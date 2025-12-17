@@ -1,0 +1,284 @@
+--====================================================
+--// Services
+--====================================================
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Camera = workspace.CurrentCamera
+local lp = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+
+--====================================================
+--// Load UI Library
+--====================================================
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/x2zu/OPEN-SOURCE-UI-ROBLOX/refs/heads/main/X2ZU%20UI%20ROBLOX%20OPEN%20SOURCE/DummyUi-leak-by-x2zu/fetching-main/Tools/Framework.luau"))()
+
+local Window = Library:Window({
+    Title = "Xi Hub [ Stellar ]",
+    Desc = "Aimbot + ESP (Mobile)",
+    Icon = 105059922903197,
+    Theme = "Dark",
+    Config = {Keybind = Enum.KeyCode.LeftControl, Size = UDim2.new(0, 550, 0, 400)},
+    CloseUIButton = {Enabled = true, Text = "X Hub"},
+    Position = UDim2.new(0.5, -275, 0, 10)
+})
+
+--====================================================
+--// Default Settings
+--====================================================
+local AimbotEnabled, TeamCheck, WallCheck = false, false, false
+local FOVRadius, LockRange = 200, 3000
+local AimPart, IgnoreFOV, DisableOnDeath, ShowFOV, AimlockHold = "Head", false, false, false, false
+local FullSmoothness = false -- Instant Lock
+local CurrentTarget = nil
+
+local ESP_ENABLED, ESPTeamCheck = false, false
+local TracerESP, NameESP, DistanceESP = false, false, false
+local ESPColor = Color3.fromRGB(255, 255, 255)
+local ESPObjects = {}
+
+--====================================================
+--// FOV Circle
+--====================================================
+local FOVCircle = Drawing.new("Circle")
+FOVCircle.Color = Color3.fromRGB(255, 255, 255)
+FOVCircle.Thickness = 2
+FOVCircle.NumSides = 64
+FOVCircle.Filled = false
+FOVCircle.Radius = FOVRadius
+FOVCircle.Visible = false
+
+RunService.RenderStepped:Connect(function()
+    local screenSize = Camera.ViewportSize
+    FOVCircle.Position = Vector2.new(screenSize.X / 2, screenSize.Y / 2)
+    FOVCircle.Radius = FOVRadius
+end)
+
+--====================================================
+--// Create ESP for player
+--====================================================
+local function CreateESP(player)
+    if player == lp then return end
+    local drawings = {
+        Tracer = Drawing.new("Line"),
+        Name = Drawing.new("Text"),
+        Distance = Drawing.new("Text")
+    }
+
+    drawings.Tracer.Color = ESPColor
+    drawings.Tracer.Thickness = 2
+    drawings.Tracer.Visible = false
+
+    drawings.Name.Color = ESPColor
+    drawings.Name.Size = 15
+    drawings.Name.Center = true
+    drawings.Name.Outline = true
+    drawings.Name.Visible = false
+
+    drawings.Distance.Color = ESPColor
+    drawings.Distance.Size = 13
+    drawings.Distance.Center = true
+    drawings.Distance.Outline = true
+    drawings.Distance.Visible = false
+
+    ESPObjects[player] = drawings
+end
+
+for _, p in ipairs(Players:GetPlayers()) do
+    if p ~= lp then CreateESP(p) end
+end
+Players.PlayerAdded:Connect(CreateESP)
+Players.PlayerRemoving:Connect(function(p)
+    local esp = ESPObjects[p]
+    if esp then
+        for _, d in pairs(esp) do d:Remove() end
+        ESPObjects[p] = nil
+    end
+end)
+
+--====================================================
+--// Raycast for WallCheck
+--====================================================
+local function IsVisible(part)
+    local origin = Camera.CFrame.Position
+    local direction = (part.Position - origin).Unit * (part.Position - origin).Magnitude
+    local params = RaycastParams.new()
+    params.FilterType = Enum.RaycastFilterType.Blacklist
+    params.FilterDescendantsInstances = {lp.Character}
+    local result = workspace:Raycast(origin, direction, params)
+    if result then
+        return result.Instance:IsDescendantOf(part.Parent)
+    end
+    return true
+end
+
+--====================================================
+--// Aimbot Functions
+--====================================================
+local function GetAimPart(char)
+    return char:FindFirstChild(AimPart) or char:FindFirstChild("Head")
+end
+
+local function IsTargetValid(player)
+    local char = player.Character
+    if not char or not char:FindFirstChild("Humanoid") then return false end
+    if TeamCheck and player.Team == lp.Team then return false end
+    local part = GetAimPart(char)
+    if not part then return false end
+    if WallCheck and not IsVisible(part) then return false end
+    return char.Humanoid.Health > 0
+end
+
+local function GetClosestTarget()
+    local closest, minDist = nil, math.huge
+    local center = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= lp and IsTargetValid(player) then
+            local part = GetAimPart(player.Character)
+            local screenPos, onScreen = Camera:WorldToViewportPoint(part.Position)
+            if onScreen then
+                local screenDist = (Vector2.new(screenPos.X, screenPos.Y) - center).Magnitude
+                local worldDist = (lp.Character.HumanoidRootPart.Position - part.Position).Magnitude
+                if (screenDist <= FOVRadius or IgnoreFOV) and worldDist <= LockRange then
+                    if screenDist < minDist then
+                        minDist = screenDist
+                        closest = player
+                    end
+                end
+            end
+        end
+    end
+    return closest
+end
+
+--====================================================
+--// ESP Update
+--====================================================
+RunService.RenderStepped:Connect(function()
+    if not lp.Character or not lp.Character:FindFirstChild("Humanoid") or lp.Character.Humanoid.Health <= 0 then
+        FOVCircle.Visible = false
+        CurrentTarget = nil
+        for _, esp in pairs(ESPObjects) do
+            for _, obj in pairs(esp) do obj.Visible = false end
+        end
+        return
+    end
+
+    FOVCircle.Visible = ShowFOV
+
+    for player, esp in pairs(ESPObjects) do
+        local char = player.Character
+        local humRoot, hum = nil, nil
+        if char then
+            humRoot = char:FindFirstChild("HumanoidRootPart")
+            hum = char:FindFirstChild("Humanoid")
+        end
+
+        if not char or not humRoot or not hum or hum.Health <= 0 then
+            for _, obj in pairs(esp) do obj.Visible = false end
+        else
+            if ESPTeamCheck and player.Team == lp.Team then
+                for _, obj in pairs(esp) do obj.Visible = false end
+            else
+                local pos, vis = Camera:WorldToViewportPoint(humRoot.Position)
+                if vis and ESP_ENABLED then
+                    local dist = math.floor((lp.Character.HumanoidRootPart.Position - humRoot.Position).Magnitude)
+                    esp.Name.Visible = NameESP
+                    esp.Distance.Visible = DistanceESP
+                    esp.Tracer.Visible = TracerESP
+
+                    if NameESP then
+                        esp.Name.Text = player.Name
+                        esp.Name.Position = Vector2.new(pos.X, pos.Y - 25)
+                    end
+                    if DistanceESP then
+                        esp.Distance.Text = tostring(dist).."m"
+                        esp.Distance.Position = Vector2.new(pos.X, pos.Y + 25)
+                    end
+                    if TracerESP then
+                        esp.Tracer.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
+                        esp.Tracer.To = Vector2.new(pos.X, pos.Y)
+                    end
+                else
+                    for _, obj in pairs(esp) do obj.Visible = false end
+                end
+            end
+        end
+    end
+end)
+
+--====================================================
+--// Aimbot Update
+--====================================================
+RunService.RenderStepped:Connect(function()
+    if not lp.Character or not lp.Character:FindFirstChild("Humanoid") or lp.Character.Humanoid.Health <= 0 then
+        CurrentTarget = nil
+        FOVCircle.Visible = false
+        return
+    end
+
+    if not AimbotEnabled or not AimlockHold then
+        CurrentTarget = nil
+        FOVCircle.Color = Color3.fromRGB(255, 255, 255)
+        return
+    end
+
+    local target = GetClosestTarget()
+    if target then
+        CurrentTarget = target
+        local part = GetAimPart(target.Character)
+        if part then
+            -- Instant Lock (FullSmoothness)
+            Camera.CFrame = CFrame.lookAt(Camera.CFrame.Position, part.Position)
+            FOVCircle.Color = Color3.fromRGB(255, 0, 0)
+        end
+    else
+        CurrentTarget = nil
+        FOVCircle.Color = Color3.fromRGB(255, 255, 255)
+    end
+end)
+
+--====================================================
+--// Controls (Mobile + PC)
+--====================================================
+UserInputService.InputBegan:Connect(function(input, gp)
+    if gp then return end
+    if input.KeyCode == Enum.KeyCode.Q then
+        AimbotEnabled = not AimbotEnabled
+        FOVCircle.Visible = ShowFOV and AimbotEnabled
+    end
+    if input.UserInputType == Enum.UserInputType.MouseButton2 then
+        AimlockHold = true
+    end
+end)
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton2 then
+        AimlockHold = false
+    end
+end)
+
+UserInputService.TouchStarted:Connect(function(_, gp) if gp then return end; AimlockHold = true end)
+UserInputService.TouchEnded:Connect(function(_, gp) if gp then return end; AimlockHold = false end)
+
+--====================================================
+--// GUI Tabs
+--====================================================
+local TabAimbot = Window:Tab({Title="Aimbot", Icon="crosshair"})
+TabAimbot:Toggle({Title="Enable Aimbot", Value=false, Callback=function(v) AimbotEnabled=v; FOVCircle.Visible=ShowFOV and v end})
+TabAimbot:Toggle({Title="Team Check", Value=false, Callback=function(v) TeamCheck=v end})
+TabAimbot:Toggle({Title="WallCheck (LOS)", Value=false, Callback=function(v) WallCheck=v end})
+TabAimbot:Toggle({Title="Ignore FOV", Value=false, Callback=function(v) IgnoreFOV=v end})
+TabAimbot:Toggle({Title="Disable While Dead", Value=false, Callback=function(v) DisableOnDeath=v end})
+TabAimbot:Toggle({Title="Show FOV Circle", Value=false, Callback=function(v) ShowFOV=v; FOVCircle.Visible=v and AimbotEnabled end})
+TabAimbot:Slider({Title="FOV Radius", Min=50, Max=500, Value=FOVRadius, Callback=function(v) FOVRadius=v; FOVCircle.Radius=v end})
+TabAimbot:Slider({Title="Lock Range", Min=50, Max=3000, Value=LockRange, Callback=function(v) LockRange=v end})
+TabAimbot:Dropdown({Title="Aim Part", List={"Head","HumanoidRootPart","Torso"}, Value=AimPart, Callback=function(v) AimPart=v end})
+TabAimbot:Toggle({Title="Full Smoothness (Instant Lock)", Value=true, Callback=function(v) FullSmoothness=v end})
+
+local TabESP = Window:Tab({Title="ESP", Icon="eye"})
+TabESP:Toggle({Title="Enable ESP", Value=false, Callback=function(v) ESP_ENABLED=v end})
+TabESP:Toggle({Title="Tracer ESP", Value=false, Callback=function(v) TracerESP=v end})
+TabESP:Toggle({Title="Name ESP", Value=false, Callback=function(v) NameESP=v end})
+TabESP:Toggle({Title="Distance ESP", Value=false, Callback=function(v) DistanceESP=v end})
+TabESP:Toggle({Title="ESP Team Check", Value=false, Callback=function(v) ESPTeamCheck=v end})
+
+Window:Notify({Title="Xi Hub", Desc="Aimbot + ESP Loaded (All OFF by default, Mobile Ready, Instant Lock Enabled, Smoothness Removed)", Time=4})
