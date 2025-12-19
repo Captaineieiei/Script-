@@ -1,0 +1,140 @@
+-- Load WindUI
+local WindUI = loadstring(game:HttpGet(
+    "https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"
+))()
+
+--------------------------------------------------------------------------------
+-- Decorate GUI
+--------------------------------------------------------------------------------
+WindUI.TransparencyValue = 0.2
+
+--------------------------------------------------------------------------------
+-- Create Window
+--------------------------------------------------------------------------------
+local Window = WindUI:CreateWindow({
+    Title = "Nova Hub | 99 Nights in the Forest",
+    Icon = "crown",
+    Author = "By Captain",
+    Folder = "Legend",
+    Size = UDim2.fromOffset(600, 400),
+    Transparent = true,
+    Theme = "Crimson",
+    ScrollBarEnabled = true,
+    HideSearchBar = false,
+    NewElements = true
+})
+
+--------------------------------------------------------------------------------
+-- Tabs
+--------------------------------------------------------------------------------
+local InfoTab = Window:Tab({ Title = "Info", Icon = "info" })
+local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" })
+local MiscTab = Window:Tab({ Title = "Misc", Icon = "settings" })
+
+--------------------------------------------------------------------------------
+-- Sections
+--------------------------------------------------------------------------------
+local InfoSection = InfoTab:Section({
+    Title = "Information",
+    Icon = "badge-info",
+    Opened = true
+})
+
+local PlayerSection = PlayerTab:Section({
+    Title = "Player Menu",
+    Icon = "tally-4",
+    Opened = true
+})
+
+local MiscSection = MiscTab:Section({
+    Title = "Misc Menu",
+    Icon = "boxes",
+    Opened = true
+})
+
+--------------------------------------------------------------------------------
+-- Info
+--------------------------------------------------------------------------------
+InfoSection:Label({
+    Title = "Nova Hub Loaded Successfully"
+})
+
+InfoSection:Button({
+    Title = "Copy Discord",
+    Desc = "คัดลอกลิงก์ Discord",
+    Callback = function()
+        setclipboard("https://discord.gg/yourdiscord")
+    end
+})
+
+--------------------------------------------------------------------------------
+-- Player Functions
+--------------------------------------------------------------------------------
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+PlayerSection:Toggle({
+    Title = "God Mode",
+    Desc = "เลือดไม่ลด",
+    Default = false,
+    Callback = function(state)
+        local char = LocalPlayer.Character
+        if char and char:FindFirstChild("Humanoid") then
+            char.Humanoid.MaxHealth = state and math.huge or 100
+            char.Humanoid.Health = char.Humanoid.MaxHealth
+        end
+    end
+})
+
+PlayerSection:Slider({
+    Title = "WalkSpeed",
+    Min = 16,
+    Max = 120,
+    Default = 16,
+    Callback = function(value)
+        local char = LocalPlayer.Character
+        if char and char:FindFirstChild("Humanoid") then
+            char.Humanoid.WalkSpeed = value
+        end
+    end
+})
+
+PlayerSection:Slider({
+    Title = "JumpPower",
+    Min = 50,
+    Max = 200,
+    Default = 50,
+    Callback = function(value)
+        local char = LocalPlayer.Character
+        if char and char:FindFirstChild("Humanoid") then
+            char.Humanoid.JumpPower = value
+        end
+    end
+})
+
+--------------------------------------------------------------------------------
+-- Misc
+--------------------------------------------------------------------------------
+MiscSection:Button({
+    Title = "Rejoin Server",
+    Callback = function()
+        game:GetService("TeleportService"):Teleport(game.PlaceId)
+    end
+})
+
+MiscSection:Button({
+    Title = "Destroy GUI",
+    Callback = function()
+        WindUI:Destroy()
+    end
+})
+
+--------------------------------------------------------------------------------
+-- Toggle GUI (RightCtrl)
+--------------------------------------------------------------------------------
+game:GetService("UserInputService").InputBegan:Connect(function(input, gpe)
+    if gpe then return end
+    if input.KeyCode == Enum.KeyCode.RightControl then
+        Window:SetVisible(not Window.Visible)
+    end
+end)
