@@ -1,11 +1,337 @@
-local id = game.PlaceId
+-- =====================
+-- CONFIG & SCRIPTS
+-- =====================
+local Config = {
+    api = "20ceaebc-6d17-4f6b-b959-08d42a7bf9cd",
+    service = "Novahhhh",
+    provider = "Nova"
+}
 
-if id == 17766863403 then
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/City"))()
+local PlaceScripts = {
+    [17766863403] = "https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/City",
+    [121864768012064] = "https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/Fish%20it",
+}
 
-elseif id == 9876543210 then
-    loadstring(game:HttpGet("https://pastebin.com/raw/BBBBBBB"))()
+-- =====================
+-- PRE-CHECK SYSTEM
+-- =====================
+local currentPlaceId = game.PlaceId
+local scriptUrl = PlaceScripts[currentPlaceId]
 
-else
-    warn("แมพนี้ไม่รองรับ")
+if not scriptUrl then
+    warn("Nova Hub | แมพนี้ยังไม่รองรับ (Unsupported PlaceId):", currentPlaceId)
+    return 
 end
+
+-- =====================
+-- SERVICES & API LOADING
+-- =====================
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UIS = game:GetService("UserInputService")
+local Lighting = game:GetService("Lighting")
+
+local player = Players.LocalPlayer
+local pgui = player:WaitForChild("PlayerGui")
+
+local JunkieAPI
+local apiSuccess = pcall(function()
+    JunkieAPI = loadstring(game:HttpGet("https://junkie-development.de/sdk/JunkieKeySystem.lua"))()
+end)
+
+if pgui:FindFirstChild("NovahubKeySystem") then pgui.NovahubKeySystem:Destroy() end
+if Lighting:FindFirstChild("NovaBlur") then Lighting.NovaBlur:Destroy() end
+
+-- =====================
+-- FUNCTIONS
+-- =====================
+local function main()
+    print("Nova Hub Loaded!")
+    local success, err = pcall(function() 
+        loadstring(game:HttpGet(scriptUrl))() 
+    end)
+    if not success then warn("Error loading script:", err) end
+end
+
+-- =====================
+-- UI SETUP
+-- =====================
+local blur = Instance.new("BlurEffect")
+blur.Name = "NovaBlur"
+blur.Parent = Lighting
+blur.Size = 0
+TweenService:Create(blur, TweenInfo.new(0.5), {Size = 18}):Play()
+
+local ScreenGui = Instance.new("ScreenGui", pgui)
+ScreenGui.Name = "NovahubKeySystem"
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.ResetOnSpawn = false
+
+local Frame = Instance.new("Frame", ScreenGui)
+Frame.Size = UDim2.new(0, 0, 0, 0)
+Frame.Position = UDim2.new(0.5, 0, 0.5, 0)
+Frame.AnchorPoint = Vector2.new(0.5, 0.5)
+Frame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+Frame.BackgroundTransparency = 1
+Frame.BorderSizePixel = 0
+Frame.Active = true
+Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 15)
+
+local Stroke = Instance.new("UIStroke", Frame)
+Stroke.Color = Color3.fromRGB(120, 100, 255)
+Stroke.Thickness = 2
+Stroke.Transparency = 1
+
+TweenService:Create(Frame, TweenInfo.new(0.6, Enum.EasingStyle.Back), {
+    Size = UDim2.new(0, 350, 0, 230),
+    BackgroundTransparency = 0.05
+}):Play()
+TweenService:Create(Stroke, TweenInfo.new(0.6), {Transparency = 0.4}):Play()
+
+local isClosing = false
+local function SmoothDestroy()
+    if isClosing then return end
+    isClosing = true
+    Frame.Active = false
+    local tweenInfo = TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+    TweenService:Create(Frame, tweenInfo, {Size = UDim2.new(0, 0, 0, 0), BackgroundTransparency = 1}):Play()
+    TweenService:Create(Stroke, TweenInfo.new(0.3), {Transparency = 1}):Play()
+    TweenService:Create(blur, TweenInfo.new(0.4), {Size = 0}):Play()
+    task.wait(0.45)
+    if blur then blur:Destroy() end
+    if ScreenGui then ScreenGui:Destroy() end
+end
+
+-- =====================
+-- COMPONENTS
+-- =====================
+local CloseBtn = Instance.new("ImageButton", Frame)
+CloseBtn.Size = UDim2.new(0, 22, 0, 22)
+CloseBtn.Position = UDim2.new(1, -32, 0, 12)
+CloseBtn.BackgroundTransparency = 1
+CloseBtn.Image = "rbxassetid://10747384394"
+CloseBtn.ImageColor3 = Color3.fromRGB(255, 100, 100)
+CloseBtn.ZIndex = 15
+CloseBtn.MouseButton1Click:Connect(SmoothDestroy)
+
+local Header = Instance.new("Frame", Frame)
+Header.Size = UDim2.new(1, 0, 0, 50)
+Header.Position = UDim2.new(0, 0, 0, 15)
+Header.BackgroundTransparency = 1
+
+local HeaderCenter = Instance.new("Frame", Header)
+HeaderCenter.Size = UDim2.new(0, 250, 1, 0)
+HeaderCenter.Position = UDim2.new(0.5, 0, 0.5, 0)
+HeaderCenter.AnchorPoint = Vector2.new(0.5, 0.5)
+HeaderCenter.BackgroundTransparency = 1
+
+local Layout = Instance.new("UIListLayout", HeaderCenter)
+Layout.FillDirection = Enum.FillDirection.Horizontal
+Layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+Layout.VerticalAlignment = Enum.VerticalAlignment.Center
+Layout.Padding = UDim.new(0, 12)
+
+local Logo = Instance.new("ImageLabel", HeaderCenter)
+Logo.Size = UDim2.new(0, 38, 0, 38)
+Logo.BackgroundTransparency = 1
+Logo.Image = "rbxassetid://109113228113929"
+
+local Title = Instance.new("TextLabel", HeaderCenter)
+Title.BackgroundTransparency = 1
+Title.Text = "NOVA HUB"
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 24
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.AutomaticSize = Enum.AutomaticSize.X
+
+local Status = Instance.new("TextLabel", Frame)
+Status.Size = UDim2.new(1, 0, 0, 20)
+Status.Position = UDim2.new(0, 0, 0, 75)
+Status.BackgroundTransparency = 1
+Status.Text = "Verification Required"
+Status.Font = Enum.Font.Gotham
+Status.TextSize = 13
+Status.TextColor3 = Color3.fromRGB(180, 180, 180)
+
+local function ShowStatus(msg, col)
+    Status.Text = msg
+    Status.TextColor3 = col
+end
+
+-- =====================
+-- INPUT BOX (MODIFIED)
+-- =====================
+local InputContainer = Instance.new("Frame", Frame)
+InputContainer.Size = UDim2.new(0, 290, 0, 42)
+InputContainer.Position = UDim2.new(0.5, 0, 0.58, 0)
+InputContainer.AnchorPoint = Vector2.new(0.5, 0.5)
+InputContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+InputContainer.ClipsDescendants = true 
+Instance.new("UICorner", InputContainer).CornerRadius = UDim.new(0, 8)
+
+local InpStroke = Instance.new("UIStroke", InputContainer)
+InpStroke.Color = Color3.fromRGB(100, 100, 255)
+InpStroke.Transparency = 0.7
+
+local KeyIcon = Instance.new("ImageLabel", InputContainer)
+KeyIcon.Size = UDim2.new(0, 20, 0, 20)
+KeyIcon.Position = UDim2.new(0, 12, 0.5, 0)
+KeyIcon.AnchorPoint = Vector2.new(0, 0.5)
+KeyIcon.BackgroundTransparency = 1
+KeyIcon.Image = "rbxassetid://93569468678423"
+KeyIcon.ZIndex = 10 
+
+local KeyInput = Instance.new("TextBox", InputContainer)
+KeyInput.Size = UDim2.new(1, -55, 1, 0) 
+KeyInput.Position = UDim2.new(0, 45, 0, 0) 
+KeyInput.BackgroundTransparency = 1
+KeyInput.PlaceholderText = "Paste your key here..."
+KeyInput.Text = ""
+KeyInput.Font = Enum.Font.Gotham
+KeyInput.TextSize = 14
+KeyInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+KeyInput.TextXAlignment = Enum.TextXAlignment.Left
+KeyInput.ClearTextOnFocus = false
+KeyInput.ZIndex = 5
+
+-- ฟังก์ชันที่ต้องการ: เมื่อกดที่ช่อง Input จะล้างข้อความเก่าทันที
+KeyInput.Focused:Connect(function()
+    KeyInput.Text = ""
+end)
+
+local Padding = Instance.new("UIPadding", KeyInput)
+Padding.PaddingLeft = UDim.new(0, 5)
+Padding.PaddingRight = UDim.new(0, 10)
+
+local function ShakeUI()
+    local OriginalPos = UDim2.new(0.5, 0, 0.58, 0)
+    task.spawn(function()
+        for i = 1, 3 do
+            TweenService:Create(InputContainer, TweenInfo.new(0.05), {Position = OriginalPos + UDim2.new(0, 6, 0, 0)}):Play()
+            task.wait(0.05)
+            TweenService:Create(InputContainer, TweenInfo.new(0.05), {Position = OriginalPos + UDim2.new(0, -6, 0, 0)}):Play()
+            task.wait(0.05)
+        end
+        TweenService:Create(InputContainer, TweenInfo.new(0.05), {Position = OriginalPos}):Play()
+    end)
+    TweenService:Create(InpStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(255, 50, 50), Transparency = 0}):Play()
+    task.wait(0.5)
+    TweenService:Create(InpStroke, TweenInfo.new(0.5), {Color = Color3.fromRGB(100, 100, 255), Transparency = 0.7}):Play()
+end
+
+-- =====================
+-- BUTTONS SETUP
+-- =====================
+local ButtonFrame = Instance.new("Frame", Frame)
+ButtonFrame.Size = UDim2.new(0, 290, 0, 42)
+ButtonFrame.Position = UDim2.new(0.5, 0, 0.83, 0)
+ButtonFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+ButtonFrame.BackgroundTransparency = 1
+local BL = Instance.new("UIListLayout", ButtonFrame)
+BL.FillDirection = Enum.FillDirection.Horizontal
+BL.HorizontalAlignment = Enum.HorizontalAlignment.Center
+BL.Padding = UDim.new(0, 12)
+
+local function createIconButton(text, imgId, isPrimary)
+    local btn = Instance.new("TextButton", ButtonFrame)
+    btn.Size = UDim2.new(0, 138, 1, 0)
+    btn.Text = ""
+    btn.AutoButtonColor = false
+    btn.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+    local grad = Instance.new("UIGradient", btn)
+    grad.Color = isPrimary and ColorSequence.new(Color3.fromRGB(100, 90, 255), Color3.fromRGB(160, 100, 255)) or ColorSequence.new(Color3.fromRGB(55, 55, 65), Color3.fromRGB(75, 75, 85))
+    local bStroke = Instance.new("UIStroke", btn)
+    bStroke.Color = isPrimary and Color3.fromRGB(180, 160, 255) or Color3.fromRGB(100, 100, 120)
+    bStroke.Transparency = 0.5
+
+    local container = Instance.new("Frame", btn)
+    container.Size = UDim2.new(1, 0, 1, 0)
+    container.BackgroundTransparency = 1
+    local l = Instance.new("UIListLayout", container)
+    l.FillDirection = Enum.FillDirection.Horizontal
+    l.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    l.VerticalAlignment = Enum.VerticalAlignment.Center
+    l.Padding = UDim.new(0, 8)
+
+    local icon = Instance.new("ImageLabel", container)
+    icon.Size = UDim2.new(0, 18, 0, 18)
+    icon.BackgroundTransparency = 1
+    icon.Image = "rbxassetid://" .. imgId
+    local label = Instance.new("TextLabel", container)
+    label.Text = text
+    label.Font = Enum.Font.GothamBold
+    label.TextSize = 13
+    label.TextColor3 = Color3.new(1, 1, 1)
+    label.BackgroundTransparency = 1
+    label.AutomaticSize = Enum.AutomaticSize.XY
+
+    btn.MouseEnter:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 60, 80)}):Play()
+        TweenService:Create(bStroke, TweenInfo.new(0.2), {Transparency = 0}):Play()
+    end)
+    btn.MouseLeave:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 40, 50)}):Play()
+        TweenService:Create(bStroke, TweenInfo.new(0.2), {Transparency = 0.5}):Play()
+    end)
+    return btn
+end
+
+local CheckBtn = createIconButton("Check Key", "119783053916823", true)
+local GetBtn = createIconButton("Get Key", "107485544510830", false)
+
+-- =====================
+-- LOGIC
+-- =====================
+CheckBtn.MouseButton1Click:Connect(function()
+    if isClosing then return end
+    local key = KeyInput.Text:gsub("%s+", "")
+    if key == "" then ShowStatus("Please enter a key", Color3.fromRGB(255, 80, 80)) ShakeUI() return end
+    if not JunkieAPI then
+        ShowStatus("API Error! Retrying...", Color3.fromRGB(255, 80, 80))
+        pcall(function() JunkieAPI = loadstring(game:HttpGet("https://junkie-development.de/sdk/JunkieKeySystem.lua"))() end)
+        return
+    end
+    ShowStatus("Checking...", Color3.fromRGB(255, 180, 0))
+    local success, isValid = pcall(function() return JunkieAPI.verifyKey(Config.api, key, Config.service) end)
+    if success and isValid then
+        ShowStatus("Access Granted!", Color3.fromRGB(0, 255, 150))
+        task.wait(0.5)
+        SmoothDestroy()
+        main()
+    else
+        ShowStatus("Invalid Key!", Color3.fromRGB(255, 80, 80))
+        ShakeUI()
+    end
+end)
+
+GetBtn.MouseButton1Click:Connect(function()
+    if not JunkieAPI then pcall(function() JunkieAPI = loadstring(game:HttpGet("https://junkie-development.de/sdk/JunkieKeySystem.lua"))() end) end
+    if JunkieAPI then
+        local link = JunkieAPI.getLink(Config.api, Config.provider, Config.service)
+        if setclipboard then setclipboard(link) end
+        ShowStatus("Link copied!", Color3.fromRGB(150, 150, 255))
+    else
+        ShowStatus("Failed to get link", Color3.fromRGB(255, 80, 80))
+    end
+end)
+
+local dragging, dragStart, startPos
+Frame.InputBegan:Connect(function(i)
+    if (i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch) then
+        dragging = true dragStart = i.Position startPos = Frame.Position
+        i.Changed:Connect(function() if i.UserInputState == Enum.UserInputState.End then dragging = false end end)
+    end
+end)
+UIS.InputChanged:Connect(function(i)
+    if dragging and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
+        local delta = i.Position - dragStart
+        Frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+task.spawn(function()
+    while task.wait(0.03) and ScreenGui.Parent do 
+        Logo.Rotation = math.sin(tick() * 2) * 8 
+    end
+end)
