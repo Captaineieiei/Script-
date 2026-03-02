@@ -3864,9 +3864,10 @@ local Library do
                 end
 
                 function OptionData:Set()
-                    OptionData.Selected = not OptionData.Selected
+                    if Dropdown.Multi then
+                        -- Multi-select: toggle freely
+                        OptionData.Selected = not OptionData.Selected
 
-                    if Dropdown.Multi then 
                         local Index = TableFind(Dropdown.Value, OptionData.Name)
 
                         if Index then 
@@ -3882,30 +3883,25 @@ local Library do
                         local TextFormat = #Dropdown.Value > 0 and TableConcat(Dropdown.Value, ", ") or "..."
                         Items["Value"].Instance.Text = TextFormat
                     else
-                        if OptionData.Selected then 
-                            Dropdown.Value = OptionData.Name
-                            Library.Flags[Dropdown.Flag] = OptionData.Name
-
-                            OptionData.Selected = true
-                            OptionData:Toggle("Active")
-
-                            for Index, Value in Dropdown.Options do 
-                                if Value ~= OptionData then
-                                    Value.Selected = false 
-                                    Value:Toggle("Inactive")
-                                end
-                            end
-
-                            Items["Value"].Instance.Text = OptionData.Name
-                        else
-                            Dropdown.Value = nil
-                            Library.Flags[Dropdown.Flag] = nil
-
-                            OptionData.Selected = false
-                            OptionData:Toggle("Inactive")
-
-                            Items["Value"].Instance.Text = "..."
+                        -- Single-select: ถ้าแตะ option ที่เลือกอยู่แล้ว → ไม่ต้องทำอะไร (ไม่ deselect)
+                        if OptionData.Selected then
+                            return
                         end
+
+                        OptionData.Selected = true
+                        Dropdown.Value = OptionData.Name
+                        Library.Flags[Dropdown.Flag] = OptionData.Name
+
+                        OptionData:Toggle("Active")
+
+                        for Index, Value in Dropdown.Options do 
+                            if Value ~= OptionData then
+                                Value.Selected = false 
+                                Value:Toggle("Inactive")
+                            end
+                        end
+
+                        Items["Value"].Instance.Text = OptionData.Name
                     end
 
                     if Dropdown.Callback then
@@ -3913,19 +3909,15 @@ local Library do
                     end
                 end
 
+                local OptionDebounce = false
                 OptionData.Button:Connect("MouseButton1Down", function()
-                    OptionData:Set()
-                    -- auto-close หลังเลือกใน single-select mode (UX มือถือ)
-                    if not Dropdown.Multi then
-                        task.defer(function()
-                            Dropdown:SetOpen(false)
-                        end)
-                    end
-                end)
+                    -- กัน double-fire (MouseButton1Down + events อื่นยิงพร้อมกันบนมือถือ)
+                    if OptionDebounce then return end
+                    OptionDebounce = true
+                    task.delay(0.15, function() OptionDebounce = false end)
 
-                -- รองรับ Touch บนมือถือ (กรณี MouseButton1Down ไม่ fire ครบ)
-                OptionData.Button:Connect("TouchTap", function()
                     OptionData:Set()
+                    -- auto-close หลังเลือกใน single-select mode
                     if not Dropdown.Multi then
                         task.defer(function()
                             Dropdown:SetOpen(false)
