@@ -1,3 +1,7 @@
+-- made by samet (joestar._3 on discord)
+-- https://discord.gg/VhvTd5HV8d
+-- example at bottom
+
 if getgenv().Library then
     getgenv().Library:Unload()
 end
@@ -445,6 +449,8 @@ local Library do
             local DragStart
             local StartPosition 
 
+            local ActiveTouchId = nil
+
             local Set = function(Input)
                 local DragDelta = Input.Position - DragStart
                 self:Tween(TweenInfo.new(0.16, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2New(StartPosition.X.Scale, StartPosition.X.Offset + DragDelta.X, StartPosition.Y.Scale, StartPosition.Y.Offset + DragDelta.Y)})
@@ -453,20 +459,32 @@ local Library do
             local InputChanged
 
             self:Connect("InputBegan", function(Input)
-                if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+                if Input.UserInputType == Enum.UserInputType.MouseButton1 then
                     Dragging = true
-
                     DragStart = Input.Position
                     StartPosition = Gui.Position
 
-                    if InputChanged then 
-                        return
-                    end
-
+                    if InputChanged then return end
                     InputChanged = Input.Changed:Connect(function()
                         if Input.UserInputState == Enum.UserInputState.End then
                             Dragging = false
+                            InputChanged:Disconnect()
+                            InputChanged = nil
+                        end
+                    end)
+                elseif Input.UserInputType == Enum.UserInputType.Touch then
+                    -- Only accept the first touch finger, ignore multi-touch
+                    if ActiveTouchId ~= nil then return end
+                    ActiveTouchId = Input
+                    Dragging = true
+                    DragStart = Input.Position
+                    StartPosition = Gui.Position
 
+                    if InputChanged then return end
+                    InputChanged = Input.Changed:Connect(function()
+                        if Input.UserInputState == Enum.UserInputState.End then
+                            Dragging = false
+                            ActiveTouchId = nil
                             InputChanged:Disconnect()
                             InputChanged = nil
                         end
@@ -475,8 +493,11 @@ local Library do
             end)
 
             Library:Connect(UserInputService.InputChanged, function(Input)
-                if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
-                    if Dragging then
+                if Input.UserInputType == Enum.UserInputType.MouseMovement then
+                    if Dragging then Set(Input) end
+                elseif Input.UserInputType == Enum.UserInputType.Touch then
+                    -- Only move if it's the same finger that started the drag
+                    if Dragging and Input == ActiveTouchId then
                         Set(Input)
                     end
                 end
@@ -528,21 +549,32 @@ local Library do
 
             local InputChanged
 
+            local ActiveResizeTouchId = nil
+
             ResizeButton:Connect("InputBegan", function(Input)
-                if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
-
+                if Input.UserInputType == Enum.UserInputType.MouseButton1 then
                     Resizing = true
-
                     Start = Gui.Size - UDim2New(0, Input.Position.X, 0, Input.Position.Y)
 
-                    if InputChanged then 
-                        return
-                    end
-
+                    if InputChanged then return end
                     InputChanged = Input.Changed:Connect(function()
                         if Input.UserInputState == Enum.UserInputState.End then
                             Resizing = false
+                            InputChanged:Disconnect()
+                            InputChanged = nil
+                        end
+                    end)
+                elseif Input.UserInputType == Enum.UserInputType.Touch then
+                    if ActiveResizeTouchId ~= nil then return end
+                    ActiveResizeTouchId = Input
+                    Resizing = true
+                    Start = Gui.Size - UDim2New(0, Input.Position.X, 0, Input.Position.Y)
 
+                    if InputChanged then return end
+                    InputChanged = Input.Changed:Connect(function()
+                        if Input.UserInputState == Enum.UserInputState.End then
+                            Resizing = false
+                            ActiveResizeTouchId = nil
                             InputChanged:Disconnect()
                             InputChanged = nil
                         end
@@ -551,13 +583,18 @@ local Library do
             end)
 
             Library:Connect(UserInputService.InputChanged, function(Input)
-                if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
+                if Input.UserInputType == Enum.UserInputType.MouseMovement then
                     if Resizing then
                         ResizeMax = Maximum or Gui.Parent.AbsoluteSize - Gui.AbsoluteSize
-
                         Delta = Start + UDim2New(0, Input.Position.X, 0, Input.Position.Y)
                         Delta = UDim2New(0, math.clamp(Delta.X.Offset, Minimum.X, ResizeMax.X), 0, math.clamp(Delta.Y.Offset, Minimum.Y, ResizeMax.Y))
-
+                        Tween:Create(Gui, TweenInfo.new(0.17, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = Delta}, true)
+                    end
+                elseif Input.UserInputType == Enum.UserInputType.Touch then
+                    if Resizing and Input == ActiveResizeTouchId then
+                        ResizeMax = Maximum or Gui.Parent.AbsoluteSize - Gui.AbsoluteSize
+                        Delta = Start + UDim2New(0, Input.Position.X, 0, Input.Position.Y)
+                        Delta = UDim2New(0, math.clamp(Delta.X.Offset, Minimum.X, ResizeMax.X), 0, math.clamp(Delta.Y.Offset, Minimum.Y, ResizeMax.Y))
                         Tween:Create(Gui, TweenInfo.new(0.17, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = Delta}, true)
                     end
                 end
