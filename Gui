@@ -4306,40 +4306,7 @@ local Library do
                     end
                 })
 
-                SettingsSection:Slider({
-                    Name = "Tween Speed",
-                    Default = 0.3,
-                    Flag = "Tween Speed",
-                    Decimals = 2,
-                    Suffix = "s",
-                    Max = 10,
-                    Min = 0,
-                    Callback = function(Value)
-                        Library.Tween.Time = Value
-                    end
-                })
 
-                SettingsSection:Dropdown({
-                    Name = "Tween Style",
-                    Flag = "Tween style",
-                    Items = { "Linear", "Quad", "Quart", "Back", "Bounce", "Circular", "Cubic", "Elastic", "Exponential", "Sine", "Quint" },
-                    Default = "Quint",
-                    Callback = function(Value)
-                        if not Value then Value = "Quint" end
-                        Library.Tween.Style = Enum.EasingStyle[Value]
-                    end
-                })
-
-                SettingsSection:Dropdown({
-                    Name = "Tween Direction",
-                    Flag = "Tween direction",
-                    Items = { "In", "Out", "InOut" },
-                    Default = "Out",
-                    Callback = function(Value)
-                        if not Value then Value = "Out" end
-                        Library.Tween.Direction = Enum.EasingDirection[Value]
-                    end
-                })
             end
         end
     end
