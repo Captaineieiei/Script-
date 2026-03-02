@@ -3857,8 +3857,12 @@ local Library do
                 
                 function OptionData:Toggle(Value)
                     if Value == "Active" then
+                        OptionData.Button.Instance.BackgroundTransparency = 0
+                        OptionData.Button.Instance.TextColor3 = FromRGB(0, 0, 0)
                         OptionData.Button:Tween(nil, {BackgroundTransparency = 0, TextColor3 = FromRGB(0, 0, 0)})
                     else
+                        OptionData.Button.Instance.BackgroundTransparency = 1
+                        OptionData.Button.Instance.TextColor3 = FromRGB(100, 100, 100)
                         OptionData.Button:Tween(nil, {BackgroundTransparency = 1, TextColor3 = FromRGB(100, 100, 100)})
                     end
                 end
