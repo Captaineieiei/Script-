@@ -719,7 +719,6 @@ local Library do
         local cfg = self.MobileButtonConfig
         local BtnSize = cfg.Size
 
-        -- Outer draggable frame
         local MobileBtn = Instances:Create("TextButton", {
             Parent = Library.Holder.Instance,
             Name = "\0",
@@ -748,7 +747,7 @@ local Library do
             Thickness = 1.5
         })
 
-        -- Icon label inside button (text mode)
+        -- Text icon
         local IconLabel = Instances:Create("TextLabel", {
             Parent = MobileBtn.Instance,
             Name = "MobileIconText",
@@ -765,7 +764,7 @@ local Library do
             Visible = cfg.Icon == nil
         })
 
-        -- Image icon inside button (image mode)
+        -- Image icon
         local IconImage = Instances:Create("ImageLabel", {
             Parent = MobileBtn.Instance,
             Name = "MobileIconImage",
@@ -780,51 +779,75 @@ local Library do
             Visible = cfg.Icon ~= nil
         })
 
-        -- Dragging support (touch + mouse)
+        -- helper: sync icon with window open state
+        local function SyncIcon(isOpen)
+            local hasIcon = cfg.Icon ~= nil and tostring(cfg.Icon) ~= ""
+            if isOpen then
+                IconLabel.Instance.Text    = "✕"
+                IconLabel.Instance.Visible = true
+                IconImage.Instance.Visible = false
+            else
+                IconLabel.Instance.Text    = cfg.Label
+                IconLabel.Instance.Visible = not hasIcon
+                IconImage.Instance.Visible = hasIcon
+            end
+        end
+
+        -- Drag logic
         local Dragging = false
         local DragStart = nil
-        local StartPos = nil
-        local TouchId = nil
-        local Moved = false
+        local StartPos  = nil
+        local TouchId   = nil
+        local WasDrag   = false    -- only true after 20+ px movement
 
-        MobileBtn.Instance.InputBegan:Connect(function(Input)
+        Library:Connect(MobileBtn.Instance.InputBegan, function(Input)
             if Input.UserInputType == Enum.UserInputType.MouseButton1 or
                (Input.UserInputType == Enum.UserInputType.Touch and TouchId == nil) then
-                if Input.UserInputType == Enum.UserInputType.Touch then TouchId = Input end
+                if Input.UserInputType == Enum.UserInputType.Touch then
+                    TouchId = Input
+                end
                 Dragging = true
-                Moved = false
+                WasDrag  = false
                 DragStart = Input.Position
-                StartPos = MobileBtn.Instance.Position
+                StartPos  = MobileBtn.Instance.Position
             end
         end)
 
-        UserInputService.InputChanged:Connect(function(Input)
+        Library:Connect(UserInputService.InputChanged, function(Input)
             if not Dragging then return end
-            local activeInput = (Input.UserInputType == Enum.UserInputType.MouseMovement) or
-                                (Input.UserInputType == Enum.UserInputType.Touch and Input == TouchId)
-            if not activeInput then return end
+            local isSameInput = (Input.UserInputType == Enum.UserInputType.MouseMovement)
+                or  (Input.UserInputType == Enum.UserInputType.Touch and Input == TouchId)
+            if not isSameInput then return end
+
             local delta = Input.Position - DragStart
-            if delta.Magnitude > 5 then Moved = true end
-            local newX = StartPos.X.Scale + delta.X / MobileBtn.Instance.Parent.AbsoluteSize.X
-            local newY = StartPos.Y.Scale + delta.Y / MobileBtn.Instance.Parent.AbsoluteSize.Y
-            newX = MathClamp(newX, 0.02, 0.98)
-            newY = MathClamp(newY, 0.02, 0.98)
-            MobileBtn.Instance.Position = UDim2New(newX, 0, newY, 0)
-            Library.MobileButtonConfig.Position = MobileBtn.Instance.Position
+            if delta.Magnitude > 20 then WasDrag = true end   -- 20px threshold
+
+            if WasDrag then
+                local parentSize = MobileBtn.Instance.Parent.AbsoluteSize
+                local nx = MathClamp(StartPos.X.Scale + delta.X / parentSize.X, 0.04, 0.96)
+                local ny = MathClamp(StartPos.Y.Scale + delta.Y / parentSize.Y, 0.04, 0.96)
+                MobileBtn.Instance.Position = UDim2New(nx, 0, ny, 0)
+                Library.MobileButtonConfig.Position = MobileBtn.Instance.Position
+            end
         end)
 
-        UserInputService.InputEnded:Connect(function(Input)
+        Library:Connect(UserInputService.InputEnded, function(Input)
             if Input.UserInputType == Enum.UserInputType.MouseButton1 or
                (Input.UserInputType == Enum.UserInputType.Touch and Input == TouchId) then
+                local wasDragCopy = WasDrag
                 Dragging = false
-                TouchId = nil
-                -- Only toggle window if not dragged
-                if not Moved and WindowRef then
+                WasDrag  = false
+                TouchId  = nil
+                -- Toggle window only on a clean tap (no drag)
+                if not wasDragCopy and WindowRef then
                     WindowRef:SetOpen(not WindowRef.IsOpen)
+                    SyncIcon(WindowRef.IsOpen)
                 end
-                Moved = false
             end
         end)
+
+        -- Store SyncIcon so UpdateMobileButton can call it
+        self._MobileSyncIcon = SyncIcon
 
         self.MobileButton = MobileBtn
         return MobileBtn
@@ -2465,38 +2488,12 @@ local Library do
             -- Mobile button: create once and link to this window
             Library:CreateMobileButton(Window)
 
-            -- Wrap SetOpen so the mobile button icon updates with open state
+            -- Wrap SetOpen so the mobile button icon syncs with open state
             local _OrigSetOpen = Window.SetOpen
             Window.SetOpen = function(self, Bool)
                 _OrigSetOpen(self, Bool)
-                if Library.MobileButton then
-                    local cfg = Library.MobileButtonConfig
-                    local hasIcon = cfg.Icon ~= nil and tostring(cfg.Icon) ~= ""
-                    for _, child in Library.MobileButton.Instance:GetChildren() do
-                        if child.Name == "MobileIconText" then
-                            child.Text    = Bool and "✕" or cfg.Label
-                            child.Visible = not hasIcon
-                        elseif child.Name == "MobileIconImage" then
-                            -- when open show ✕ as text fallback; when closed restore image
-                            if Bool then
-                                child.Visible = false
-                                -- show text ✕ temporarily
-                                for _, c2 in Library.MobileButton.Instance:GetChildren() do
-                                    if c2.Name == "MobileIconText" then
-                                        c2.Text    = "✕"
-                                        c2.Visible = true
-                                    end
-                                end
-                            else
-                                child.Visible = hasIcon
-                                for _, c2 in Library.MobileButton.Instance:GetChildren() do
-                                    if c2.Name == "MobileIconText" then
-                                        c2.Visible = not hasIcon
-                                    end
-                                end
-                            end
-                        end
-                    end
+                if Library._MobileSyncIcon then
+                    Library._MobileSyncIcon(Bool)
                 end
             end
 
@@ -4342,85 +4339,6 @@ local Library do
                         Library.Tween.Direction = Enum.EasingDirection[Value]
                     end
                 })
-
-                -- ── Mobile Button Settings ──────────────────────────────
-                local MobileSection = SettingsSubPage:Section({Name = "Mobile Button", Icon = "72732892493295", Side = 1})
-
-                MobileSection:Toggle({
-                    Name = "Enable Mobile Button",
-                    Flag = "MobileButtonEnabled",
-                    Default = Library.MobileButtonEnabled,
-                    Callback = function(Value)
-                        Library.MobileButtonEnabled = Value
-                        if Value then
-                            -- Find the active window reference (last created window)
-                            local win = nil
-                            for _, page in Library.Pages do
-                                if page.Window then win = page.Window break end
-                            end
-                            Library:CreateMobileButton(win)
-                        else
-                            if Library.MobileButton then
-                                Library.MobileButton:Clean()
-                                Library.MobileButton = nil
-                            end
-                        end
-                    end
-                })
-
-                MobileSection:Slider({
-                    Name = "Button Size",
-                    Flag = "MobileButtonSize",
-                    Default = Library.MobileButtonConfig.Size,
-                    Min = 30,
-                    Max = 100,
-                    Decimals = 0,
-                    Suffix = "px",
-                    Callback = function(Value)
-                        Library.MobileButtonConfig.Size = Value
-                        Library:UpdateMobileButton()
-                    end
-                })
-
-                MobileSection:Slider({
-                    Name = "Button Opacity",
-                    Flag = "MobileButtonOpacity",
-                    Default = Library.MobileButtonConfig.Opacity * 100,
-                    Min = 10,
-                    Max = 100,
-                    Decimals = 0,
-                    Suffix = "%",
-                    Callback = function(Value)
-                        Library.MobileButtonConfig.Opacity = Value / 100
-                        Library:UpdateMobileButton()
-                    end
-                })
-
-                MobileSection:Textbox({
-                    Default = Library.MobileButtonConfig.Label,
-                    Flag = "MobileButtonLabel",
-                    Placeholder = "Button label (text)",
-                    Callback = function(Value)
-                        if Value and Value ~= "" then
-                            Library.MobileButtonConfig.Label = Value
-                            Library:UpdateMobileButton()
-                        end
-                    end
-                })
-
-                MobileSection:Textbox({
-                    Default = Library.MobileButtonConfig.Icon or "",
-                    Flag = "MobileButtonIcon",
-                    Placeholder = "Icon ID (rbxassetid)",
-                    Finished = true,
-                    Numeric = true,
-                    Callback = function(Value)
-                        -- empty string = clear icon, use Label instead
-                        Library.MobileButtonConfig.Icon = (Value ~= "" and Value) or nil
-                        Library:UpdateMobileButton()
-                    end
-                })
-                -- ────────────────────────────────────────────────────────
             end
         end
     end
