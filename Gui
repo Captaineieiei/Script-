@@ -779,9 +779,14 @@ local Library do
         local function SyncIcon(isOpen)
             local hasIcon = cfg.Icon ~= nil and tostring(cfg.Icon) ~= ""
             if isOpen then
-                IconLabel.Instance.Text    = "✕"
-                IconLabel.Instance.Visible = true
-                IconImage.Instance.Visible = false
+                if hasIcon then
+                    IconLabel.Instance.Visible = false
+                    IconImage.Instance.Visible = true
+                else
+                    IconLabel.Instance.Text    = "✕"
+                    IconLabel.Instance.Visible = true
+                    IconImage.Instance.Visible = false
+                end
             else
                 IconLabel.Instance.Text    = cfg.Label
                 IconLabel.Instance.Visible = not hasIcon
@@ -2167,7 +2172,7 @@ local Library do
 
             local Window = {
                 Name = Data.Name or Data.name or "Window",
-                SubTitle = Data.SubTitle or Data.subtitle or "Zzz.X666",
+                SubTitle = Data.SubTitle or Data.subtitle or "for PUBG",
                 ExpiresIn = Data.ExpiresIn or Data.expiresin or "23d",
                 Size = Data.Size or Vector2New(798, 599),
                 SideBarSize = Data.SideBarSize or 215,  -- Sidebar width in pixels
