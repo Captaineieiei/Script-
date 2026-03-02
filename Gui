@@ -1036,21 +1036,24 @@ local Library do
     end
 
     Library.RefreshConfigsList = function(self, Element)
-        local CurrentList = { }
+        -- CurrentList persists between calls to detect actual changes
+        if not Library._ConfigsCurrentList then
+            Library._ConfigsCurrentList = { }
+        end
+
         local List = { }
 
-        local ConfigFolderName = StringGSub(Library.Folders.Configs, Library.Folders.Directory .. "/", "")
-
         for Index, Value in listfiles(Library.Folders.Configs) do
-            local FileName = StringGSub(Value, Library.Folders.Directory .. "\\" .. ConfigFolderName .. "\\", "")
+            -- Handle both / and \ path separators (executor-agnostic)
+            local FileName = Value:match("[/\\]([^/\\]+)$") or Value
             List[Index] = FileName
         end
 
-        local IsNew = #List ~= #CurrentList
+        local IsNew = #List ~= #Library._ConfigsCurrentList
 
         if not IsNew then
             for Index = 1, #List do
-                if List[Index] ~= CurrentList[Index] then
+                if List[Index] ~= Library._ConfigsCurrentList[Index] then
                     IsNew = true
                     break
                 end
@@ -1058,8 +1061,8 @@ local Library do
         end
 
         if IsNew then
-            CurrentList = List
-            Element:Refresh(CurrentList)
+            Library._ConfigsCurrentList = List
+            Element:Refresh(List)
         end
     end
 
@@ -2158,6 +2161,21 @@ local Library do
         Library.Window = function(self, Data)
             local StartTime = tick()
             Data = Data or { }
+
+            -- Update Folders to use Window Name
+            local DirName = Data.Name or Data.name or "Hub"
+            Library.Folders = {
+                Directory = DirName,
+                Configs   = DirName .. "/Configs",
+                Assets    = DirName .. "/Assets",
+                Fonts     = DirName .. "/Fonts",
+            }
+            for _, Path in Library.Folders do
+                if not isfolder(Path) then
+                    makefolder(Path)
+                end
+            end
+
 
             -- Apply MobileButton config overrides from Window data
             if Data.MobileButton then
