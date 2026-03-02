@@ -1091,10 +1091,15 @@ local Library do
         end
     end
 
-    Library.IsMouseOverFrame = function(self, Frame)
-        Frame = Frame.Instance
+    Library.IsMouseOverFrame = function(self, Frame, OverridePosition)
+        Frame = Frame.Instance or Frame
 
-        local MousePosition = Vector2New(Mouse.X, Mouse.Y)
+        -- บนมือถือ Mouse.X/Y ไม่อัปเดตทันใน InputBegan(Touch) → ใช้ UserInputService แทน
+        local MousePosition = OverridePosition
+            and Vector2New(OverridePosition.X, OverridePosition.Y)
+            or (UserInputService.TouchEnabled
+                and UserInputService:GetMouseLocation()
+                or Vector2New(Mouse.X, Mouse.Y))
 
         return MousePosition.X >= Frame.AbsolutePosition.X and MousePosition.X <= Frame.AbsolutePosition.X + Frame.AbsoluteSize.X 
         and MousePosition.Y >= Frame.AbsolutePosition.Y and MousePosition.Y <= Frame.AbsolutePosition.Y + Frame.AbsoluteSize.Y
@@ -1551,7 +1556,7 @@ local Library do
             Library:Connect(UserInputService.InputBegan, function(Input)
                 if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
                     if Colorpicker.IsOpen then
-                        if Library:IsMouseOverFrame(Items["ColorpickerWindow"]) then
+                        if Library:IsMouseOverFrame(Items["ColorpickerWindow"], Input.Position) then
                             return
                         end
 
@@ -1992,12 +1997,12 @@ local Library do
                     end
                 end
 
-                if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+                if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
                     if not Keybind.IsOpen then
                         return
                     end
 
-                    if Library:IsMouseOverFrame(Items["KeybindWindow"]) then
+                    if Library:IsMouseOverFrame(Items["KeybindWindow"], Input.Position) then
                         return
                     end
 
@@ -3910,6 +3915,22 @@ local Library do
 
                 OptionData.Button:Connect("MouseButton1Down", function()
                     OptionData:Set()
+                    -- auto-close หลังเลือกใน single-select mode (UX มือถือ)
+                    if not Dropdown.Multi then
+                        task.defer(function()
+                            Dropdown:SetOpen(false)
+                        end)
+                    end
+                end)
+
+                -- รองรับ Touch บนมือถือ (กรณี MouseButton1Down ไม่ fire ครบ)
+                OptionData.Button:Connect("TouchTap", function()
+                    OptionData:Set()
+                    if not Dropdown.Multi then
+                        task.defer(function()
+                            Dropdown:SetOpen(false)
+                        end)
+                    end
                 end)
 
                 Dropdown.Options[OptionData.Name] = OptionData
@@ -3940,7 +3961,16 @@ local Library do
             Library:Connect(UserInputService.InputBegan, function(Input)
                 if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
                     if Dropdown.IsOpen then
-                        if Library:IsMouseOverFrame(Items["OptionHolder"]) then
+                        -- ใช้ Input.Position แทน Mouse.X/Y เพื่อให้ถูกต้องบนมือถือ
+                        local InputPos = Input.Position
+
+                        -- ถ้า tap อยู่ใน OptionHolder → ปล่อยให้ option button จัดการ
+                        if Library:IsMouseOverFrame(Items["OptionHolder"], InputPos) then
+                            return
+                        end
+
+                        -- ถ้า tap อยู่บน RealDropdown button → ปล่อยให้ MouseButton1Down จัดการปิด/เปิด
+                        if Library:IsMouseOverFrame(Items["RealDropdown"], InputPos) then
                             return
                         end
 
