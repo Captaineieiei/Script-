@@ -3678,16 +3678,18 @@ local Library do
                     Parent = Items["OptionHolder"].Instance,
                     Name = "\0",
                     Active = true,
-                    AutomaticCanvasSize = Enum.AutomaticSize.XY,
+                    AutomaticCanvasSize = Enum.AutomaticSize.Y,
                     ScrollBarThickness = 2,
-                    Size = UDim2New(1, 0, 1, 0),
+                    Size = UDim2New(1, 0, 0, 0),
                     BorderSizePixel = 0,
                     BackgroundTransparency = 1,
                     ScrollingDirection = Enum.ScrollingDirection.Y,
                     BorderColor3 = FromRGB(0, 0, 0),
                     BackgroundColor3 = FromRGB(255, 255, 255),
                     AutomaticSize = Enum.AutomaticSize.Y,
-                    CanvasSize = UDim2New(0, 0, 0, 0)
+                    CanvasSize = UDim2New(0, 0, 0, 0),
+                    MaxSize = Vector2New(math.huge, 125),
+                    ClipsDescendants = true
                 })  Items["Holder"]:AddToTheme({ScrollBarImageColor3 = "Accent"})
                 
                 Instances:Create("UIListLayout", {
