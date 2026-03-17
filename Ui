@@ -1,5 +1,5 @@
 -- ============================================================
---   NOVA HUB  |  UI Library  |  v3.1.0
+--   NOVA HUB  |  UI Library  |  v3.2.0
 --   loadstring compatible
 --
 --   Usage:
@@ -7,6 +7,7 @@
 --     local win = UI.CreateWindow("Title","Subtitle","350","Tag")
 --     local Tab = win:AddTab("home","Home")
 --     Tab:AddButton({ Name="Click", Description="desc", Callback=function() end })
+--     Tab:AddThemePicker({ Name="Color", Callback=function(theme) end })
 -- ============================================================
 
 local UserInputService = game:GetService("UserInputService")
@@ -32,6 +33,7 @@ local Themes = {
         Border  = Color3.fromRGB(65,  42,  108),
         Knob    = Color3.fromRGB(46,  38,  68),
         Tab     = Color3.fromRGB(12,  10,  18),
+        Swatch  = Color3.fromRGB(135, 68,  255),
     },
     Dark = {
         BG      = Color3.fromRGB(22,  22,  30),
@@ -44,6 +46,7 @@ local Themes = {
         Border  = Color3.fromRGB(55,  55,  85),
         Knob    = Color3.fromRGB(50,  50,  75),
         Tab     = Color3.fromRGB(18,  18,  26),
+        Swatch  = Color3.fromRGB(100, 140, 255),
     },
     White = {
         BG      = Color3.fromRGB(245, 245, 250),
@@ -56,6 +59,7 @@ local Themes = {
         Border  = Color3.fromRGB(200, 200, 220),
         Knob    = Color3.fromRGB(200, 200, 225),
         Tab     = Color3.fromRGB(235, 235, 245),
+        Swatch  = Color3.fromRGB(230, 230, 240),
     },
     Black = {
         BG      = Color3.fromRGB(8,   8,   10),
@@ -68,6 +72,98 @@ local Themes = {
         Border  = Color3.fromRGB(35,  35,  40),
         Knob    = Color3.fromRGB(35,  35,  45),
         Tab     = Color3.fromRGB(5,   5,   8),
+        Swatch  = Color3.fromRGB(30,  30,  35),
+    },
+    Red = {
+        BG      = Color3.fromRGB(14,  8,   8),
+        TopBar  = Color3.fromRGB(22,  10,  10),
+        Elem    = Color3.fromRGB(30,  14,  14),
+        Accent  = Color3.fromRGB(210, 35,  35),
+        AccLt   = Color3.fromRGB(255, 70,  70),
+        Text    = Color3.fromRGB(245, 210, 210),
+        TextDim = Color3.fromRGB(150, 90,  90),
+        Border  = Color3.fromRGB(90,  28,  28),
+        Knob    = Color3.fromRGB(65,  20,  20),
+        Tab     = Color3.fromRGB(10,  6,   6),
+        Swatch  = Color3.fromRGB(220, 40,  40),
+    },
+    Blue = {
+        BG      = Color3.fromRGB(8,   12,  22),
+        TopBar  = Color3.fromRGB(10,  16,  32),
+        Elem    = Color3.fromRGB(14,  22,  42),
+        Accent  = Color3.fromRGB(30,  100, 230),
+        AccLt   = Color3.fromRGB(70,  145, 255),
+        Text    = Color3.fromRGB(200, 215, 245),
+        TextDim = Color3.fromRGB(90,  115, 175),
+        Border  = Color3.fromRGB(28,  60,  120),
+        Knob    = Color3.fromRGB(20,  45,  90),
+        Tab     = Color3.fromRGB(6,   9,   18),
+        Swatch  = Color3.fromRGB(50,  120, 245),
+    },
+    Green = {
+        BG      = Color3.fromRGB(8,   14,  10),
+        TopBar  = Color3.fromRGB(10,  20,  13),
+        Elem    = Color3.fromRGB(14,  28,  18),
+        Accent  = Color3.fromRGB(30,  180, 75),
+        AccLt   = Color3.fromRGB(60,  220, 110),
+        Text    = Color3.fromRGB(195, 235, 205),
+        TextDim = Color3.fromRGB(85,  145, 100),
+        Border  = Color3.fromRGB(28,  88,  45),
+        Knob    = Color3.fromRGB(20,  65,  32),
+        Tab     = Color3.fromRGB(6,   11,  8),
+        Swatch  = Color3.fromRGB(40,  195, 85),
+    },
+    Orange = {
+        BG      = Color3.fromRGB(16,  11,  6),
+        TopBar  = Color3.fromRGB(24,  15,  8),
+        Elem    = Color3.fromRGB(32,  20,  10),
+        Accent  = Color3.fromRGB(220, 120, 20),
+        AccLt   = Color3.fromRGB(255, 155, 45),
+        Text    = Color3.fromRGB(245, 225, 200),
+        TextDim = Color3.fromRGB(155, 120, 75),
+        Border  = Color3.fromRGB(100, 58,  15),
+        Knob    = Color3.fromRGB(75,  42,  10),
+        Tab     = Color3.fromRGB(12,  8,   4),
+        Swatch  = Color3.fromRGB(235, 130, 25),
+    },
+    Pink = {
+        BG      = Color3.fromRGB(18,  10,  16),
+        TopBar  = Color3.fromRGB(26,  13,  22),
+        Elem    = Color3.fromRGB(36,  18,  32),
+        Accent  = Color3.fromRGB(220, 55,  145),
+        AccLt   = Color3.fromRGB(255, 100, 185),
+        Text    = Color3.fromRGB(245, 210, 235),
+        TextDim = Color3.fromRGB(155, 90,  135),
+        Border  = Color3.fromRGB(100, 30,  80),
+        Knob    = Color3.fromRGB(75,  20,  58),
+        Tab     = Color3.fromRGB(12,  7,   11),
+        Swatch  = Color3.fromRGB(235, 70,  160),
+    },
+    Cyan = {
+        BG      = Color3.fromRGB(6,   15,  18),
+        TopBar  = Color3.fromRGB(8,   20,  24),
+        Elem    = Color3.fromRGB(10,  28,  34),
+        Accent  = Color3.fromRGB(20,  185, 210),
+        AccLt   = Color3.fromRGB(50,  220, 245),
+        Text    = Color3.fromRGB(195, 235, 240),
+        TextDim = Color3.fromRGB(75,  150, 165),
+        Border  = Color3.fromRGB(18,  90,  108),
+        Knob    = Color3.fromRGB(12,  65,  78),
+        Tab     = Color3.fromRGB(5,   12,  15),
+        Swatch  = Color3.fromRGB(30,  205, 230),
+    },
+    Yellow = {
+        BG      = Color3.fromRGB(15,  14,  6),
+        TopBar  = Color3.fromRGB(22,  20,  8),
+        Elem    = Color3.fromRGB(30,  28,  10),
+        Accent  = Color3.fromRGB(210, 195, 20),
+        AccLt   = Color3.fromRGB(245, 230, 40),
+        Text    = Color3.fromRGB(245, 240, 195),
+        TextDim = Color3.fromRGB(150, 140, 70),
+        Border  = Color3.fromRGB(95,  88,  15),
+        Knob    = Color3.fromRGB(70,  65,  10),
+        Tab     = Color3.fromRGB(11,  10,  4),
+        Swatch  = Color3.fromRGB(230, 215, 30),
     },
     Forsaken = {
         BG      = Color3.fromRGB(10,  8,   18),
@@ -80,6 +176,7 @@ local Themes = {
         Border  = Color3.fromRGB(70,  30,  110),
         Knob    = Color3.fromRGB(50,  28,  82),
         Tab     = Color3.fromRGB(8,   6,   15),
+        Swatch  = Color3.fromRGB(175, 65,  240),
     },
     ["Forest 2021"] = {
         BG      = Color3.fromRGB(10,  18,  12),
@@ -92,6 +189,7 @@ local Themes = {
         Border  = Color3.fromRGB(38,  80,  48),
         Knob    = Color3.fromRGB(30,  65,  38),
         Tab     = Color3.fromRGB(8,   14,  10),
+        Swatch  = Color3.fromRGB(65,  195, 95),
     },
     ["Germany 1941"] = {
         BG      = Color3.fromRGB(20,  18,  14),
@@ -104,6 +202,7 @@ local Themes = {
         Border  = Color3.fromRGB(80,  68,  38),
         Knob    = Color3.fromRGB(60,  52,  28),
         Tab     = Color3.fromRGB(14,  12,  8),
+        Swatch  = Color3.fromRGB(205, 165, 55),
     },
     Spooky = {
         BG      = Color3.fromRGB(12,  8,   8),
@@ -116,7 +215,15 @@ local Themes = {
         Border  = Color3.fromRGB(80,  30,  30),
         Knob    = Color3.fromRGB(60,  22,  22),
         Tab     = Color3.fromRGB(8,   5,   5),
+        Swatch  = Color3.fromRGB(215, 55,  55),
     },
+}
+
+-- ordered list for ThemePicker display
+local ThemeOrder = {
+    "Darkness","Dark","Black","White",
+    "Red","Blue","Green","Orange","Pink","Cyan","Yellow",
+    "Forsaken","Forest 2021","Germany 1941","Spooky",
 }
 
 -- ─────────────────────────────────────────────────────────────
@@ -1064,6 +1171,152 @@ function UILibrary.CreateWindow(titleText, subtitle, winWidth, tag)
             return elem
         end
 
+        -- ╔══════════════════════════════════════╗
+        --   AddThemePicker { Name, Callback }
+        --   แสดง swatch สีทุก theme ให้กดเปลี่ยนได้
+        -- ╚══════════════════════════════════════╝
+        function TabData:AddThemePicker(cfg)
+            cfg = cfg or {}
+            local name     = cfg.Name or "Theme Color"
+            local callback = cfg.Callback or function() end
+            local SWATCH   = 22  -- swatch size px
+            local GAP      = 5
+            local PER_ROW  = 8
+            local rows     = math.ceil(#ThemeOrder / PER_ROW)
+            local rowH     = SWATCH + GAP
+            local totalH   = 28 + rows * rowH + 6  -- header + swatches + bottom pad
+
+            local Wrap = Instance.new("Frame")
+            Wrap.Parent           = TabFrame
+            Wrap.BackgroundColor3 = T.Elem
+            Wrap.BorderSizePixel  = 0
+            Wrap.Size             = UDim2.new(1, 0, 0, totalH)
+            Instance.new("UICorner", Wrap).CornerRadius = UDim.new(0, 7)
+            do
+                local s = Instance.new("UIStroke")
+                s.Color = T.Border; s.Thickness = 1; s.Transparency = 0.45; s.Parent = Wrap
+            end
+            -- Accent bar
+            local Acc2 = Instance.new("Frame")
+            Acc2.Parent                = Wrap
+            Acc2.BackgroundColor3      = T.AccLt
+            Acc2.BorderSizePixel       = 0
+            Acc2.Position              = UDim2.new(0, 0, 0.12, 0)
+            Acc2.Size                  = UDim2.new(0, 3, 0.76, 0)
+            Acc2.BackgroundTransparency = 0.6
+            Instance.new("UICorner", Acc2).CornerRadius = UDim.new(1, 0)
+
+            local Header = Instance.new("TextLabel")
+            Header.Parent              = Wrap
+            Header.BackgroundTransparency = 1
+            Header.Position            = UDim2.new(0, 12, 0, 6)
+            Header.Size                = UDim2.new(1, -20, 0, 18)
+            Header.Font                = Enum.Font.GothamSemibold
+            Header.Text                = name
+            Header.TextColor3          = T.Text
+            Header.TextSize            = 13
+            Header.TextXAlignment      = Enum.TextXAlignment.Left
+
+            -- Current theme name label
+            local CurLbl = Instance.new("TextLabel")
+            CurLbl.Parent              = Wrap
+            CurLbl.BackgroundTransparency = 1
+            CurLbl.AnchorPoint         = Vector2.new(1, 0)
+            CurLbl.Position            = UDim2.new(1, -8, 0, 8)
+            CurLbl.Size                = UDim2.new(0, 100, 0, 14)
+            CurLbl.Font                = Enum.Font.Gotham
+            CurLbl.Text                = "Darkness"
+            CurLbl.TextColor3          = T.AccLt
+            CurLbl.TextSize            = 10
+            CurLbl.TextXAlignment      = Enum.TextXAlignment.Right
+
+            local swatchRefs = {}
+
+            for idx, themeName in ipairs(ThemeOrder) do
+                local th = Themes[themeName]
+                if th then
+                    local col  = ((idx - 1) % PER_ROW)
+                    local row  = math.floor((idx - 1) / PER_ROW)
+                    local xOff = 12 + col * (SWATCH + GAP)
+                    local yOff = 28 + row * rowH
+
+                    local SW = Instance.new("TextButton")
+                    SW.Parent              = Wrap
+                    SW.BackgroundColor3    = th.Swatch or th.AccLt
+                    SW.BorderSizePixel     = 0
+                    SW.Position            = UDim2.new(0, xOff, 0, yOff)
+                    SW.Size                = UDim2.new(0, SWATCH, 0, SWATCH)
+                    SW.Text                = ""
+                    SW.ZIndex              = 2
+                    SW.AutoButtonColor     = false
+                    Instance.new("UICorner", SW).CornerRadius = UDim.new(1, 0)
+
+                    -- selection ring
+                    local Ring = Instance.new("UIStroke")
+                    Ring.Color       = Color3.fromRGB(255, 255, 255)
+                    Ring.Thickness   = 2
+                    Ring.Transparency = 1
+                    Ring.Parent      = SW
+
+                    swatchRefs[themeName] = {sw = SW, ring = Ring}
+
+                    -- tooltip frame
+                    local TipFrame = Instance.new("Frame")
+                    TipFrame.Parent           = ScreenGui
+                    TipFrame.BackgroundColor3 = T.TopBar
+                    TipFrame.BorderSizePixel  = 0
+                    TipFrame.ZIndex           = 35
+                    TipFrame.Visible          = false
+                    TipFrame.Size             = UDim2.new(0, 0, 0, 20)
+                    TipFrame.AutomaticSize    = Enum.AutomaticSize.X
+                    Instance.new("UICorner", TipFrame).CornerRadius = UDim.new(0, 5)
+                    do
+                        local s = Instance.new("UIStroke")
+                        s.Color = th.Swatch or th.AccLt; s.Thickness = 1; s.Transparency = 0.5; s.Parent = TipFrame
+                    end
+                    local TipLbl = Instance.new("TextLabel")
+                    TipLbl.Parent              = TipFrame
+                    TipLbl.BackgroundTransparency = 1
+                    TipLbl.Size                = UDim2.new(1, 0, 1, 0)
+                    TipLbl.Font                = Enum.Font.GothamBold
+                    TipLbl.Text                = "  " .. themeName .. "  "
+                    TipLbl.TextColor3          = Color3.fromRGB(240, 235, 255)
+                    TipLbl.TextSize            = 10
+                    TipLbl.ZIndex              = 36
+
+                    SW.MouseEnter:Connect(function()
+                        Tween(SW, 0.1, {Size = UDim2.new(0, SWATCH + 3, 0, SWATCH + 3),
+                            Position = UDim2.new(0, xOff - 1, 0, yOff - 1)}):Play()
+                        local abs = SW.AbsolutePosition
+                        TipFrame.Position = UDim2.new(0, abs.X, 0, abs.Y - 24)
+                        TipFrame.Visible  = true
+                    end)
+                    SW.MouseLeave:Connect(function()
+                        Tween(SW, 0.1, {Size = UDim2.new(0, SWATCH, 0, SWATCH),
+                            Position = UDim2.new(0, xOff, 0, yOff)}):Play()
+                        TipFrame.Visible = false
+                    end)
+                    SW.MouseButton1Click:Connect(function()
+                        TipFrame.Visible = false
+                        -- reset all rings
+                        for _, ref in pairs(swatchRefs) do
+                            Tween(ref.ring, 0.15, {Transparency = 1}):Play()
+                        end
+                        Tween(Ring, 0.15, {Transparency = 0}):Play()
+                        CurLbl.Text = themeName
+                        -- apply theme
+                        Window:SetTheme(themeName)
+                        pcall(callback, themeName)
+                    end)
+                end
+            end
+
+            -- set initial ring on Darkness
+            if swatchRefs["Darkness"] then
+                swatchRefs["Darkness"].ring.Transparency = 0
+            end
+        end
+
         return TabData
     end
 
@@ -1075,11 +1328,16 @@ function UILibrary.CreateWindow(titleText, subtitle, winWidth, tag)
         local newT = Themes[name]
         if not newT then return end
         T = newT
+        -- update main frame colors
         MainFrame.BackgroundColor3 = T.BG
         MainStroke.Color           = T.Accent
         TopBar.BackgroundColor3    = T.TopBar
         TabBar.BackgroundColor3    = T.Tab
         Dot.BackgroundColor3       = T.AccLt
+        -- update all tab scroll bars
+        for _, td in ipairs(Tabs) do
+            td.Frame.ScrollBarImageColor3 = T.Accent
+        end
     end
 
     function Window:Blur()
