@@ -1563,6 +1563,51 @@ function UILibrary.CreateWindow(titleText, subtitle, winWidth, tag)
     end
 
     -- ══════════════════════════════════════════════════════
+    --  BUILT-IN SETTINGS TAB  (always last, fully automatic)
+    -- ══════════════════════════════════════════════════════
+    local RunService = game:GetService("RunService")
+    local _hbConn; _hbConn = RunService.Heartbeat:Connect(function()
+        _hbConn:Disconnect()
+        local S = Window:AddTab("__settings__", "⚙️ ตั้งค่า")
+
+        -- ── Theme Color ──
+        S:AddSection("ธีมสี")
+        S:AddThemePicker({ Name = "เลือกธีมสี" })
+
+        -- ── Window ──
+        S:AddSection("หน้าต่าง")
+        S:AddToggle({
+            Name        = "Blur",
+            Description = "เบลอพื้นหลัง (Graphics 8+)",
+            Callback    = function(state)
+                if state then Window:Blur() else Window:BlurOff() end
+            end,
+        })
+        S:AddToggle({
+            Name        = "โปร่งใส",
+            Description = "เปลี่ยนความโปร่งใสพื้นหลัง",
+            Callback    = function()
+                Window:ChangeBackgroundTransparance()
+            end,
+        })
+        S:AddButton({
+            Name        = "ข้อมูลผู้ใช้",
+            Description = "แสดง Name / DisplayName / UserID",
+            Callback    = function() Window:UserInfo() end,
+        })
+        S:AddButton({
+            Name        = "ย่อ / ขยาย",
+            Description = "Toggle minimize window",
+            Callback    = function() Window:Minimaze() end,
+        })
+        S:AddButton({
+            Name        = "ปิดหน้าต่าง",
+            Description = "Close UI",
+            Callback    = function() Window:Close() end,
+        })
+    end)
+
+    -- ══════════════════════════════════════════════════════
     --  LOADING SEQUENCE
     -- ══════════════════════════════════════════════════════
     local loadSteps = {
