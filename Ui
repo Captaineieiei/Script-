@@ -1324,6 +1324,28 @@ function UILibrary.CreateWindow(titleText, subtitle, winWidth, tag)
     --  WINDOW METHODS
     -- ══════════════════════════════════════════════════════
 
+    function Window:ToggleVisible()
+        local isHidden = not MainFrame.Visible
+        if isHidden then
+            -- แสดงคืน: pop-in animation
+            MainFrame.Visible = true
+            MainFrame.Size    = UDim2.new(0, winWidth - 20, 0, winHeight - 20)
+            Tween(MainFrame, 0.25, {Size = UDim2.new(0, winWidth, 0, winHeight)},
+                  Enum.EasingStyle.Back, Enum.EasingDirection.Out):Play()
+        else
+            -- ซ่อน: shrink + fade
+            Tween(MainFrame, 0.2, {
+                Size = UDim2.new(0, winWidth - 20, 0, winHeight - 20),
+                BackgroundTransparency = 1,
+            }):Play()
+            task.delay(0.22, function()
+                MainFrame.Visible              = false
+                MainFrame.BackgroundTransparency = 0
+                MainFrame.Size                 = UDim2.new(0, winWidth, 0, winHeight)
+            end)
+        end
+    end
+
     function Window:SetTheme(name)
         local newT = Themes[name]
         if not newT then return end
@@ -1604,6 +1626,19 @@ function UILibrary.CreateWindow(titleText, subtitle, winWidth, tag)
             Name        = "ปิดหน้าต่าง",
             Description = "Close UI",
             Callback    = function() Window:Close() end,
+        })
+
+        S:AddSection("ซ่อน UI")
+        S:AddKeybind({
+            Name        = "ซ่อน / แสดง UI",
+            Description = "กด key เพื่อ toggle ซ่อน UI",
+            Default     = Enum.KeyCode.RightShift,
+            Callback    = function() Window:ToggleVisible() end,
+        })
+        S:AddButton({
+            Name        = "ซ่อน UI ตอนนี้",
+            Description = "กดอีกครั้งหรือ keybind เพื่อแสดงคืน",
+            Callback    = function() Window:ToggleVisible() end,
         })
     end)
 
