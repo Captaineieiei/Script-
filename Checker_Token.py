@@ -58,7 +58,7 @@ class C:
 
     @staticmethod
     def gradient(text: str) -> str:
-        colors = ['\033[95m', '\033[94m', '\033[96m', '\033[94m', '\033{95m']
+        colors = ['\033[95m', '\033[94m', '\033[96m', '\033[94m', '\033[95m']
         out, i = '', 0
         for ch in text:
             if ch != ' ':
@@ -99,26 +99,63 @@ def divider(char='─', width=60, color=C.CYAN):
     print(f"{color}{char * width}{C.RESET}")
 
 def loading(msg="กำลังตรวจสอบ", secs=1.2):
-    frames = ['⠋','⠙','⠹','⠸','⠼','⠴','⠦','⠧','⠇','⠏']
-    end_time = time.time() + secs
-    i = 0
-    while time.time() < end_time:
-        print(f"\r  {C.CYAN}{frames[i % len(frames)]}{C.RESET}  {C.BOLD}{msg}...{C.RESET}", end='', flush=True)
-        time.sleep(0.08)
-        i += 1
-    print('\r' + ' ' * 50 + '\r', end='')
+    """Progress bar แบบ gradient สวยๆ"""
+    BAR_WIDTH  = 28
+    spin_chars = ['◐','◓','◑','◒']
+    bar_colors = ['\033[94m', '\033[96m', '\033[95m', '\033[94m']
+    start_time = time.time()
+
+    while True:
+        elapsed = time.time() - start_time
+        pct     = min(elapsed / secs, 1.0)
+        filled  = int(BAR_WIDTH * pct)
+        spin    = spin_chars[int(elapsed * 10) % 4]
+
+        bar = ''
+        for j in range(BAR_WIDTH):
+            bar += (bar_colors[j % len(bar_colors)] + '█') if j < filled else (C.DIM + '░')
+
+        print(f"\r  {C.CYAN}{spin}{C.RESET}  {C.BOLD}{msg}{C.RESET}  "
+              f"[{bar}{C.RESET}] {C.YELLOW}{int(pct*100):3d}%{C.RESET}",
+              end='', flush=True)
+
+        if pct >= 1.0:
+            break
+        time.sleep(0.05)
+
+    print('\r' + ' ' * 70 + '\r', end='')
 
 def hacker_loading(msg="HACKING", secs=2):
-    """โหลดดิ้งสไตล์แฮกเกอร์ สุดโหด"""
-    chars = ['░', '▒', '▓', '█']
-    end_time = time.time() + secs
-    i = 0
-    while time.time() < end_time:
-        bar = ''.join([chars[(i + j) % 4] for j in range(20)])
-        print(f"\r  {C.GREEN}{blink('>')} {msg} {bar} {i*2}%{C.RESET}", end='', flush=True)
-        time.sleep(0.05)
-        i += 1
-    print('\r' + ' ' * 60 + '\r', end='')
+    """Loading สไตล์ matrix สุดโหด"""
+    import random
+    glitch_chars = list('01アイウエオカキクケコ∆∇∈∉⊕⊗#$%&@!')
+    bar_chars    = ['▏','▎','▍','▌','▋','▊','▉','█']
+    start_time   = time.time()
+
+    while True:
+        elapsed = time.time() - start_time
+        pct     = min(elapsed / secs, 1.0)
+        filled  = int(30 * pct)
+        glitch  = ''.join(random.choice(glitch_chars) for _ in range(8))
+
+        bar = C.GREEN + '█' * filled
+        if filled < 30:
+            bar += bar_chars[int((pct * 30 - filled) * 8) % 8]
+        bar += C.DIM + '░' * (30 - filled - (1 if filled < 30 else 0))
+
+        print(f"\r  {C.GREEN}>{C.RESET} {C.BOLD}{C.GREEN}{msg}{C.RESET} "
+              f"[{bar}{C.RESET}] "
+              f"{C.GREEN}{int(pct*100):3d}%{C.RESET}  "
+              f"{C.DIM}{glitch}{C.RESET}",
+              end='', flush=True)
+
+        if pct >= 1.0:
+            break
+        time.sleep(0.04)
+
+    print(f"\r  {C.GREEN}✔{C.RESET} {C.BOLD}{C.GREEN}{msg} — DONE!{C.RESET}" + ' ' * 40)
+    time.sleep(0.25)
+    print('\r' + ' ' * 70 + '\r', end='')
 
 # ─────────────────────────────────────────────────────────────────────────────
 #  Banner (โหดขึ้น)
