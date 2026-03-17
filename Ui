@@ -147,6 +147,18 @@ function UILibrary.CreateWindow(titleText, subtitle, winWidth, tag)
         Instance.new("UICorner",TagLbl).CornerRadius=UDim.new(0,4)
         RegTheme(function(t) if TagLbl.Parent then TagLbl.BackgroundColor3=t.Accent end end)
     end
+    -- ปุ่ม X ปิด มุมขวาบน
+    local CloseBtn=Instance.new("TextButton"); CloseBtn.Parent=TopBar
+    CloseBtn.BackgroundColor3=Color3.fromRGB(180,40,40); CloseBtn.BackgroundTransparency=0.3
+    CloseBtn.AnchorPoint=Vector2.new(1,0.5); CloseBtn.Position=UDim2.new(1,-8,0.5,0)
+    CloseBtn.Size=UDim2.new(0,22,0,22); CloseBtn.Text="✕"
+    CloseBtn.Font=Enum.Font.GothamBold; CloseBtn.TextColor3=Color3.fromRGB(255,200,200)
+    CloseBtn.TextSize=12; CloseBtn.ZIndex=5; CloseBtn.AutoButtonColor=false
+    Instance.new("UICorner",CloseBtn).CornerRadius=UDim.new(1,0)
+    CloseBtn.MouseEnter:Connect(function() Tween(CloseBtn,0.12,{BackgroundTransparency=0,BackgroundColor3=Color3.fromRGB(220,45,45)}):Play() end)
+    CloseBtn.MouseLeave:Connect(function() Tween(CloseBtn,0.12,{BackgroundTransparency=0.3,BackgroundColor3=Color3.fromRGB(180,40,40)}):Play() end)
+    CloseBtn.MouseButton1Click:Connect(function() Window:Close() end)
+
     MakeDraggable(TopBar, MainFrame)
 
     -- ══ FLOATING HAMBURGER BUTTON ══
@@ -192,41 +204,9 @@ function UILibrary.CreateWindow(titleText, subtitle, winWidth, tag)
         Tween(lines[3],0.2,{Size=UDim2.new(0,26,0,3),Rotation=-45,Position=UDim2.new(0.5,0,0.5,0)}):Play()
     end
 
-    -- ── Mini Panel "แตะเพื่อเปิด" ──
-    local MiniPanel=Instance.new("Frame")
-    MiniPanel.Name="NovaMiniPanel"; MiniPanel.Parent=FloatGui
-    MiniPanel.BackgroundColor3=Color3.fromRGB(18,14,30)
-    MiniPanel.BackgroundTransparency=1
-    MiniPanel.AnchorPoint=Vector2.new(0.5,0)
-    MiniPanel.Position=UDim2.new(0.5,0,0,68)
-    MiniPanel.Size=UDim2.new(0,130,0,30)
-    MiniPanel.ZIndex=39; MiniPanel.Visible=false
-    Instance.new("UICorner",MiniPanel).CornerRadius=UDim.new(0,15)
-    local MPStroke=Instance.new("UIStroke"); MPStroke.Color=T.Accent; MPStroke.Thickness=1; MPStroke.Transparency=1; MPStroke.Parent=MiniPanel
-    local MPLabel=Instance.new("TextLabel"); MPLabel.Parent=MiniPanel
-    MPLabel.BackgroundTransparency=1; MPLabel.Size=UDim2.new(1,0,1,0)
-    MPLabel.Font=Enum.Font.GothamBold; MPLabel.Text="แตะเพื่อเปิด  ☰"
-    MPLabel.TextColor3=Color3.fromRGB(200,185,255); MPLabel.TextSize=11
-    MPLabel.TextTransparency=1; MPLabel.ZIndex=40
-    RegTheme(function(t) if MiniPanel.Parent then MPStroke.Color=t.Accent end end)
-    local MPBtn=Instance.new("TextButton"); MPBtn.Parent=MiniPanel
-    MPBtn.BackgroundTransparency=1; MPBtn.Size=UDim2.new(1,0,1,0)
-    MPBtn.Text=""; MPBtn.ZIndex=41; MPBtn.AutoButtonColor=false
 
-    local function showMini()
-        MiniPanel.Visible=true
-        Tween(MiniPanel,0.22,{BackgroundTransparency=0.15}):Play()
-        Tween(MPStroke,0.22,{Transparency=0.3}):Play()
-        Tween(MPLabel,0.22,{TextTransparency=0}):Play()
-    end
-    local function hideMini()
-        Tween(MiniPanel,0.18,{BackgroundTransparency=1}):Play()
-        Tween(MPStroke,0.18,{Transparency=1}):Play()
-        Tween(MPLabel,0.18,{TextTransparency=1}):Play()
-        task.delay(0.2,function() if not isHidden then MiniPanel.Visible=false end end)
-    end
 
-    -- ลาก FloatBtn + MiniPanel ตาม
+    -- ลาก FloatBtn
     do
         local fDrag,fStart,fPos,fMoved=false,nil,nil,false
         FloatBtn.InputBegan:Connect(function(inp)
@@ -239,9 +219,7 @@ function UILibrary.CreateWindow(titleText, subtitle, winWidth, tag)
             if inp.UserInputType==Enum.UserInputType.Touch or inp.UserInputType==Enum.UserInputType.MouseMovement then
                 local d=inp.Position-fStart
                 if math.abs(d.X)>5 or math.abs(d.Y)>5 then fMoved=true end
-                local newPos=UDim2.new(fPos.X.Scale,fPos.X.Offset+d.X,fPos.Y.Scale,fPos.Y.Offset+d.Y)
-                FloatBtn.Position=newPos
-                MiniPanel.Position=UDim2.new(newPos.X.Scale,newPos.X.Offset,newPos.Y.Scale,newPos.Y.Offset+58)
+                FloatBtn.Position=UDim2.new(fPos.X.Scale,fPos.X.Offset+d.X,fPos.Y.Scale,fPos.Y.Offset+d.Y)
             end
         end)
         FloatBtn.InputEnded:Connect(function(inp)
@@ -258,7 +236,6 @@ function UILibrary.CreateWindow(titleText, subtitle, winWidth, tag)
             Tween(FloatBtn,0.15,{BackgroundColor3=Color3.fromRGB(18,14,30)}):Play()
             Tween(FBStroke,0.15,{Transparency=0.2}):Play()
         end)
-        MPBtn.MouseButton1Click:Connect(function() Window:ToggleVisible() end)
     end
 
     local HintFrame=Instance.new("Frame"); HintFrame.Parent=FloatGui
@@ -361,13 +338,12 @@ function UILibrary.CreateWindow(titleText, subtitle, winWidth, tag)
         task.delay(0.3,function() ScreenGui:Destroy(); FloatGui:Destroy() end)
     end
 
-    -- ══ ToggleVisible — hamburger ↔ X + MiniPanel ══
+    -- ══ ToggleVisible — hamburger ↔ X ══
     function Window:ToggleVisible()
         if isHidden then
             -- เปิด UI
             isHidden=false
             setHamburger()
-            hideMini()
             Tween(FloatBtn,0.15,{BackgroundColor3=Color3.fromRGB(18,14,30)}):Play()
             MainFrame.Visible=true; MainFrame.BackgroundTransparency=1
             MainFrame.Size=UDim2.new(0,winWidth-24,0,winHeight-24)
@@ -376,7 +352,6 @@ function UILibrary.CreateWindow(titleText, subtitle, winWidth, tag)
             -- ซ่อน UI (ไม่ลบ)
             isHidden=true
             setCloseX()
-            showMini()
             Tween(FloatBtn,0.15,{BackgroundColor3=Color3.fromRGB(24,10,10)}):Play()
             Tween(MainFrame,0.2,{BackgroundTransparency=1,Size=UDim2.new(0,winWidth-24,0,winHeight-24)}):Play()
             task.delay(0.22,function()
@@ -710,7 +685,7 @@ function UILibrary.CreateWindow(titleText, subtitle, winWidth, tag)
 
         S:AddSection("ซ่อน UI")
         S:AddLabel("กดปุ่ม ☰ ที่ลอยอยู่บนหน้าจอเพื่อซ่อน/แสดง UI")
-        S:AddLabel("เมื่อซ่อนแล้วจะมีปุ่ม 'แตะเพื่อเปิด' โผล่ใต้ปุ่ม ☰")
+
         if not isMobile then
             hideKey=Enum.KeyCode.RightShift
             S:AddDropdown({Name="ปุ่ม Keyboard (PC)",Description="กด key นี้เพื่อสลับซ่อน/แสดง UI บน PC",
