@@ -137,7 +137,6 @@ Title.TextScaled           = false
 Title.TextSize             = 26
 Title.Font                 = Enum.Font.GothamBold
 Title.TextXAlignment       = Enum.TextXAlignment.Center
-Title.LetterSpacing        = 4
 Title.ZIndex               = 4
 Title.Parent               = Card
 
