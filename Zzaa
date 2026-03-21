@@ -1,0 +1,8 @@
+-- โค้ด Roblox ของคุณตรงนี้
+print("Yenix Exploit loaded!")
+
+-- ตัวอย่าง GUI หรือ feature ต่างๆ
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+-- ใส่ฟีเจอร์ที่ต้องการได้เลย
