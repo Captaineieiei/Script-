@@ -4,7 +4,6 @@
 -- ============================================================
 local KEY    = getgenv().KEY or ""
 local API    = "http://fi8.bot-hosting.net:21017"
--- ⬇ เปลี่ยน URL นี้ให้ตรงกับ script จริงของคุณ
 local SCRIPT = "https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/Zzaa"
 
 local HS  = game:GetService("HttpService")
@@ -78,12 +77,43 @@ if data.expiresAt ~= -1 then
 end
 
 notify("✅ Authorized | เหลือ: " .. timeLeft, Color3.fromRGB(80, 255, 180))
-task.wait(0.3)
+task.wait(0.5)
+
+-- ── Loading Animation ──────────────────────────────────────
+local frames = {
+  "⠋ กำลังโหลด Nova Hub...",
+  "⠙ กำลังโหลด Nova Hub...",
+  "⠹ กำลังโหลด Nova Hub...",
+  "⠸ กำลังโหลด Nova Hub...",
+  "⠼ กำลังโหลด Nova Hub...",
+  "⠴ กำลังโหลด Nova Hub...",
+  "⠦ กำลังโหลด Nova Hub...",
+  "⠧ กำลังโหลด Nova Hub...",
+  "⠇ กำลังโหลด Nova Hub...",
+  "⠏ กำลังโหลด Nova Hub...",
+}
+
+local loadingDone = false
+
+task.spawn(function()
+  local i = 1
+  while not loadingDone do
+    notify(frames[i], Color3.fromRGB(255, 200, 0))
+    i = (i % #frames) + 1
+    task.wait(0.18)
+  end
+end)
 
 -- ── โหลด script จริง ──────────────────────────────────────
 local loadOk, loadErr = pcall(function()
   loadstring(game:HttpGet(SCRIPT, true))()
 end)
+
+loadingDone = true
+task.wait(0.1)
+
 if not loadOk then
   notify("❌ Script error: " .. tostring(loadErr), Color3.fromRGB(255, 80, 80))
+else
+  notify("🚀 โหลดสำเร็จ! Nova Hub พร้อมใช้งาน", Color3.fromRGB(80, 255, 180))
 end
