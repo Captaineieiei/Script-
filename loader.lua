@@ -1,6 +1,7 @@
 -- ============================================================
 -- Nova Hub | Loader v2
 -- ============================================================
+local KEY  = getgenv().KEY or ""
 local API  = "http://fi8.bot-hosting.net:21017"
 local NAME = "Nova Hub"
 local HS   = game:GetService("HttpService")
