@@ -404,4 +404,9 @@ notify("🚀 กำลังโหลด Script...", Color3.fromRGB(80,200,255))
 task.wait(0.2)
 
 -- ใส่ loadstring script หลักของคุณด้านล่างนี้
--- loadstring(game:HttpGet("YOUR_MAIN_SCRIPT_URL", true))()
+local ok, err = pcall(function()
+    loadstring(game:HttpGet("YOUR_MAIN_SCRIPT_URL", true))()
+end)
+if not ok then
+    notify("❌ Script error: "..tostring(err), Color3.fromRGB(255,80,80))
+end
