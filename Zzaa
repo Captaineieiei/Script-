@@ -1,8 +1,13 @@
--- โค้ด Roblox ของคุณตรงนี้
-print("Yenix Exploit loaded!")
+local scripts = {
+    [16607956688] = "https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/Beady",
+    [00000000000] = "INSERT_SECOND_LINK_HERE" 
+}
 
--- ตัวอย่าง GUI หรือ feature ต่างๆ
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
+local placeId = game.PlaceId
 
--- ใส่ฟีเจอร์ที่ต้องการได้เลย
+if scripts[placeId] then
+    print("Loading Script for Map: " .. placeId)
+    loadstring(game:HttpGet(scripts[placeId]))()
+else
+    warn("Map ID: " .. placeId .. " is not supported.")
+end
