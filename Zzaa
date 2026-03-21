@@ -1,13 +1,1 @@
-local scripts = {
-    [16607956688] = "https://raw.githubusercontent.com/thanyathonxyz/spectre/refs/heads/main/universal.lua",
-    [00000000000] = "INSERT_SECOND_LINK_HERE" 
-}
-
-local placeId = game.PlaceId
-
-if scripts[placeId] then
-    print("Loading Script for Map: " .. placeId)
-    loadstring(game:HttpGet(scripts[placeId]))()
-else
-    warn("Map ID: " .. placeId .. " is not supported.")
-end
+loadstring(game:HttpGet("https://raw.githubusercontent.com/thanyathonxyz/spectreware/refs/heads/main/loader.lua"))()
