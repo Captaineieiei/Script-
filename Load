@@ -16,13 +16,13 @@ local function notify(msg, col)
   end)
   pcall(function()
     SG:SetCore("ChatMakeSystemMessage", {
-      Text     = "[Nova Hub] " .. msg,
+      Text     = "[SpectreWare] " .. msg,
       Color    = col or Color3.fromRGB(0, 200, 255),
       Font     = Enum.Font.GothamBold,
       TextSize = 14,
     })
   end)
-  print("[Nova Hub] " .. msg)
+  print("[SpectreWare] " .. msg)
 end
 
 local function getHWID()
