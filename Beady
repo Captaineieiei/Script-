@@ -22,11 +22,13 @@ local Scripts = {
     },
     [2] = {
         Name = "Auto Farm",
-        Desc = "ฟาร์มเงินอัตโนมัติ",
+        Desc = "ฟาร์มอัตโนมัติ",
         Icon = "🏠",
         Tag = "MONEY",
         Color = Color3.fromRGB(255, 140, 190),
-        Code = function() print("[ Auto Farm ] กำลังรัน...") end
+        Code = function() 
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/auto.farm_obfuscated.lua.txt", true))()
+        end
     },
 }
 
