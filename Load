@@ -1,14 +1,17 @@
--- ============================================================
--- Nova Hub | Load  (อัปโหลดไฟล์นี้ขึ้น GitHub ชื่อ "Load")
--- อ่าน getgenv().KEY → ตรวจ whitelist → โหลด script จริง
--- ============================================================
 local KEY    = getgenv().KEY or ""
 local API    = "http://fi8.bot-hosting.net:21017"
 local SCRIPT = "https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/Zzaa"
 
-local HS  = game:GetService("HttpService")
-local SG  = game:GetService("StarterGui")
-local PL  = game:GetService("Players").LocalPlayer
+-- ── แมพที่รองรับ (ใส่ PlaceId ที่ต้องการ) ──────────────────
+local ALLOWED_PLACES = {
+  -- ตัวอย่าง:
+  -- 292439477,   -- Blox Fruits
+  -- 6284583030,  -- Pet Simulator X
+}
+
+local HS = game:GetService("HttpService")
+local SG = game:GetService("StarterGui")
+local PL = game:GetService("Players").LocalPlayer
 
 -- ── Notify ────────────────────────────────────────────────
 local function notify(msg, col)
@@ -26,6 +29,16 @@ local function notify(msg, col)
   print("[Nova Hub] " .. msg)
 end
 
+-- ── เช็คแมพ ───────────────────────────────────────────────
+local function checkMap()
+  if #ALLOWED_PLACES == 0 then return true end -- ถ้าไม่ล็อคแมพ ผ่านเลย
+  local currentPlace = game.PlaceId
+  for _, id in ipairs(ALLOWED_PLACES) do
+    if id == currentPlace then return true end
+  end
+  return false
+end
+
 -- ── HWID ──────────────────────────────────────────────────
 local function getHWID()
   local ok, id = pcall(function()
@@ -34,6 +47,17 @@ local function getHWID()
   if ok and id and id ~= "" then return id end
   return tostring(PL.UserId)
 end
+
+-- ── เช็คแมพก่อน ───────────────────────────────────────────
+if not checkMap() then
+  notify(
+    "❌ แมพนี้ไม่รองรับ (PlaceId: " .. game.PlaceId .. ")",
+    Color3.fromRGB(255, 80, 80)
+  )
+  return
+end
+
+notify("✅ แมพรองรับ | กำลังตรวจสอบ Key...", Color3.fromRGB(0, 200, 255))
 
 -- ── Key check ─────────────────────────────────────────────
 if KEY == "" then
@@ -81,20 +105,14 @@ task.wait(0.5)
 
 -- ── Loading Animation ──────────────────────────────────────
 local frames = {
-  "⠋ กำลังโหลด Nova Hub...",
-  "⠙ กำลังโหลด Nova Hub...",
-  "⠹ กำลังโหลด Nova Hub...",
-  "⠸ กำลังโหลด Nova Hub...",
-  "⠼ กำลังโหลด Nova Hub...",
-  "⠴ กำลังโหลด Nova Hub...",
-  "⠦ กำลังโหลด Nova Hub...",
-  "⠧ กำลังโหลด Nova Hub...",
-  "⠇ กำลังโหลด Nova Hub...",
-  "⠏ กำลังโหลด Nova Hub...",
+  "⠋ กำลังโหลด Nova Hub...", "⠙ กำลังโหลด Nova Hub...",
+  "⠹ กำลังโหลด Nova Hub...", "⠸ กำลังโหลด Nova Hub...",
+  "⠼ กำลังโหลด Nova Hub...", "⠴ กำลังโหลด Nova Hub...",
+  "⠦ กำลังโหลด Nova Hub...", "⠧ กำลังโหลด Nova Hub...",
+  "⠇ กำลังโหลด Nova Hub...", "⠏ กำลังโหลด Nova Hub...",
 }
 
 local loadingDone = false
-
 task.spawn(function()
   local i = 1
   while not loadingDone do
@@ -104,7 +122,7 @@ task.spawn(function()
   end
 end)
 
--- ── โหลด script จริง ──────────────────────────────────────
+-- ── โหลด Script จริง ──────────────────────────────────────
 local loadOk, loadErr = pcall(function()
   loadstring(game:HttpGet(SCRIPT, true))()
 end)
