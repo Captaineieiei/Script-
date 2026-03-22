@@ -1,5 +1,5 @@
 local scripts = {
-    [16607956688] = "",
+    [16607956688] = "https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/Beady",
     [00000000000] = "INSERT_SECOND_LINK_HERE" 
 }
 
