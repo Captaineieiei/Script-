@@ -1,1 +1,672 @@
-loadstring(game:HttpGet("https://raw.githubusercontent.com/thanyathonxyz/spectre/refs/heads/main/premium.lua"))()
+-- ╔══════════════════════════════════════╗
+-- ║   BLOXBURG SCRIPT SELECTOR v2.0      ║
+-- ║   Beady City Edition — UI Kit        ║
+-- ╚══════════════════════════════════════╝
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+local Scripts = {
+    [1] = {
+        Name = "Aimbot + Esp",
+        Desc = "เล็งอัตโนมัติ + มองเห็นผู้เล่น",
+        ImageId = "rbxassetid://127278087492594",
+        Tag = "AIM",
+        Color = Color3.fromRGB(255, 80, 80),
+        Code = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/thanyathonxyz/spectre/refs/heads/main/premium.lua", true))()
+        end
+    },
+    [2] = {
+        Name = "Auto Farm",
+        Desc = "ฟาร์มเงินอัตโนมัติ",
+        Icon = "🏠",
+        Tag = "MONEY",
+        Color = Color3.fromRGB(255, 140, 190),
+        Code = function() print("[ Auto Farm ] กำลังรัน...") end
+    },
+}
+
+if PlayerGui:FindFirstChild("BloxburgUI") then
+    PlayerGui.BloxburgUI:Destroy()
+end
+
+-- ══════════════════════════════
+--  Helpers
+-- ══════════════════════════════
+local function Tween(obj, props, t, style, dir)
+    TweenService:Create(obj,
+        TweenInfo.new(t or 0.25, style or Enum.EasingStyle.Quad, dir or Enum.EasingDirection.Out),
+        props):Play()
+end
+local function Corner(p, r)
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, r or 8)
+    c.Parent = p
+    return c
+end
+local function Stroke(p, col, thick)
+    local s = Instance.new("UIStroke")
+    s.Color = col or Color3.fromRGB(80,80,80)
+    s.Thickness = thick or 1.5
+    s.Parent = p
+    return s
+end
+local function Grad(p, c0, c1, rot)
+    local g = Instance.new("UIGradient")
+    g.Color = ColorSequence.new(c0, c1)
+    g.Rotation = rot or 90
+    g.Parent = p
+    return g
+end
+local function Label(p, txt, size, font, col, ax, zidx)
+    local l = Instance.new("TextLabel")
+    l.BackgroundTransparency = 1
+    l.Text = txt
+    l.TextSize = size or 13
+    l.Font = font or Enum.Font.Gotham
+    l.TextColor3 = col or Color3.fromRGB(255,255,255)
+    l.TextXAlignment = ax or Enum.TextXAlignment.Left
+    l.ZIndex = zidx or 2
+    l.Parent = p
+    return l
+end
+
+-- ══════════════════════════════
+--  ScreenGui
+-- ══════════════════════════════
+local SG = Instance.new("ScreenGui")
+SG.Name = "BloxburgUI"
+SG.ResetOnSpawn = false
+SG.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+SG.DisplayOrder = 999
+SG.Parent = PlayerGui
+
+-- ══════════════════════════════
+--  MAIN WINDOW
+-- ══════════════════════════════
+local Main = Instance.new("Frame")
+Main.Name = "Main"
+Main.Size = UDim2.new(0, 310, 0, 360)
+Main.Position = UDim2.new(0.5, -155, 0.5, -190)
+Main.BackgroundColor3 = Color3.fromRGB(14, 8, 22)
+Main.BorderSizePixel = 0
+Main.ClipsDescendants = true
+Main.ZIndex = 1
+Main.Parent = SG
+local MainCorner = Corner(Main, 20)
+
+-- ══════════════════════════════
+--  🌸 ANIMATED BG BLOBS
+-- ══════════════════════════════
+local blobData = {
+    { x=0.15, y=0.10, size=130, color=Color3.fromRGB(180, 50, 120),  speed=1.2, amp=0.06 },
+    { x=0.75, y=0.20, size=110, color=Color3.fromRGB(100, 40, 180),  speed=0.8, amp=0.05 },
+    { x=0.50, y=0.55, size=140, color=Color3.fromRGB(220, 80, 150),  speed=1.0, amp=0.07 },
+    { x=0.20, y=0.75, size=100, color=Color3.fromRGB(80,  30, 160),  speed=1.4, amp=0.04 },
+    { x=0.80, y=0.70, size=120, color=Color3.fromRGB(160, 60, 200),  speed=0.9, amp=0.06 },
+}
+
+for _, bd in ipairs(blobData) do
+    local blob = Instance.new("Frame")
+    blob.Size = UDim2.new(0, bd.size, 0, bd.size)
+    blob.Position = UDim2.new(bd.x, -bd.size/2, bd.y, -bd.size/2)
+    blob.BackgroundColor3 = bd.color
+    blob.BackgroundTransparency = 0.72
+    blob.BorderSizePixel = 0
+    blob.ZIndex = 1
+    blob.Parent = Main
+    Corner(blob, bd.size)   -- กลมเต็ม
+
+    -- blur ด้วยการซ้อน frame โปร่งใสขนาดใหญ่กว่า
+    local blur = Instance.new("Frame")
+    blur.Size = UDim2.new(0, bd.size+40, 0, bd.size+40)
+    blur.Position = UDim2.new(0, -20, 0, -20)
+    blur.BackgroundColor3 = bd.color
+    blur.BackgroundTransparency = 0.88
+    blur.BorderSizePixel = 0
+    blur.ZIndex = 1
+    blur.Parent = blob
+    Corner(blur, bd.size+40)
+
+    -- animate
+    local baseX = bd.x
+    local baseY = bd.y
+    local offset = math.random() * math.pi * 2
+    task.spawn(function()
+        while blob.Parent do
+            local t = tick() * bd.speed + offset
+            local nx = baseX + math.sin(t) * bd.amp
+            local ny = baseY + math.cos(t * 0.7) * bd.amp
+            blob.Position = UDim2.new(nx, -bd.size/2, ny, -bd.size/2)
+            task.wait(0.05)
+        end
+    end)
+end
+
+-- ══════════════════════════════
+--  ✨ SHIMMER SCAN LINE (เส้นวิ่ง)
+-- ══════════════════════════════
+local Scan = Instance.new("Frame")
+Scan.Size = UDim2.new(1, 0, 0, 2)
+Scan.Position = UDim2.new(0, 0, 0, 0)
+Scan.BackgroundColor3 = Color3.fromRGB(255, 180, 220)
+Scan.BackgroundTransparency = 0.65
+Scan.BorderSizePixel = 0
+Scan.ZIndex = 2
+Scan.Parent = Main
+
+-- gradient บน scan line
+local ScanGrad = Instance.new("UIGradient")
+ScanGrad.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0,   Color3.fromRGB(18, 12, 28)),
+    ColorSequenceKeypoint.new(0.3, Color3.fromRGB(255, 160, 210)),
+    ColorSequenceKeypoint.new(0.7, Color3.fromRGB(200, 140, 255)),
+    ColorSequenceKeypoint.new(1,   Color3.fromRGB(18, 12, 28)),
+})
+ScanGrad.Parent = Scan
+
+task.spawn(function()
+    while Scan.Parent do
+        -- วิ่งลงจากบนไปล่าง
+        Scan.Position = UDim2.new(0, 0, 0, 0)
+        Tween(Scan, {Position = UDim2.new(0, 0, 1, 0)}, 2.5, Enum.EasingStyle.Linear)
+        task.wait(2.5)
+        Scan.Position = UDim2.new(0, 0, 0, 0)
+        task.wait(1.5)
+    end
+end)
+
+-- ══════════════════════════════
+--  🔮 GRID DOTS (จุดตาราง subtle)
+-- ══════════════════════════════
+local gridSpacing = 22
+local gridRows = math.floor(360 / gridSpacing)
+local gridCols = math.floor(310 / gridSpacing)
+for row = 0, gridRows do
+    for col = 0, gridCols do
+        local dot = Instance.new("Frame")
+        dot.Size = UDim2.new(0, 2, 0, 2)
+        dot.Position = UDim2.new(0, col * gridSpacing, 0, row * gridSpacing)
+        dot.BackgroundColor3 = Color3.fromRGB(200, 140, 220)
+        dot.BackgroundTransparency = 0.82
+        dot.BorderSizePixel = 0
+        dot.ZIndex = 2
+        dot.Parent = Main
+        Corner(dot, 1)
+    end
+end
+
+-- ══════════════════════════════
+--  glass overlay บน bg ทั้งหมด
+-- ══════════════════════════════
+local BgOverlay = Instance.new("Frame")
+BgOverlay.Size = UDim2.new(1, 0, 1, 0)
+BgOverlay.BackgroundColor3 = Color3.fromRGB(14, 8, 22)
+BgOverlay.BackgroundTransparency = 0.55
+BgOverlay.BorderSizePixel = 0
+BgOverlay.ZIndex = 2
+BgOverlay.Parent = Main
+Corner(BgOverlay, 20)
+
+local TopGrad = Instance.new("Frame")
+TopGrad.Size = UDim2.new(1, 0, 0, 100)
+TopGrad.BackgroundColor3 = Color3.fromRGB(220, 90, 150)
+TopGrad.BackgroundTransparency = 0.82
+TopGrad.BorderSizePixel = 0
+TopGrad.ZIndex = 3
+TopGrad.Parent = Main
+Corner(TopGrad, 20)
+Grad(TopGrad, Color3.fromRGB(220, 90, 150), Color3.fromRGB(14, 8, 22), 180)
+
+-- ── FLOATING PARTICLES ──
+local pColors = {Color3.fromRGB(255,160,200), Color3.fromRGB(255,200,220), Color3.fromRGB(200,140,255)}
+local Particles = {}
+for i = 1, 7 do
+    local dot = Instance.new("TextLabel")
+    dot.Size = UDim2.new(0,12,0,12)
+    dot.Position = UDim2.new(math.random()*0.85+0.05, 0, math.random()*0.28+0.02, 0)
+    dot.BackgroundTransparency = 1
+    dot.Text = i%3==0 and "✦" or "♡"
+    dot.TextColor3 = pColors[(i%#pColors)+1]
+    dot.TextTransparency = 0.4
+    dot.TextSize = math.random(8,11)
+    dot.Font = Enum.Font.GothamBold
+    dot.ZIndex = 6
+    dot.Parent = Main
+    table.insert(Particles, dot)
+    task.spawn(function()
+        local offset = math.random()*math.pi*2
+        local xScale = dot.Position.X.Scale
+        while dot.Parent do
+            local t = tick()*0.7+offset
+            dot.Position = UDim2.new(xScale, 0, dot.Position.Y.Scale, math.sin(t)*5)
+            dot.TextTransparency = 0.25+math.abs(math.sin(t*0.5))*0.45
+            task.wait(0.05)
+        end
+    end)
+end
+
+-- ══════════════════════════════
+--  HEADER
+-- ══════════════════════════════
+local HeaderFrame = Instance.new("Frame")
+HeaderFrame.Size = UDim2.new(1, 0, 0, 66)
+HeaderFrame.BackgroundTransparency = 1
+HeaderFrame.ZIndex = 8
+HeaderFrame.Parent = Main
+
+local LogoBg = Instance.new("Frame")
+LogoBg.Size = UDim2.new(0,52,0,52)
+LogoBg.Position = UDim2.new(0,10,0.5,-26)
+LogoBg.BackgroundTransparency = 1
+LogoBg.BorderSizePixel = 0
+LogoBg.ZIndex = 9
+LogoBg.Parent = HeaderFrame
+Corner(LogoBg, 14)
+
+local LogoIcon = Instance.new("ImageLabel")
+LogoIcon.Size = UDim2.new(1,0,1,0)
+LogoIcon.BackgroundTransparency = 1
+LogoIcon.Image = "rbxassetid://80921423835608"
+LogoIcon.ScaleType = Enum.ScaleType.Fit
+LogoIcon.ZIndex = 10
+LogoIcon.Parent = LogoBg
+
+local LogoGlow = Instance.new("Frame")
+LogoGlow.Size = UDim2.new(0,52,0,10)
+LogoGlow.Position = UDim2.new(0,10,0.5,27)
+LogoGlow.BackgroundColor3 = Color3.fromRGB(255,140,190)
+LogoGlow.BackgroundTransparency = 0.62
+LogoGlow.BorderSizePixel = 0
+LogoGlow.ZIndex = 8
+LogoGlow.Parent = HeaderFrame
+Corner(LogoGlow, 6)
+
+local TitleL = Label(HeaderFrame,"Beady City",14,Enum.Font.GothamBold,Color3.fromRGB(255,190,215),Enum.TextXAlignment.Left,9)
+TitleL.Size = UDim2.new(1,-130,0,18)
+TitleL.Position = UDim2.new(0,72,0,11)
+
+local SubL = Label(HeaderFrame,"เลือกสคริปที่ต้องการใช้งาน",10,Enum.Font.Gotham,Color3.fromRGB(180,145,200),Enum.TextXAlignment.Left,9)
+SubL.Size = UDim2.new(1,-130,0,14)
+SubL.Position = UDim2.new(0,72,0,31)
+
+local VerTag = Instance.new("Frame")
+VerTag.Size = UDim2.new(0,36,0,15)
+VerTag.Position = UDim2.new(0,72,0,47)
+VerTag.BackgroundColor3 = Color3.fromRGB(210,90,150)
+VerTag.BackgroundTransparency = 0.7
+VerTag.BorderSizePixel = 0
+VerTag.ZIndex = 9
+VerTag.Parent = HeaderFrame
+Corner(VerTag, 5)
+local VerText = Label(VerTag,"v2.0",8,Enum.Font.GothamBold,Color3.fromRGB(255,200,220),Enum.TextXAlignment.Center,10)
+VerText.Size = UDim2.new(1,0,1,0)
+
+local function TopBtn(xOffset, bg, imageId)
+    local cont = Instance.new("Frame")
+    cont.Size = UDim2.new(0,24,0,24)
+    cont.Position = UDim2.new(1,xOffset,0.5,-12)
+    cont.BackgroundColor3 = bg
+    cont.ClipsDescendants = true
+    cont.BorderSizePixel = 0
+    cont.ZIndex = 11
+    cont.Parent = HeaderFrame
+    Corner(cont, 7)
+    local img = Instance.new("ImageLabel")
+    img.Size = UDim2.new(1,0,1,0)
+    img.BackgroundTransparency = 1
+    img.Image = "rbxassetid://"..imageId
+    img.ScaleType = Enum.ScaleType.Fit
+    img.ZIndex = 12
+    img.Parent = cont
+    Corner(img, 7)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1,0,1,0)
+    btn.BackgroundTransparency = 1
+    btn.Text = ""
+    btn.AutoButtonColor = false
+    btn.ZIndex = 13
+    btn.Parent = cont
+    return cont, btn
+end
+local CloseCont, CloseBtn = TopBtn(-38, Color3.fromRGB(255,80,110), "128758299280257")
+local MinCont,   MinBtn   = TopBtn(-68, Color3.fromRGB(70,50,95),   "110254668945260")
+
+local Div = Instance.new("Frame")
+Div.Size = UDim2.new(1,-24,0,1)
+Div.Position = UDim2.new(0,12,0,66)
+Div.BackgroundColor3 = Color3.fromRGB(220,100,160)
+Div.BackgroundTransparency = 0.78
+Div.BorderSizePixel = 0
+Div.ZIndex = 8
+Div.Parent = Main
+
+-- ══════════════════════════════
+--  SCRIPT CARDS
+-- ══════════════════════════════
+local selectedIndex = 1
+local cardRefs = {}
+
+local function CreateCard(index, yPos)
+    local s = Scripts[index]
+    local Card = Instance.new("Frame")
+    Card.Name = "Card"..index
+    Card.Size = UDim2.new(1,-24,0,70)
+    Card.Position = UDim2.new(0,12,0,yPos)
+    Card.BackgroundColor3 = Color3.fromRGB(28,18,42)
+    Card.BackgroundTransparency = 0.25
+    Card.BorderSizePixel = 0
+    Card.ZIndex = 7
+    Card.Parent = Main
+    Corner(Card, 14)
+    local cStroke = Stroke(Card, Color3.fromRGB(70,45,90), 1.5)
+
+    local CardGrad = Instance.new("Frame")
+    CardGrad.Size = UDim2.new(1,0,1,0)
+    CardGrad.BackgroundColor3 = Color3.fromRGB(255,200,220)
+    CardGrad.BackgroundTransparency = 0.94
+    CardGrad.BorderSizePixel = 0
+    CardGrad.ZIndex = 7
+    CardGrad.Parent = Card
+    Corner(CardGrad, 14)
+
+    local GlowBar = Instance.new("Frame")
+    GlowBar.Name = "GlowBar"
+    GlowBar.Size = UDim2.new(0,3,1,-16)
+    GlowBar.Position = UDim2.new(0,9,0,8)
+    GlowBar.BackgroundColor3 = Color3.fromRGB(80,55,100)
+    GlowBar.BorderSizePixel = 0
+    GlowBar.ZIndex = 8
+    GlowBar.Parent = Card
+    Corner(GlowBar, 3)
+
+    local IconBg = Instance.new("Frame")
+    IconBg.Size = UDim2.new(0,44,0,44)
+    IconBg.Position = UDim2.new(0,20,0.5,-22)
+    IconBg.BackgroundColor3 = Color3.fromRGB(20,14,30)
+    IconBg.BorderSizePixel = 0
+    IconBg.ZIndex = 8
+    IconBg.Parent = Card
+    Corner(IconBg, 12)
+    local iStroke = Stroke(IconBg, Color3.fromRGB(70,45,90), 1.5)
+
+    local IconL
+    if s.ImageId then
+        IconL = Instance.new("ImageLabel")
+        IconL.Size = UDim2.new(0,38,0,38)
+        IconL.Position = UDim2.new(0.5,-19,0.5,-19)
+        IconL.BackgroundTransparency = 1
+        IconL.Image = s.ImageId
+        IconL.ScaleType = Enum.ScaleType.Fit
+        IconL.ZIndex = 9
+        IconL.Parent = IconBg
+    else
+        IconL = Label(IconBg,s.Icon,20,Enum.Font.GothamBold,Color3.fromRGB(255,255,255),Enum.TextXAlignment.Center,9)
+        IconL.Size = UDim2.new(1,0,1,0)
+    end
+
+    local NameL = Label(Card,s.Name,13,Enum.Font.GothamBold,Color3.fromRGB(255,215,230),Enum.TextXAlignment.Left,9)
+    NameL.Size = UDim2.new(1,-110,0,18)
+    NameL.Position = UDim2.new(0,74,0,10)
+
+    local DescL = Label(Card,s.Desc,10,Enum.Font.Gotham,Color3.fromRGB(155,115,175),Enum.TextXAlignment.Left,9)
+    DescL.Size = UDim2.new(1,-110,0,14)
+    DescL.Position = UDim2.new(0,74,0,30)
+
+    local TagBg = Instance.new("Frame")
+    TagBg.Size = UDim2.new(0,56,0,16)
+    TagBg.Position = UDim2.new(0,74,0,47)
+    TagBg.BackgroundColor3 = s.Color
+    TagBg.BackgroundTransparency = 0.78
+    TagBg.BorderSizePixel = 0
+    TagBg.ZIndex = 9
+    TagBg.Parent = Card
+    Corner(TagBg, 6)
+    local TagL = Label(TagBg,"● "..s.Tag,8,Enum.Font.GothamBold,s.Color,Enum.TextXAlignment.Center,10)
+    TagL.Size = UDim2.new(1,0,1,0)
+
+    local RadioBg = Instance.new("Frame")
+    RadioBg.Size = UDim2.new(0,20,0,20)
+    RadioBg.Position = UDim2.new(1,-34,0.5,-10)
+    RadioBg.BackgroundColor3 = Color3.fromRGB(20,14,30)
+    RadioBg.BorderSizePixel = 0
+    RadioBg.ZIndex = 9
+    RadioBg.Parent = Card
+    Corner(RadioBg, 10)
+    Stroke(RadioBg, Color3.fromRGB(80,50,110), 1.5)
+
+    local RadioDot = Instance.new("Frame")
+    RadioDot.Name = "Dot"
+    RadioDot.Size = UDim2.new(0,10,0,10)
+    RadioDot.Position = UDim2.new(0.5,-5,0.5,-5)
+    RadioDot.BackgroundColor3 = s.Color
+    RadioDot.BackgroundTransparency = 1
+    RadioDot.BorderSizePixel = 0
+    RadioDot.ZIndex = 10
+    RadioDot.Parent = RadioBg
+    Corner(RadioDot, 5)
+
+    local ClickBtn = Instance.new("TextButton")
+    ClickBtn.Size = UDim2.new(1,0,1,0)
+    ClickBtn.BackgroundTransparency = 1
+    ClickBtn.Text = ""
+    ClickBtn.AutoButtonColor = false
+    ClickBtn.ZIndex = 11
+    ClickBtn.Parent = Card
+
+    cardRefs[index] = {Card=Card, GlowBar=GlowBar, Stroke=cStroke, Dot=RadioDot, IconBg=IconBg, IStroke=iStroke, NameL=NameL, Color=s.Color}
+
+    ClickBtn.MouseButton1Click:Connect(function() selectedIndex=index updateSelection() end)
+    ClickBtn.MouseEnter:Connect(function() if selectedIndex~=index then Tween(Card,{BackgroundColor3=Color3.fromRGB(36,22,52)},0.15) end end)
+    ClickBtn.MouseLeave:Connect(function() if selectedIndex~=index then Tween(Card,{BackgroundColor3=Color3.fromRGB(28,18,42)},0.2) end end)
+end
+
+function updateSelection()
+    for i, r in pairs(cardRefs) do
+        if i == selectedIndex then
+            Tween(r.Card,    {BackgroundColor3=Color3.fromRGB(40,22,58)},      0.2)
+            Tween(r.Stroke,  {Color=r.Color, Thickness=2},                     0.2)
+            Tween(r.GlowBar, {BackgroundColor3=r.Color},                       0.2)
+            Tween(r.Dot,     {BackgroundTransparency=0},                       0.2)
+            Tween(r.IconBg,  {BackgroundColor3=Color3.fromRGB(14,10,22)},      0.2)
+            Tween(r.IStroke, {Color=r.Color},                                  0.2)
+        else
+            Tween(r.Card,    {BackgroundColor3=Color3.fromRGB(28,18,42)},      0.2)
+            Tween(r.Stroke,  {Color=Color3.fromRGB(70,45,90), Thickness=1.5},  0.2)
+            Tween(r.GlowBar, {BackgroundColor3=Color3.fromRGB(80,55,100)},     0.2)
+            Tween(r.Dot,     {BackgroundTransparency=1},                       0.2)
+            Tween(r.IconBg,  {BackgroundColor3=Color3.fromRGB(20,14,30)},      0.2)
+            Tween(r.IStroke, {Color=Color3.fromRGB(70,45,90)},                 0.2)
+        end
+    end
+    StatusDot.BackgroundColor3 = Scripts[selectedIndex].Color
+    StatusTxt.Text = "เลือก:  " .. Scripts[selectedIndex].Name
+end
+
+CreateCard(1, 80)
+CreateCard(2, 160)
+
+-- ══════════════════════════════
+--  STATUS BAR
+-- ══════════════════════════════
+local StatBar = Instance.new("Frame")
+StatBar.Size = UDim2.new(1,-24,0,28)
+StatBar.Position = UDim2.new(0,12,0,242)
+StatBar.BackgroundColor3 = Color3.fromRGB(22,14,34)
+StatBar.BackgroundTransparency = 0.2
+StatBar.BorderSizePixel = 0
+StatBar.ZIndex = 7
+StatBar.Parent = Main
+Corner(StatBar, 8)
+Stroke(StatBar, Color3.fromRGB(70,45,90), 1)
+
+StatusDot = Instance.new("Frame")
+StatusDot.Size = UDim2.new(0,7,0,7)
+StatusDot.Position = UDim2.new(0,10,0.5,-3)
+StatusDot.BackgroundColor3 = Scripts[1].Color
+StatusDot.BorderSizePixel = 0
+StatusDot.ZIndex = 8
+StatusDot.Parent = StatBar
+Corner(StatusDot, 4)
+
+task.spawn(function()
+    while StatusDot.Parent do
+        Tween(StatusDot,{BackgroundTransparency=0.5},0.6) task.wait(0.6)
+        Tween(StatusDot,{BackgroundTransparency=0},0.6)   task.wait(0.6)
+    end
+end)
+
+StatusTxt = Label(StatBar,"เลือก:  "..Scripts[1].Name,10,Enum.Font.Gotham,Color3.fromRGB(200,155,210),Enum.TextXAlignment.Left,8)
+StatusTxt.Size = UDim2.new(1,-28,1,0)
+StatusTxt.Position = UDim2.new(0,24,0,0)
+
+-- ══════════════════════════════
+--  RUN BUTTON
+-- ══════════════════════════════
+local RunBtn = Instance.new("TextButton")
+RunBtn.Size = UDim2.new(1,-24,0,42)
+RunBtn.Position = UDim2.new(0,12,0,280)
+RunBtn.BackgroundColor3 = Color3.fromRGB(210,85,145)
+RunBtn.Text = ""
+RunBtn.AutoButtonColor = false
+RunBtn.BorderSizePixel = 0
+RunBtn.ZIndex = 7
+RunBtn.Parent = Main
+Corner(RunBtn, 13)
+Grad(RunBtn, Color3.fromRGB(255,135,185), Color3.fromRGB(180,65,130), 135)
+Stroke(RunBtn, Color3.fromRGB(255,175,205), 1.5)
+
+local Shine = Instance.new("Frame")
+Shine.Size = UDim2.new(0,28,1,10)
+Shine.Position = UDim2.new(-0.2,0,0,-5)
+Shine.BackgroundColor3 = Color3.fromRGB(255,255,255)
+Shine.BackgroundTransparency = 0.72
+Shine.BorderSizePixel = 0
+Shine.Rotation = 15
+Shine.ZIndex = 8
+Shine.Parent = RunBtn
+task.spawn(function()
+    while RunBtn.Parent do
+        task.wait(3)
+        Tween(Shine,{Position=UDim2.new(1.2,0,0,-5)},0.5,Enum.EasingStyle.Linear)
+        task.wait(0.6)
+        Shine.Position = UDim2.new(-0.2,0,0,-5)
+    end
+end)
+
+local RunIconL = Label(RunBtn,"▶",13,Enum.Font.GothamBold,Color3.fromRGB(80,20,50),Enum.TextXAlignment.Center,9)
+RunIconL.Size = UDim2.new(0,28,1,0)
+RunIconL.Position = UDim2.new(0.5,-52,0,0)
+
+local RunTxtL = Label(RunBtn,"EXECUTE SCRIPT",12,Enum.Font.GothamBold,Color3.fromRGB(80,20,50),Enum.TextXAlignment.Center,9)
+RunTxtL.Size = UDim2.new(0,120,1,0)
+RunTxtL.Position = UDim2.new(0.5,-32,0,0)
+
+local FooterL = Label(Main,"♡  Beady City  ♡",9,Enum.Font.Gotham,Color3.fromRGB(130,75,115),Enum.TextXAlignment.Center,7)
+FooterL.Size = UDim2.new(1,0,0,20)
+FooterL.Position = UDim2.new(0,0,0,334)
+
+-- ══════════════════════════════
+--  REVEAL
+-- ══════════════════════════════
+Main.BackgroundTransparency = 1
+Tween(Main,{BackgroundTransparency=0},0.5,Enum.EasingStyle.Quad)
+task.wait(0.1)
+updateSelection()
+
+-- ══════════════════════════════
+--  DRAGGABLE
+-- ══════════════════════════════
+local dragging, dragStart, startPos
+HeaderFrame.InputBegan:Connect(function(i)
+    if i.UserInputType==Enum.UserInputType.MouseButton1 then
+        dragging=true dragStart=i.Position startPos=Main.Position
+    end
+end)
+UserInputService.InputChanged:Connect(function(i)
+    if dragging and i.UserInputType==Enum.UserInputType.MouseMovement then
+        local d=i.Position-dragStart
+        Main.Position=UDim2.new(startPos.X.Scale,startPos.X.Offset+d.X,startPos.Y.Scale,startPos.Y.Offset+d.Y)
+    end
+end)
+UserInputService.InputEnded:Connect(function(i)
+    if i.UserInputType==Enum.UserInputType.MouseButton1 then dragging=false end
+end)
+
+-- ══════════════════════════════
+--  RUN EVENTS
+-- ══════════════════════════════
+RunBtn.MouseButton1Click:Connect(function()
+    Tween(RunBtn,{BackgroundColor3=Color3.fromRGB(160,55,110)},0.08) task.wait(0.08)
+    Tween(RunBtn,{BackgroundColor3=Color3.fromRGB(210,85,145)},0.2)
+    RunTxtL.Text="RUNNING..." RunIconL.Text="⟳"
+    StatusTxt.Text="กำลังรัน:  "..Scripts[selectedIndex].Name
+    StatusDot.BackgroundColor3=Color3.fromRGB(120,255,170)
+    task.spawn(function()
+        local ok,err=pcall(Scripts[selectedIndex].Code) task.wait(0.5)
+        if ok then
+            RunTxtL.Text="✓  สำเร็จ!" RunIconL.Text=""
+            StatusTxt.Text="สำเร็จ:  "..Scripts[selectedIndex].Name
+            StatusDot.BackgroundColor3=Color3.fromRGB(120,255,170)
+        else
+            RunTxtL.Text="✕  ERROR" RunIconL.Text=""
+            StatusDot.BackgroundColor3=Color3.fromRGB(255,80,100)
+            StatusTxt.Text="Error: "..tostring(err)
+        end
+        task.wait(1.8)
+        RunTxtL.Text="EXECUTE SCRIPT" RunIconL.Text="▶"
+        StatusDot.BackgroundColor3=Scripts[selectedIndex].Color
+        StatusTxt.Text="เลือก:  "..Scripts[selectedIndex].Name
+    end)
+end)
+RunBtn.MouseEnter:Connect(function() Tween(RunBtn,{BackgroundColor3=Color3.fromRGB(235,115,165)},0.15) end)
+RunBtn.MouseLeave:Connect(function() Tween(RunBtn,{BackgroundColor3=Color3.fromRGB(210,85,145)},0.2) end)
+
+-- ══════════════════════════════
+--  MINIMIZE
+-- ══════════════════════════════
+local minimized = false
+MinBtn.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    if minimized then
+        for _, p in ipairs(Particles) do p.Visible=false end
+        SubL.Visible=false VerTag.Visible=false Div.Visible=false FooterL.Visible=false
+        Scan.Visible=false
+
+        Tween(LogoBg,      {Size=UDim2.new(0,32,0,32), Position=UDim2.new(0,6,0.5,-16)}, 0.25)
+        Tween(LogoGlow,    {BackgroundTransparency=1}, 0.15)
+        TitleL.Size = UDim2.new(0,90,0,16)
+        Tween(TitleL,      {Position=UDim2.new(0,46,0.5,-8)}, 0.25)
+        Tween(MinCont,     {Size=UDim2.new(0,28,0,28), Position=UDim2.new(1,-66,0.5,-14)}, 0.25)
+        Tween(CloseCont,   {Size=UDim2.new(0,28,0,28), Position=UDim2.new(1,-34,0.5,-14)}, 0.25)
+        Tween(HeaderFrame, {Size=UDim2.new(1,0,0,44)}, 0.25)
+        Tween(Main,        {Size=UDim2.new(0,215,0,44)}, 0.3, Enum.EasingStyle.Back)
+        task.delay(0.15, function() MainCorner.CornerRadius = UDim.new(0,8) end)
+    else
+        for _, p in ipairs(Particles) do p.Visible=true end
+        SubL.Visible=true VerTag.Visible=true Div.Visible=true FooterL.Visible=true
+        Scan.Visible=true
+        MainCorner.CornerRadius = UDim.new(0,20)
+
+        Tween(LogoBg,      {Size=UDim2.new(0,52,0,52), Position=UDim2.new(0,10,0.5,-26)}, 0.3)
+        Tween(LogoGlow,    {BackgroundTransparency=0.62}, 0.25)
+        TitleL.Size = UDim2.new(1,-130,0,18)
+        Tween(TitleL,      {Position=UDim2.new(0,72,0,11)}, 0.3)
+        Tween(MinCont,     {Size=UDim2.new(0,24,0,24), Position=UDim2.new(1,-68,0.5,-12)}, 0.3)
+        Tween(CloseCont,   {Size=UDim2.new(0,24,0,24), Position=UDim2.new(1,-38,0.5,-12)}, 0.3)
+        Tween(HeaderFrame, {Size=UDim2.new(1,0,0,66)}, 0.3)
+        Tween(Main,        {Size=UDim2.new(0,310,0,360)}, 0.35, Enum.EasingStyle.Back)
+    end
+end)
+
+CloseBtn.MouseButton1Click:Connect(function()
+    Tween(Main,{BackgroundTransparency=1},0.25)
+    task.wait(0.3)
+    SG:Destroy()
+end)
+
+print("[BloxburgUI] โหลดสำเร็จ ✓")
