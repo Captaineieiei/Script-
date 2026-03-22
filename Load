@@ -76,11 +76,11 @@ notify("✅ Authorized | เหลือ: " .. timeLeft, Color3.fromRGB(80, 255,
 task.wait(0.5)
 
 local frames = {
-  "⠋ กำลังโหลด Nova Hub...", "⠙ กำลังโหลด Nova Hub...",
-  "⠹ กำลังโหลด Nova Hub...", "⠸ กำลังโหลด Nova Hub...",
-  "⠼ กำลังโหลด Nova Hub...", "⠴ กำลังโหลด Nova Hub...",
-  "⠦ กำลังโหลด Nova Hub...", "⠧ กำลังโหลด Nova Hub...",
-  "⠇ กำลังโหลด Nova Hub...", "⠏ กำลังโหลด Nova Hub...",
+  "⠋ กำลังโหลด SpectreWare...", "⠙ กำลังโหลด SpectreWare...",
+  "⠹ กำลังโหลด SpectreWare...", "⠸ กำลังโหลด SpectreWare...",
+  "⠼ กำลังโหลด SpectreWare...", "⠴ กำลังโหลด SpectreWare...",
+  "⠦ กำลังโหลด SpectreWare...", "⠧ กำลังโหลด SpectreWare...",
+  "⠇ กำลังโหลด SpectreWare...", "⠏ กำลังโหลด SpectreWare...",
 }
 
 local loadingDone = false
