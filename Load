@@ -1,19 +1,15 @@
+
+-- ============================================================
+-- Nova Hub | Load
+-- ============================================================
 local KEY    = getgenv().KEY or ""
 local API    = "http://fi8.bot-hosting.net:21017"
 local SCRIPT = "https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/Zzaa"
 
--- ── แมพที่รองรับ (ใส่ PlaceId ที่ต้องการ) ──────────────────
-local ALLOWED_PLACES = {
-  -- ตัวอย่าง:
-  -- 292439477,   -- Blox Fruits
-  -- 6284583030,  -- Pet Simulator X
-}
+local HS  = game:GetService("HttpService")
+local SG  = game:GetService("StarterGui")
+local PL  = game:GetService("Players").LocalPlayer
 
-local HS = game:GetService("HttpService")
-local SG = game:GetService("StarterGui")
-local PL = game:GetService("Players").LocalPlayer
-
--- ── Notify ────────────────────────────────────────────────
 local function notify(msg, col)
   pcall(function()
     SG:SetCore("SendNotification", {Title = "Nova Hub", Text = msg, Duration = 4})
@@ -29,17 +25,6 @@ local function notify(msg, col)
   print("[Nova Hub] " .. msg)
 end
 
--- ── เช็คแมพ ───────────────────────────────────────────────
-local function checkMap()
-  if #ALLOWED_PLACES == 0 then return true end -- ถ้าไม่ล็อคแมพ ผ่านเลย
-  local currentPlace = game.PlaceId
-  for _, id in ipairs(ALLOWED_PLACES) do
-    if id == currentPlace then return true end
-  end
-  return false
-end
-
--- ── HWID ──────────────────────────────────────────────────
 local function getHWID()
   local ok, id = pcall(function()
     return tostring(game:GetService("RbxAnalyticsService"):GetClientId())
@@ -48,18 +33,6 @@ local function getHWID()
   return tostring(PL.UserId)
 end
 
--- ── เช็คแมพก่อน ───────────────────────────────────────────
-if not checkMap() then
-  notify(
-    "❌ แมพนี้ไม่รองรับ (PlaceId: " .. game.PlaceId .. ")",
-    Color3.fromRGB(255, 80, 80)
-  )
-  return
-end
-
-notify("✅ แมพรองรับ | กำลังตรวจสอบ Key...", Color3.fromRGB(0, 200, 255))
-
--- ── Key check ─────────────────────────────────────────────
 if KEY == "" then
   notify("❌ ไม่พบ Key  (ใช้ getgenv().KEY = \"...\")", Color3.fromRGB(255, 80, 80))
   return
@@ -85,7 +58,6 @@ if not result.success then
   return
 end
 
--- ── แสดงเวลาที่เหลือ ──────────────────────────────────────
 local timeLeft = "Permanent"
 local data = result.data
 if data.expiresAt ~= -1 then
@@ -103,7 +75,6 @@ end
 notify("✅ Authorized | เหลือ: " .. timeLeft, Color3.fromRGB(80, 255, 180))
 task.wait(0.5)
 
--- ── Loading Animation ──────────────────────────────────────
 local frames = {
   "⠋ กำลังโหลด Nova Hub...", "⠙ กำลังโหลด Nova Hub...",
   "⠹ กำลังโหลด Nova Hub...", "⠸ กำลังโหลด Nova Hub...",
@@ -113,6 +84,7 @@ local frames = {
 }
 
 local loadingDone = false
+
 task.spawn(function()
   local i = 1
   while not loadingDone do
@@ -122,7 +94,6 @@ task.spawn(function()
   end
 end)
 
--- ── โหลด Script จริง ──────────────────────────────────────
 local loadOk, loadErr = pcall(function()
   loadstring(game:HttpGet(SCRIPT, true))()
 end)
@@ -132,6 +103,4 @@ task.wait(0.1)
 
 if not loadOk then
   notify("❌ Script error: " .. tostring(loadErr), Color3.fromRGB(255, 80, 80))
-else
-  notify("🚀 โหลดสำเร็จ! Nova Hub พร้อมใช้งาน", Color3.fromRGB(80, 255, 180))
 end
