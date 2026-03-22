@@ -3,7 +3,7 @@
 -- ============================================================
 local KEY    = getgenv().KEY or ""
 local API    = "http://37.27.169.207:20745"
-local SCRIPT = "https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/Zzaa"
+local SCRIPT = "https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/All"
 
 local HS  = game:GetService("HttpService")
 local SG  = game:GetService("StarterGui")
