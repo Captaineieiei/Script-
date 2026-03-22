@@ -1,1 +1,1 @@
-loadstring(game:HttpGet("https://raw.githubusercontent.com/thanyathonxyz/spectreware/refs/heads/main/loader.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/thanyathonxyz/spectre/refs/heads/main/premium.lua"))()
