@@ -24,9 +24,9 @@ local Scripts = {
         Name = "Auto Farm",
         Desc = "ฟาร์มอัตโนมัติ",
         Icon = "🏠",
-        Tag = "MONEY",
+        Tag = "FARM",
         Color = Color3.fromRGB(255, 140, 190),
-        Code = function() 
+        Code = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/auto.farm_obfuscated.lua.txt", true))()
         end
     },
@@ -144,7 +144,7 @@ for _, bd in ipairs(blobData) do
             local nx = baseX + math.sin(t) * bd.amp
             local ny = baseY + math.cos(t * 0.7) * bd.amp
             blob.Position = UDim2.new(nx, -bd.size/2, ny, -bd.size/2)
-            task.wait(0.05)
+            task.wait(0.1)
         end
     end)
 end
@@ -185,7 +185,7 @@ end)
 -- ══════════════════════════════
 --  🔮 GRID DOTS (จุดตาราง subtle)
 -- ══════════════════════════════
-local gridSpacing = 22
+local gridSpacing = 32
 local gridRows = math.floor(360 / gridSpacing)
 local gridCols = math.floor(310 / gridSpacing)
 for row = 0, gridRows do
@@ -247,7 +247,7 @@ for i = 1, 7 do
             local t = tick()*0.7+offset
             dot.Position = UDim2.new(xScale, 0, dot.Position.Y.Scale, math.sin(t)*5)
             dot.TextTransparency = 0.25+math.abs(math.sin(t*0.5))*0.45
-            task.wait(0.05)
+            task.wait(0.1)
         end
     end)
 end
@@ -581,22 +581,48 @@ task.wait(0.1)
 updateSelection()
 
 -- ══════════════════════════════
---  DRAGGABLE
+--  DRAGGABLE (PC + Mobile)
 -- ══════════════════════════════
 local dragging, dragStart, startPos
+
+local function onDragStart(input)
+    dragging = true
+    dragStart = input.Position
+    startPos = Main.Position
+end
+
+local function onDragMove(input)
+    if not dragging then return end
+    local delta = input.Position - dragStart
+    Main.Position = UDim2.new(
+        startPos.X.Scale, startPos.X.Offset + delta.X,
+        startPos.Y.Scale, startPos.Y.Offset + delta.Y
+    )
+end
+
+local function onDragEnd()
+    dragging = false
+end
+
 HeaderFrame.InputBegan:Connect(function(i)
-    if i.UserInputType==Enum.UserInputType.MouseButton1 then
-        dragging=true dragStart=i.Position startPos=Main.Position
+    if i.UserInputType == Enum.UserInputType.MouseButton1
+    or i.UserInputType == Enum.UserInputType.Touch then
+        onDragStart(i)
     end
 end)
+
 UserInputService.InputChanged:Connect(function(i)
-    if dragging and i.UserInputType==Enum.UserInputType.MouseMovement then
-        local d=i.Position-dragStart
-        Main.Position=UDim2.new(startPos.X.Scale,startPos.X.Offset+d.X,startPos.Y.Scale,startPos.Y.Offset+d.Y)
+    if i.UserInputType == Enum.UserInputType.MouseMovement
+    or i.UserInputType == Enum.UserInputType.Touch then
+        onDragMove(i)
     end
 end)
+
 UserInputService.InputEnded:Connect(function(i)
-    if i.UserInputType==Enum.UserInputType.MouseButton1 then dragging=false end
+    if i.UserInputType == Enum.UserInputType.MouseButton1
+    or i.UserInputType == Enum.UserInputType.Touch then
+        onDragEnd()
+    end
 end)
 
 -- ══════════════════════════════
