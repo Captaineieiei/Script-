@@ -1,5 +1,5 @@
 -- ============================================================
--- Nova Hub | Load
+-- SpectreWare | Load
 -- ============================================================
 local KEY    = getgenv().KEY or ""
 local API    = "http://37.27.169.207:20745"
@@ -11,7 +11,7 @@ local PL  = game:GetService("Players").LocalPlayer
 
 local function notify(msg, col)
   pcall(function()
-    SG:SetCore("SendNotification", {Title = "Nova Hub", Text = msg, Duration = 4})
+    SG:SetCore("SendNotification", {Title = "SpectreWare", Text = msg, Duration = 4})
   end)
   pcall(function()
     SG:SetCore("ChatMakeSystemMessage", {
