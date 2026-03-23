@@ -1,32 +1,34 @@
 -- ╔══════════════════════════════════════╗
 -- ║   BLOXBURG SCRIPT SELECTOR v2.0      ║
 -- ║   Beady City Edition — UI Kit        ║
+-- ║   [OPTIMIZED - lag fixed]            ║
 -- ╚══════════════════════════════════════╝
 
-local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
+local Players          = game:GetService("Players")
+local TweenService     = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local LocalPlayer = Players.LocalPlayer
-local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local RunService       = game:GetService("RunService")   -- [FIX] ใช้แทน task.spawn loops
+local LocalPlayer      = Players.LocalPlayer
+local PlayerGui        = LocalPlayer:WaitForChild("PlayerGui")
 
 local Scripts = {
     [1] = {
-        Name = "Aimbot + Esp",
-        Desc = "เล็งอัตโนมัติ + มองเห็นผู้เล่น",
+        Name    = "Aimbot + Esp",
+        Desc    = "เล็งอัตโนมัติ + มองเห็นผู้เล่น",
         ImageId = "rbxassetid://127278087492594",
-        Tag = "AIM",
-        Color = Color3.fromRGB(255, 105, 155),   -- 🎀 Hot Pink
-        Code = function()
+        Tag     = "AIM",
+        Color   = Color3.fromRGB(255, 105, 155),
+        Code    = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/thanyathonxyz/spectre/refs/heads/main/premium.lua", true))()
         end
     },
     [2] = {
-        Name = "Auto Farm",
-        Desc = "ฟาร์มอัตโนมัติ",
-        Icon = "🏠",
-        Tag = "FARM",
-        Color = Color3.fromRGB(255, 182, 213),   -- 🌸 Light Pink
-        Code = function()
+        Name  = "Auto Farm",
+        Desc  = "ฟาร์มอัตโนมัติ",
+        Icon  = "🏠",
+        Tag   = "FARM",
+        Color = Color3.fromRGB(255, 182, 213),
+        Code  = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/auto.farm_obfuscated.lua.txt", true))()
         end
     },
@@ -52,28 +54,28 @@ local function Corner(p, r)
 end
 local function Stroke(p, col, thick)
     local s = Instance.new("UIStroke")
-    s.Color = col or Color3.fromRGB(80,50,45)
+    s.Color     = col or Color3.fromRGB(80,50,45)
     s.Thickness = thick or 1.5
-    s.Parent = p
+    s.Parent    = p
     return s
 end
 local function Grad(p, c0, c1, rot)
     local g = Instance.new("UIGradient")
-    g.Color = ColorSequence.new(c0, c1)
+    g.Color    = ColorSequence.new(c0, c1)
     g.Rotation = rot or 90
-    g.Parent = p
+    g.Parent   = p
     return g
 end
 local function Label(p, txt, size, font, col, ax, zidx)
     local l = Instance.new("TextLabel")
     l.BackgroundTransparency = 1
-    l.Text = txt
-    l.TextSize = size or 13
-    l.Font = font or Enum.Font.Gotham
-    l.TextColor3 = col or Color3.fromRGB(255,255,255)
+    l.Text           = txt
+    l.TextSize       = size or 13
+    l.Font           = font or Enum.Font.Gotham
+    l.TextColor3     = col or Color3.fromRGB(255,255,255)
     l.TextXAlignment = ax or Enum.TextXAlignment.Left
-    l.ZIndex = zidx or 2
-    l.Parent = p
+    l.ZIndex         = zidx or 2
+    l.Parent         = p
     return l
 end
 
@@ -81,92 +83,87 @@ end
 --  ScreenGui
 -- ══════════════════════════════
 local SG = Instance.new("ScreenGui")
-SG.Name = "BloxburgUI"
-SG.ResetOnSpawn = false
-SG.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-SG.DisplayOrder = 999
-SG.Parent = PlayerGui
+SG.Name            = "BloxburgUI"
+SG.ResetOnSpawn    = false
+SG.ZIndexBehavior  = Enum.ZIndexBehavior.Sibling
+SG.DisplayOrder    = 999
+SG.Parent          = PlayerGui
 
 -- ══════════════════════════════
 --  MAIN WINDOW
---  🎀 Dark Chocolate base (จาก ช็อกโกแลตหมีน้ำตาล)
 -- ══════════════════════════════
 local Main = Instance.new("Frame")
-Main.Name = "Main"
-Main.Size = UDim2.new(0, 310, 0, 360)
-Main.Position = UDim2.new(0.5, -155, 0.5, -190)
-Main.BackgroundColor3 = Color3.fromRGB(28, 14, 18)   -- Dark Chocolate
-Main.BorderSizePixel = 0
-Main.ClipsDescendants = true
-Main.ZIndex = 1
-Main.Parent = SG
-local MainCorner = Corner(Main, 20)
+Main.Name                = "Main"
+Main.Size                = UDim2.new(0, 310, 0, 360)
+Main.Position            = UDim2.new(0.5, -155, 0.5, -190)
+Main.BackgroundColor3    = Color3.fromRGB(28, 14, 18)
+Main.BorderSizePixel     = 0
+Main.ClipsDescendants    = true
+Main.ZIndex              = 1
+Main.Parent              = SG
+Corner(Main, 20)
 
 -- ══════════════════════════════
 --  🌸 ANIMATED BG BLOBS
---  สีจากโลโก้: Hot Pink + Chocolate Brown + Light Pink
+--  [FIX] ลดจาก 5 → 3 blob, รวมอนิเมชันไว้ใน Heartbeat ตัวเดียว
 -- ══════════════════════════════
 local blobData = {
-    { x=0.15, y=0.10, size=130, color=Color3.fromRGB(220, 70,  130),  speed=1.2, amp=0.06 },  -- Deep Pink
-    { x=0.75, y=0.20, size=110, color=Color3.fromRGB(130, 70,  40),   speed=0.8, amp=0.05 },  -- Chocolate Brown
-    { x=0.50, y=0.55, size=140, color=Color3.fromRGB(255, 105, 160),  speed=1.0, amp=0.07 },  -- Hot Pink
-    { x=0.20, y=0.75, size=100, color=Color3.fromRGB(100, 50,  30),   speed=1.4, amp=0.04 },  -- Dark Chocolate
-    { x=0.80, y=0.70, size=120, color=Color3.fromRGB(200, 100, 150),  speed=0.9, amp=0.06 },  -- Rose Pink
+    { x=0.15, y=0.10, size=130, color=Color3.fromRGB(220, 70,  130), speed=1.2, amp=0.06 },
+    { x=0.50, y=0.55, size=140, color=Color3.fromRGB(255, 105, 160), speed=1.0, amp=0.07 },
+    { x=0.80, y=0.70, size=120, color=Color3.fromRGB(200, 100, 150), speed=0.9, amp=0.06 },
 }
 
+local blobObjects = {}
 for _, bd in ipairs(blobData) do
     local blob = Instance.new("Frame")
-    blob.Size = UDim2.new(0, bd.size, 0, bd.size)
-    blob.Position = UDim2.new(bd.x, -bd.size/2, bd.y, -bd.size/2)
-    blob.BackgroundColor3 = bd.color
+    blob.Size                   = UDim2.new(0, bd.size, 0, bd.size)
+    blob.Position               = UDim2.new(bd.x, -bd.size/2, bd.y, -bd.size/2)
+    blob.BackgroundColor3       = bd.color
     blob.BackgroundTransparency = 0.72
-    blob.BorderSizePixel = 0
-    blob.ZIndex = 1
-    blob.Parent = Main
+    blob.BorderSizePixel        = 0
+    blob.ZIndex                 = 1
+    blob.Parent                 = Main
     Corner(blob, bd.size)
 
     local blur = Instance.new("Frame")
-    blur.Size = UDim2.new(0, bd.size+40, 0, bd.size+40)
-    blur.Position = UDim2.new(0, -20, 0, -20)
-    blur.BackgroundColor3 = bd.color
+    blur.Size                   = UDim2.new(0, bd.size+40, 0, bd.size+40)
+    blur.Position               = UDim2.new(0, -20, 0, -20)
+    blur.BackgroundColor3       = bd.color
     blur.BackgroundTransparency = 0.88
-    blur.BorderSizePixel = 0
-    blur.ZIndex = 1
-    blur.Parent = blob
+    blur.BorderSizePixel        = 0
+    blur.ZIndex                 = 1
+    blur.Parent                 = blob
     Corner(blur, bd.size+40)
 
-    local baseX = bd.x
-    local baseY = bd.y
-    local offset = math.random() * math.pi * 2
-    task.spawn(function()
-        while blob.Parent do
-            local t = tick() * bd.speed + offset
-            local nx = baseX + math.sin(t) * bd.amp
-            local ny = baseY + math.cos(t * 0.7) * bd.amp
-            blob.Position = UDim2.new(nx, -bd.size/2, ny, -bd.size/2)
-            task.wait(0.1)
-        end
-    end)
+    table.insert(blobObjects, {
+        frame  = blob,
+        baseX  = bd.x,
+        baseY  = bd.y,
+        size   = bd.size,
+        speed  = bd.speed,
+        amp    = bd.amp,
+        offset = math.random() * math.pi * 2,
+    })
 end
 
 -- ══════════════════════════════
 --  ✨ SHIMMER SCAN LINE
 -- ══════════════════════════════
 local Scan = Instance.new("Frame")
-Scan.Size = UDim2.new(1, 0, 0, 2)
-Scan.Position = UDim2.new(0, 0, 0, 0)
-Scan.BackgroundColor3 = Color3.fromRGB(255, 180, 210)
+Scan.Size                   = UDim2.new(1, 0, 0, 2)
+Scan.Position               = UDim2.new(0, 0, 0, 0)
+Scan.BackgroundColor3       = Color3.fromRGB(255, 180, 210)
 Scan.BackgroundTransparency = 0.65
-Scan.BorderSizePixel = 0
-Scan.ZIndex = 2
-Scan.Parent = Main
+Scan.BorderSizePixel        = 0
+Scan.ZIndex                 = 2
+Scan.Parent                 = Main
 
 local ScanGrad = Instance.new("UIGradient")
 ScanGrad.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0,   Color3.fromRGB(28, 14, 18)),    -- Dark Chocolate
-    ColorSequenceKeypoint.new(0.3, Color3.fromRGB(255, 160, 200)), -- Pink
-    ColorSequenceKeypoint.new(0.7, Color3.fromRGB(240, 180, 210)), -- Light Pink
-    ColorSequenceKeypoint.new(1,   Color3.fromRGB(28, 14, 18)),    -- Dark Chocolate
+    ColorSequenceKeypoint.new(0,   Color3.fromRGB(28, 14, 18)),
+    ColorSequenceKeypoint.new(0.3, Color3.fromRGB(255, 160, 200)),
+    ColorSequenceKeypoint.new(0.7, Color3.fromRGB(240, 180, 210)),
+    ColorSequenceKeypoint.new(1,   Color3.fromRGB(28, 14, 18)),
 })
 ScanGrad.Parent = Scan
 
@@ -174,28 +171,27 @@ task.spawn(function()
     while Scan.Parent do
         Scan.Position = UDim2.new(0, 0, 0, 0)
         Tween(Scan, {Position = UDim2.new(0, 0, 1, 0)}, 2.5, Enum.EasingStyle.Linear)
-        task.wait(2.5)
-        Scan.Position = UDim2.new(0, 0, 0, 0)
-        task.wait(1.5)
+        task.wait(4)   -- [FIX] wait รวม (2.5 tween + 1.5 pause)
     end
 end)
 
 -- ══════════════════════════════
 --  🔮 GRID DOTS
+--  [FIX] spacing 32→48 ลด instance จาก ~110 → ~50
 -- ══════════════════════════════
-local gridSpacing = 32
+local gridSpacing = 48
 local gridRows = math.floor(360 / gridSpacing)
 local gridCols = math.floor(310 / gridSpacing)
 for row = 0, gridRows do
     for col = 0, gridCols do
         local dot = Instance.new("Frame")
-        dot.Size = UDim2.new(0, 2, 0, 2)
-        dot.Position = UDim2.new(0, col * gridSpacing, 0, row * gridSpacing)
-        dot.BackgroundColor3 = Color3.fromRGB(220, 150, 175)   -- Pink Dust
+        dot.Size                   = UDim2.new(0, 2, 0, 2)
+        dot.Position               = UDim2.new(0, col * gridSpacing, 0, row * gridSpacing)
+        dot.BackgroundColor3       = Color3.fromRGB(220, 150, 175)
         dot.BackgroundTransparency = 0.82
-        dot.BorderSizePixel = 0
-        dot.ZIndex = 2
-        dot.Parent = Main
+        dot.BorderSizePixel        = 0
+        dot.ZIndex                 = 2
+        dot.Parent                 = Main
         Corner(dot, 1)
     end
 end
@@ -204,265 +200,292 @@ end
 --  glass overlay
 -- ══════════════════════════════
 local BgOverlay = Instance.new("Frame")
-BgOverlay.Size = UDim2.new(1, 0, 1, 0)
-BgOverlay.BackgroundColor3 = Color3.fromRGB(28, 14, 18)   -- Dark Chocolate
+BgOverlay.Size                   = UDim2.new(1, 0, 1, 0)
+BgOverlay.BackgroundColor3       = Color3.fromRGB(28, 14, 18)
 BgOverlay.BackgroundTransparency = 0.55
-BgOverlay.BorderSizePixel = 0
-BgOverlay.ZIndex = 2
-BgOverlay.Parent = Main
+BgOverlay.BorderSizePixel        = 0
+BgOverlay.ZIndex                 = 2
+BgOverlay.Parent                 = Main
 Corner(BgOverlay, 20)
 
 local TopGrad = Instance.new("Frame")
-TopGrad.Size = UDim2.new(1, 0, 0, 100)
-TopGrad.BackgroundColor3 = Color3.fromRGB(220, 90, 140)   -- Hot Pink
+TopGrad.Size                   = UDim2.new(1, 0, 0, 100)
+TopGrad.BackgroundColor3       = Color3.fromRGB(220, 90, 140)
 TopGrad.BackgroundTransparency = 0.82
-TopGrad.BorderSizePixel = 0
-TopGrad.ZIndex = 3
-TopGrad.Parent = Main
+TopGrad.BorderSizePixel        = 0
+TopGrad.ZIndex                 = 3
+TopGrad.Parent                 = Main
 Corner(TopGrad, 20)
 Grad(TopGrad, Color3.fromRGB(220, 90, 140), Color3.fromRGB(28, 14, 18), 180)
 
 -- ── FLOATING PARTICLES ──
+--  [FIX] ลดจาก 7 → 4, รวมอนิเมชันไว้ใน Heartbeat ตัวเดียว
 local pColors = {
-    Color3.fromRGB(255, 160, 200),   -- Hot Pink
-    Color3.fromRGB(255, 220, 235),   -- Cream Pink
-    Color3.fromRGB(200, 120, 100),   -- Chocolate Rose
+    Color3.fromRGB(255, 160, 200),
+    Color3.fromRGB(255, 220, 235),
+    Color3.fromRGB(200, 120, 100),
 }
 local Particles = {}
-for i = 1, 7 do
+for i = 1, 4 do
     local dot = Instance.new("TextLabel")
-    dot.Size = UDim2.new(0,12,0,12)
-    dot.Position = UDim2.new(math.random()*0.85+0.05, 0, math.random()*0.28+0.02, 0)
+    dot.Size                 = UDim2.new(0,12,0,12)
+    dot.Position             = UDim2.new(math.random()*0.85+0.05, 0, math.random()*0.28+0.02, 0)
     dot.BackgroundTransparency = 1
-    dot.Text = i%3==0 and "✦" or "♡"
-    dot.TextColor3 = pColors[(i%#pColors)+1]
-    dot.TextTransparency = 0.4
-    dot.TextSize = math.random(8,11)
-    dot.Font = Enum.Font.GothamBold
-    dot.ZIndex = 6
-    dot.Parent = Main
-    table.insert(Particles, dot)
-    task.spawn(function()
-        local offset = math.random()*math.pi*2
-        local xScale = dot.Position.X.Scale
-        while dot.Parent do
-            local t = tick()*0.7+offset
-            dot.Position = UDim2.new(xScale, 0, dot.Position.Y.Scale, math.sin(t)*5)
-            dot.TextTransparency = 0.25+math.abs(math.sin(t*0.5))*0.45
-            task.wait(0.1)
-        end
-    end)
+    dot.Text                 = i%2==0 and "✦" or "♡"
+    dot.TextColor3           = pColors[(i%#pColors)+1]
+    dot.TextTransparency     = 0.4
+    dot.TextSize             = math.random(8,11)
+    dot.Font                 = Enum.Font.GothamBold
+    dot.ZIndex               = 6
+    dot.Parent               = Main
+    table.insert(Particles, {
+        label  = dot,
+        xScale = dot.Position.X.Scale,
+        yScale = dot.Position.Y.Scale,
+        offset = math.random() * math.pi * 2,
+    })
 end
+
+-- ══════════════════════════════
+--  🚀 MASTER HEARTBEAT LOOP
+--  [FIX] รวม blob + particle อนิเมชัน ไว้ใน 1 connection แทน 12 loops
+-- ══════════════════════════════
+local masterConn
+masterConn = RunService.Heartbeat:Connect(function()
+    if not Main.Parent then
+        masterConn:Disconnect()
+        return
+    end
+    local t = tick()
+
+    -- Blob animation
+    for _, bd in ipairs(blobObjects) do
+        if bd.frame.Parent then
+            local tS = t * bd.speed + bd.offset
+            local nx  = bd.baseX + math.sin(tS) * bd.amp
+            local ny  = bd.baseY + math.cos(tS * 0.7) * bd.amp
+            bd.frame.Position = UDim2.new(nx, -bd.size/2, ny, -bd.size/2)
+        end
+    end
+
+    -- Particle animation
+    for _, p in ipairs(Particles) do
+        if p.label.Parent then
+            local tS = t * 0.7 + p.offset
+            p.label.Position         = UDim2.new(p.xScale, 0, p.yScale + math.sin(tS)*0.015, math.sin(tS)*5)
+            p.label.TextTransparency = 0.25 + math.abs(math.sin(tS*0.5)) * 0.45
+        end
+    end
+end)
 
 -- ══════════════════════════════
 --  HEADER
 -- ══════════════════════════════
 local HeaderFrame = Instance.new("Frame")
-HeaderFrame.Size = UDim2.new(1, 0, 0, 66)
+HeaderFrame.Size                = UDim2.new(1, 0, 0, 66)
 HeaderFrame.BackgroundTransparency = 1
-HeaderFrame.ZIndex = 8
-HeaderFrame.Parent = Main
+HeaderFrame.ZIndex              = 8
+HeaderFrame.Parent              = Main
 
 local LogoBg = Instance.new("Frame")
-LogoBg.Size = UDim2.new(0,52,0,52)
-LogoBg.Position = UDim2.new(0,10,0.5,-26)
-LogoBg.BackgroundTransparency = 1
-LogoBg.BorderSizePixel = 0
-LogoBg.ZIndex = 9
-LogoBg.Parent = HeaderFrame
+LogoBg.Size                    = UDim2.new(0,52,0,52)
+LogoBg.Position                = UDim2.new(0,10,0.5,-26)
+LogoBg.BackgroundTransparency  = 1
+LogoBg.BorderSizePixel         = 0
+LogoBg.ZIndex                  = 9
+LogoBg.Parent                  = HeaderFrame
 Corner(LogoBg, 14)
 
 local LogoIcon = Instance.new("ImageLabel")
-LogoIcon.Size = UDim2.new(1,0,1,0)
+LogoIcon.Size                  = UDim2.new(1,0,1,0)
 LogoIcon.BackgroundTransparency = 1
-LogoIcon.Image = "rbxassetid://80921423835608"
-LogoIcon.ScaleType = Enum.ScaleType.Fit
-LogoIcon.ZIndex = 10
-LogoIcon.Parent = LogoBg
+LogoIcon.Image                 = "rbxassetid://80921423835608"
+LogoIcon.ScaleType             = Enum.ScaleType.Fit
+LogoIcon.ZIndex                = 10
+LogoIcon.Parent                = LogoBg
 
 local LogoGlow = Instance.new("Frame")
-LogoGlow.Size = UDim2.new(0,52,0,10)
-LogoGlow.Position = UDim2.new(0,10,0.5,27)
-LogoGlow.BackgroundColor3 = Color3.fromRGB(255, 140, 185)   -- Pink Glow
+LogoGlow.Size                  = UDim2.new(0,52,0,10)
+LogoGlow.Position              = UDim2.new(0,10,0.5,27)
+LogoGlow.BackgroundColor3      = Color3.fromRGB(255, 140, 185)
 LogoGlow.BackgroundTransparency = 0.62
-LogoGlow.BorderSizePixel = 0
-LogoGlow.ZIndex = 8
-LogoGlow.Parent = HeaderFrame
+LogoGlow.BorderSizePixel       = 0
+LogoGlow.ZIndex                = 8
+LogoGlow.Parent                = HeaderFrame
 Corner(LogoGlow, 6)
 
--- Title: สีชมพูสด ตาม "BEADY CITY" text ในโลโก้
 local TitleL = Label(HeaderFrame,"Beady City",14,Enum.Font.GothamBold,Color3.fromRGB(255, 192, 215),Enum.TextXAlignment.Left,9)
-TitleL.Size = UDim2.new(1,-130,0,18)
+TitleL.Size     = UDim2.new(1,-130,0,18)
 TitleL.Position = UDim2.new(0,72,0,11)
 
 local SubL = Label(HeaderFrame,"เลือกสคริปที่ต้องการใช้งาน",10,Enum.Font.Gotham,Color3.fromRGB(200, 155, 168),Enum.TextXAlignment.Left,9)
-SubL.Size = UDim2.new(1,-130,0,14)
+SubL.Size     = UDim2.new(1,-130,0,14)
 SubL.Position = UDim2.new(0,72,0,31)
 
 local VerTag = Instance.new("Frame")
-VerTag.Size = UDim2.new(0,36,0,15)
-VerTag.Position = UDim2.new(0,72,0,47)
-VerTag.BackgroundColor3 = Color3.fromRGB(220, 90, 140)   -- Hot Pink
+VerTag.Size                   = UDim2.new(0,36,0,15)
+VerTag.Position               = UDim2.new(0,72,0,47)
+VerTag.BackgroundColor3       = Color3.fromRGB(220, 90, 140)
 VerTag.BackgroundTransparency = 0.7
-VerTag.BorderSizePixel = 0
-VerTag.ZIndex = 9
-VerTag.Parent = HeaderFrame
+VerTag.BorderSizePixel        = 0
+VerTag.ZIndex                 = 9
+VerTag.Parent                 = HeaderFrame
 Corner(VerTag, 5)
 local VerText = Label(VerTag,"v2.0",8,Enum.Font.GothamBold,Color3.fromRGB(255, 210, 228),Enum.TextXAlignment.Center,10)
 VerText.Size = UDim2.new(1,0,1,0)
 
 local function TopBtn(xOffset, bg, imageId)
     local cont = Instance.new("Frame")
-    cont.Size = UDim2.new(0,24,0,24)
-    cont.Position = UDim2.new(1,xOffset,0.5,-12)
-    cont.BackgroundColor3 = bg
-    cont.ClipsDescendants = true
-    cont.BorderSizePixel = 0
-    cont.ZIndex = 11
-    cont.Parent = HeaderFrame
+    cont.Size              = UDim2.new(0,24,0,24)
+    cont.Position          = UDim2.new(1,xOffset,0.5,-12)
+    cont.BackgroundColor3  = bg
+    cont.ClipsDescendants  = true
+    cont.BorderSizePixel   = 0
+    cont.ZIndex            = 11
+    cont.Parent            = HeaderFrame
     Corner(cont, 7)
     local img = Instance.new("ImageLabel")
-    img.Size = UDim2.new(1,0,1,0)
+    img.Size                = UDim2.new(1,0,1,0)
     img.BackgroundTransparency = 1
-    img.Image = "rbxassetid://"..imageId
-    img.ScaleType = Enum.ScaleType.Fit
-    img.ZIndex = 12
-    img.Parent = cont
+    img.Image               = "rbxassetid://"..imageId
+    img.ScaleType           = Enum.ScaleType.Fit
+    img.ZIndex              = 12
+    img.Parent              = cont
     Corner(img, 7)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1,0,1,0)
+    btn.Size                = UDim2.new(1,0,1,0)
     btn.BackgroundTransparency = 1
-    btn.Text = ""
-    btn.AutoButtonColor = false
-    btn.ZIndex = 13
-    btn.Parent = cont
+    btn.Text                = ""
+    btn.AutoButtonColor     = false
+    btn.ZIndex              = 13
+    btn.Parent              = cont
     return cont, btn
 end
-local CloseCont, CloseBtn = TopBtn(-38, Color3.fromRGB(255, 80, 110),  "128758299280257")  -- Hot Pink ✓
-local MinCont,   MinBtn   = TopBtn(-68, Color3.fromRGB(110, 65, 45),   "110254668945260")  -- Chocolate Brown
+local CloseCont, CloseBtn = TopBtn(-38, Color3.fromRGB(255, 80, 110),  "128758299280257")
+local MinCont,   MinBtn   = TopBtn(-68, Color3.fromRGB(110, 65, 45),   "110254668945260")
 
 local Div = Instance.new("Frame")
-Div.Size = UDim2.new(1,-24,0,1)
-Div.Position = UDim2.new(0,12,0,66)
-Div.BackgroundColor3 = Color3.fromRGB(220, 100, 155)   -- Pink Divider
+Div.Size                   = UDim2.new(1,-24,0,1)
+Div.Position               = UDim2.new(0,12,0,66)
+Div.BackgroundColor3       = Color3.fromRGB(220, 100, 155)
 Div.BackgroundTransparency = 0.78
-Div.BorderSizePixel = 0
-Div.ZIndex = 8
-Div.Parent = Main
+Div.BorderSizePixel        = 0
+Div.ZIndex                 = 8
+Div.Parent                 = Main
 
 -- ══════════════════════════════
 --  SCRIPT CARDS
 -- ══════════════════════════════
 local selectedIndex = 1
-local cardRefs = {}
-local StatusDot, StatusTxt  -- forward declaration
+local cardRefs      = {}
+local StatusDot, StatusTxt
 
 local function CreateCard(index, yPos)
-    local s = Scripts[index]
+    local s    = Scripts[index]
     local Card = Instance.new("Frame")
-    Card.Name = "Card"..index
-    Card.Size = UDim2.new(1,-24,0,70)
-    Card.Position = UDim2.new(0,12,0,yPos)
-    Card.BackgroundColor3 = Color3.fromRGB(42, 22, 26)   -- Dark Chocolate Card
+    Card.Name                   = "Card"..index
+    Card.Size                   = UDim2.new(1,-24,0,70)
+    Card.Position               = UDim2.new(0,12,0,yPos)
+    Card.BackgroundColor3       = Color3.fromRGB(42, 22, 26)
     Card.BackgroundTransparency = 0.25
-    Card.BorderSizePixel = 0
-    Card.ZIndex = 7
-    Card.Parent = Main
+    Card.BorderSizePixel        = 0
+    Card.ZIndex                 = 7
+    Card.Parent                 = Main
     Corner(Card, 14)
-    local cStroke = Stroke(Card, Color3.fromRGB(90, 50, 55), 1.5)   -- Chocolate Stroke
+    local cStroke = Stroke(Card, Color3.fromRGB(90, 50, 55), 1.5)
 
     local CardGrad = Instance.new("Frame")
-    CardGrad.Size = UDim2.new(1,0,1,0)
-    CardGrad.BackgroundColor3 = Color3.fromRGB(255, 200, 220)   -- Light Pink Tint
+    CardGrad.Size                   = UDim2.new(1,0,1,0)
+    CardGrad.BackgroundColor3       = Color3.fromRGB(255, 200, 220)
     CardGrad.BackgroundTransparency = 0.94
-    CardGrad.BorderSizePixel = 0
-    CardGrad.ZIndex = 7
-    CardGrad.Parent = Card
+    CardGrad.BorderSizePixel        = 0
+    CardGrad.ZIndex                 = 7
+    CardGrad.Parent                 = Card
     Corner(CardGrad, 14)
 
     local GlowBar = Instance.new("Frame")
-    GlowBar.Name = "GlowBar"
-    GlowBar.Size = UDim2.new(0,3,1,-16)
-    GlowBar.Position = UDim2.new(0,9,0,8)
-    GlowBar.BackgroundColor3 = Color3.fromRGB(110, 60, 55)   -- Chocolate Bar
-    GlowBar.BorderSizePixel = 0
-    GlowBar.ZIndex = 8
-    GlowBar.Parent = Card
+    GlowBar.Name                 = "GlowBar"
+    GlowBar.Size                 = UDim2.new(0,3,1,-16)
+    GlowBar.Position             = UDim2.new(0,9,0,8)
+    GlowBar.BackgroundColor3     = Color3.fromRGB(110, 60, 55)
+    GlowBar.BorderSizePixel      = 0
+    GlowBar.ZIndex               = 8
+    GlowBar.Parent               = Card
     Corner(GlowBar, 3)
 
     local IconBg = Instance.new("Frame")
-    IconBg.Size = UDim2.new(0,44,0,44)
-    IconBg.Position = UDim2.new(0,20,0.5,-22)
-    IconBg.BackgroundColor3 = Color3.fromRGB(35, 18, 18)   -- Dark Choc Icon Bg
-    IconBg.BorderSizePixel = 0
-    IconBg.ZIndex = 8
-    IconBg.Parent = Card
+    IconBg.Size                  = UDim2.new(0,44,0,44)
+    IconBg.Position              = UDim2.new(0,20,0.5,-22)
+    IconBg.BackgroundColor3      = Color3.fromRGB(35, 18, 18)
+    IconBg.BorderSizePixel       = 0
+    IconBg.ZIndex                = 8
+    IconBg.Parent                = Card
     Corner(IconBg, 12)
     local iStroke = Stroke(IconBg, Color3.fromRGB(90, 50, 55), 1.5)
 
     local IconL
     if s.ImageId then
-        IconL = Instance.new("ImageLabel")
-        IconL.Size = UDim2.new(0,38,0,38)
-        IconL.Position = UDim2.new(0.5,-19,0.5,-19)
+        IconL                    = Instance.new("ImageLabel")
+        IconL.Size               = UDim2.new(0,38,0,38)
+        IconL.Position           = UDim2.new(0.5,-19,0.5,-19)
         IconL.BackgroundTransparency = 1
-        IconL.Image = s.ImageId
-        IconL.ScaleType = Enum.ScaleType.Fit
-        IconL.ZIndex = 9
-        IconL.Parent = IconBg
+        IconL.Image              = s.ImageId
+        IconL.ScaleType          = Enum.ScaleType.Fit
+        IconL.ZIndex             = 9
+        IconL.Parent             = IconBg
     else
-        IconL = Label(IconBg,s.Icon,20,Enum.Font.GothamBold,Color3.fromRGB(255,255,255),Enum.TextXAlignment.Center,9)
-        IconL.Size = UDim2.new(1,0,1,0)
+        IconL                    = Label(IconBg,s.Icon,20,Enum.Font.GothamBold,Color3.fromRGB(255,255,255),Enum.TextXAlignment.Center,9)
+        IconL.Size               = UDim2.new(1,0,1,0)
     end
 
-    local NameL = Label(Card,s.Name,13,Enum.Font.GothamBold,Color3.fromRGB(255, 218, 228),Enum.TextXAlignment.Left,9)  -- Cream Pink
-    NameL.Size = UDim2.new(1,-110,0,18)
+    local NameL = Label(Card,s.Name,13,Enum.Font.GothamBold,Color3.fromRGB(255, 218, 228),Enum.TextXAlignment.Left,9)
+    NameL.Size     = UDim2.new(1,-110,0,18)
     NameL.Position = UDim2.new(0,74,0,10)
 
-    local DescL = Label(Card,s.Desc,10,Enum.Font.Gotham,Color3.fromRGB(175, 120, 130),Enum.TextXAlignment.Left,9)  -- Muted Rose
-    DescL.Size = UDim2.new(1,-110,0,14)
+    local DescL = Label(Card,s.Desc,10,Enum.Font.Gotham,Color3.fromRGB(175, 120, 130),Enum.TextXAlignment.Left,9)
+    DescL.Size     = UDim2.new(1,-110,0,14)
     DescL.Position = UDim2.new(0,74,0,30)
 
     local TagBg = Instance.new("Frame")
-    TagBg.Size = UDim2.new(0,56,0,16)
-    TagBg.Position = UDim2.new(0,74,0,47)
-    TagBg.BackgroundColor3 = s.Color
+    TagBg.Size                   = UDim2.new(0,56,0,16)
+    TagBg.Position               = UDim2.new(0,74,0,47)
+    TagBg.BackgroundColor3       = s.Color
     TagBg.BackgroundTransparency = 0.78
-    TagBg.BorderSizePixel = 0
-    TagBg.ZIndex = 9
-    TagBg.Parent = Card
+    TagBg.BorderSizePixel        = 0
+    TagBg.ZIndex                 = 9
+    TagBg.Parent                 = Card
     Corner(TagBg, 6)
     local TagL = Label(TagBg,"● "..s.Tag,8,Enum.Font.GothamBold,s.Color,Enum.TextXAlignment.Center,10)
     TagL.Size = UDim2.new(1,0,1,0)
 
     local RadioBg = Instance.new("Frame")
-    RadioBg.Size = UDim2.new(0,20,0,20)
-    RadioBg.Position = UDim2.new(1,-34,0.5,-10)
-    RadioBg.BackgroundColor3 = Color3.fromRGB(35, 18, 18)   -- Dark Choc Radio
-    RadioBg.BorderSizePixel = 0
-    RadioBg.ZIndex = 9
-    RadioBg.Parent = Card
+    RadioBg.Size                  = UDim2.new(0,20,0,20)
+    RadioBg.Position              = UDim2.new(1,-34,0.5,-10)
+    RadioBg.BackgroundColor3      = Color3.fromRGB(35, 18, 18)
+    RadioBg.BorderSizePixel       = 0
+    RadioBg.ZIndex                = 9
+    RadioBg.Parent                = Card
     Corner(RadioBg, 10)
     Stroke(RadioBg, Color3.fromRGB(110, 60, 60), 1.5)
 
     local RadioDot = Instance.new("Frame")
-    RadioDot.Name = "Dot"
-    RadioDot.Size = UDim2.new(0,10,0,10)
-    RadioDot.Position = UDim2.new(0.5,-5,0.5,-5)
-    RadioDot.BackgroundColor3 = s.Color
+    RadioDot.Name                  = "Dot"
+    RadioDot.Size                  = UDim2.new(0,10,0,10)
+    RadioDot.Position              = UDim2.new(0.5,-5,0.5,-5)
+    RadioDot.BackgroundColor3      = s.Color
     RadioDot.BackgroundTransparency = 1
-    RadioDot.BorderSizePixel = 0
-    RadioDot.ZIndex = 10
-    RadioDot.Parent = RadioBg
+    RadioDot.BorderSizePixel       = 0
+    RadioDot.ZIndex                = 10
+    RadioDot.Parent                = RadioBg
     Corner(RadioDot, 5)
 
     local ClickBtn = Instance.new("TextButton")
-    ClickBtn.Size = UDim2.new(1,0,1,0)
+    ClickBtn.Size                  = UDim2.new(1,0,1,0)
     ClickBtn.BackgroundTransparency = 1
-    ClickBtn.Text = ""
-    ClickBtn.AutoButtonColor = false
-    ClickBtn.ZIndex = 11
-    ClickBtn.Parent = Card
+    ClickBtn.Text                  = ""
+    ClickBtn.AutoButtonColor       = false
+    ClickBtn.ZIndex                = 11
+    ClickBtn.Parent                = Card
 
     cardRefs[index] = {Card=Card, GlowBar=GlowBar, Stroke=cStroke, Dot=RadioDot, IconBg=IconBg, IStroke=iStroke, NameL=NameL, Color=s.Color}
 
@@ -474,7 +497,7 @@ end
 function updateSelection()
     for i, r in pairs(cardRefs) do
         if i == selectedIndex then
-            Tween(r.Card,    {BackgroundColor3=Color3.fromRGB(58, 28, 35)},      0.2)   -- Selected Choc-Pink
+            Tween(r.Card,    {BackgroundColor3=Color3.fromRGB(58, 28, 35)},      0.2)
             Tween(r.Stroke,  {Color=r.Color, Thickness=2},                        0.2)
             Tween(r.GlowBar, {BackgroundColor3=r.Color},                          0.2)
             Tween(r.Dot,     {BackgroundTransparency=0},                          0.2)
@@ -500,23 +523,23 @@ CreateCard(2, 160)
 --  STATUS BAR
 -- ══════════════════════════════
 local StatBar = Instance.new("Frame")
-StatBar.Size = UDim2.new(1,-24,0,28)
-StatBar.Position = UDim2.new(0,12,0,242)
-StatBar.BackgroundColor3 = Color3.fromRGB(38, 20, 22)   -- Chocolate Status Bar
+StatBar.Size                   = UDim2.new(1,-24,0,28)
+StatBar.Position               = UDim2.new(0,12,0,242)
+StatBar.BackgroundColor3       = Color3.fromRGB(38, 20, 22)
 StatBar.BackgroundTransparency = 0.2
-StatBar.BorderSizePixel = 0
-StatBar.ZIndex = 7
-StatBar.Parent = Main
+StatBar.BorderSizePixel        = 0
+StatBar.ZIndex                 = 7
+StatBar.Parent                 = Main
 Corner(StatBar, 8)
 Stroke(StatBar, Color3.fromRGB(90, 50, 55), 1)
 
-StatusDot = Instance.new("Frame")  -- assigned to forward-declared local
-StatusDot.Size = UDim2.new(0,7,0,7)
-StatusDot.Position = UDim2.new(0,10,0.5,-3)
-StatusDot.BackgroundColor3 = Scripts[1].Color
-StatusDot.BorderSizePixel = 0
-StatusDot.ZIndex = 8
-StatusDot.Parent = StatBar
+StatusDot = Instance.new("Frame")
+StatusDot.Size                   = UDim2.new(0,7,0,7)
+StatusDot.Position               = UDim2.new(0,10,0.5,-3)
+StatusDot.BackgroundColor3       = Scripts[1].Color
+StatusDot.BorderSizePixel        = 0
+StatusDot.ZIndex                 = 8
+StatusDot.Parent                 = StatBar
 Corner(StatusDot, 4)
 
 task.spawn(function()
@@ -526,36 +549,36 @@ task.spawn(function()
     end
 end)
 
-StatusTxt = Label(StatBar,"เลือก:  "..Scripts[1].Name,10,Enum.Font.Gotham,Color3.fromRGB(220, 170, 182),Enum.TextXAlignment.Left,8)  -- Muted Pink
-StatusTxt.Size = UDim2.new(1,-28,1,0)
+StatusTxt = Label(StatBar,"เลือก:  "..Scripts[1].Name,10,Enum.Font.Gotham,Color3.fromRGB(220, 170, 182),Enum.TextXAlignment.Left,8)
+StatusTxt.Size     = UDim2.new(1,-28,1,0)
 StatusTxt.Position = UDim2.new(0,24,0,0)
 
 -- ══════════════════════════════
 --  RUN BUTTON
---  🎀 ไล่สีชมพู Beady City
 -- ══════════════════════════════
 local RunBtn = Instance.new("TextButton")
-RunBtn.Size = UDim2.new(1,-24,0,42)
-RunBtn.Position = UDim2.new(0,12,0,280)
-RunBtn.BackgroundColor3 = Color3.fromRGB(220, 90, 140)   -- Hot Pink Base
-RunBtn.Text = ""
-RunBtn.AutoButtonColor = false
-RunBtn.BorderSizePixel = 0
-RunBtn.ZIndex = 7
-RunBtn.Parent = Main
+RunBtn.Size                  = UDim2.new(1,-24,0,42)
+RunBtn.Position              = UDim2.new(0,12,0,280)
+RunBtn.BackgroundColor3      = Color3.fromRGB(220, 90, 140)
+RunBtn.Text                  = ""
+RunBtn.AutoButtonColor       = false
+RunBtn.BorderSizePixel       = 0
+RunBtn.ZIndex                = 7
+RunBtn.Parent                = Main
 Corner(RunBtn, 13)
-Grad(RunBtn, Color3.fromRGB(255, 140, 185), Color3.fromRGB(190, 70, 120), 135)  -- Pink Gradient
-Stroke(RunBtn, Color3.fromRGB(255, 182, 210), 1.5)                               -- Light Pink Stroke
+Grad(RunBtn, Color3.fromRGB(255, 140, 185), Color3.fromRGB(190, 70, 120), 135)
+Stroke(RunBtn, Color3.fromRGB(255, 182, 210), 1.5)
 
 local Shine = Instance.new("Frame")
-Shine.Size = UDim2.new(0,28,1,10)
-Shine.Position = UDim2.new(-0.2,0,0,-5)
-Shine.BackgroundColor3 = Color3.fromRGB(255,255,255)
+Shine.Size                   = UDim2.new(0,28,1,10)
+Shine.Position               = UDim2.new(-0.2,0,0,-5)
+Shine.BackgroundColor3       = Color3.fromRGB(255,255,255)
 Shine.BackgroundTransparency = 0.72
-Shine.BorderSizePixel = 0
-Shine.Rotation = 15
-Shine.ZIndex = 8
-Shine.Parent = RunBtn
+Shine.BorderSizePixel        = 0
+Shine.Rotation               = 15
+Shine.ZIndex                 = 8
+Shine.Parent                 = RunBtn
+
 task.spawn(function()
     while RunBtn.Parent do
         task.wait(3)
@@ -566,15 +589,15 @@ task.spawn(function()
 end)
 
 local RunIconL = Label(RunBtn,"▶",13,Enum.Font.GothamBold,Color3.fromRGB(90, 30, 50),Enum.TextXAlignment.Center,9)
-RunIconL.Size = UDim2.new(0,28,1,0)
+RunIconL.Size     = UDim2.new(0,28,1,0)
 RunIconL.Position = UDim2.new(0.5,-62,0,0)
 
 local RunTxtL = Label(RunBtn,"EXECUTE SCRIPT",12,Enum.Font.GothamBold,Color3.fromRGB(90, 30, 50),Enum.TextXAlignment.Center,9)
-RunTxtL.Size = UDim2.new(0,120,1,0)
+RunTxtL.Size     = UDim2.new(0,120,1,0)
 RunTxtL.Position = UDim2.new(0.5,-28,0,0)
 
 local FooterL = Label(Main,"♡  Beady City  ♡",9,Enum.Font.Gotham,Color3.fromRGB(155, 85, 100),Enum.TextXAlignment.Center,7)
-FooterL.Size = UDim2.new(1,0,0,20)
+FooterL.Size     = UDim2.new(1,0,0,20)
 FooterL.Position = UDim2.new(0,0,0,334)
 
 -- ══════════════════════════════
@@ -587,27 +610,18 @@ updateSelection()
 
 -- ══════════════════════════════
 --  DRAGGABLE (PC + Mobile)
+--  [FIX] รวม drag state ทั้ง Main และ FloatIcon ไว้ใน InputChanged เดียว
 -- ══════════════════════════════
 local dragging, dragStart, startPos
 
 local function onDragStart(input)
-    dragging = true
+    dragging  = true
     dragStart = input.Position
-    startPos = Main.Position
+    startPos  = Main.Position
 end
-
-local function onDragMove(input)
-    if not dragging then return end
-    local delta = input.Position - dragStart
-    Main.Position = UDim2.new(
-        startPos.X.Scale, startPos.X.Offset + delta.X,
-        startPos.Y.Scale, startPos.Y.Offset + delta.Y
-    )
-end
-
 local function onDragEnd()
-    dragging = false
-    savedMainPos = Main.Position  -- บันทึกตำแหน่งล่าสุดทุกครั้งที่หยุดลาก
+    dragging     = false
+    savedMainPos = Main.Position
 end
 
 HeaderFrame.InputBegan:Connect(function(i)
@@ -617,18 +631,253 @@ HeaderFrame.InputBegan:Connect(function(i)
     end
 end)
 
-UserInputService.InputChanged:Connect(function(i)
-    if i.UserInputType == Enum.UserInputType.MouseMovement
-    or i.UserInputType == Enum.UserInputType.Touch then
-        onDragMove(i)
+-- ══════════════════════════════
+--  FLOATING LOGO ICON
+-- ══════════════════════════════
+local FloatIcon = Instance.new("Frame")
+FloatIcon.Name                   = "FloatIcon"
+FloatIcon.Size                   = UDim2.new(0, 64, 0, 64)
+FloatIcon.Position               = UDim2.new(0, 20, 0.5, -32)
+FloatIcon.BackgroundColor3       = Color3.fromRGB(28, 14, 18)
+FloatIcon.BackgroundTransparency = 1
+FloatIcon.BorderSizePixel        = 0
+FloatIcon.ZIndex                 = 50
+FloatIcon.Visible                = false
+FloatIcon.Parent                 = SG
+Corner(FloatIcon, 32)
+
+local FloatRing = Instance.new("Frame")
+FloatRing.Size                   = UDim2.new(1, 16, 1, 16)
+FloatRing.Position               = UDim2.new(0, -8, 0, -8)
+FloatRing.BackgroundColor3       = Color3.fromRGB(220, 90, 140)
+FloatRing.BackgroundTransparency = 0.5
+FloatRing.BorderSizePixel        = 0
+FloatRing.ZIndex                 = 49
+FloatRing.Parent                 = FloatIcon
+Corner(FloatRing, 40)
+
+local FloatRing2 = Instance.new("Frame")
+FloatRing2.Size                   = UDim2.new(1, 6, 1, 6)
+FloatRing2.Position               = UDim2.new(0, -3, 0, -3)
+FloatRing2.BackgroundColor3       = Color3.fromRGB(255, 140, 185)
+FloatRing2.BackgroundTransparency = 0.6
+FloatRing2.BorderSizePixel        = 0
+FloatRing2.ZIndex                 = 49
+FloatRing2.Parent                 = FloatIcon
+Corner(FloatRing2, 36)
+
+local FloatBase = Instance.new("Frame")
+FloatBase.Size                   = UDim2.new(1, 0, 1, 0)
+FloatBase.BackgroundColor3       = Color3.fromRGB(28, 14, 18)
+FloatBase.BackgroundTransparency = 0
+FloatBase.BorderSizePixel        = 0
+FloatBase.ZIndex                 = 50
+FloatBase.Parent                 = FloatIcon
+Corner(FloatBase, 32)
+Grad(FloatBase, Color3.fromRGB(50, 22, 30), Color3.fromRGB(18, 8, 12), 135)
+
+local FloatLogo = Instance.new("ImageLabel")
+FloatLogo.Size                   = UDim2.new(0, 44, 0, 44)
+FloatLogo.Position               = UDim2.new(0.5, -22, 0.5, -22)
+FloatLogo.BackgroundTransparency = 1
+FloatLogo.Image                  = "rbxassetid://80921423835608"
+FloatLogo.ScaleType              = Enum.ScaleType.Fit
+FloatLogo.ZIndex                 = 52
+FloatLogo.Parent                 = FloatIcon
+
+local FloatBtn = Instance.new("TextButton")
+FloatBtn.Size                    = UDim2.new(1, 0, 1, 0)
+FloatBtn.BackgroundTransparency  = 1
+FloatBtn.Text                    = ""
+FloatBtn.AutoButtonColor         = false
+FloatBtn.ZIndex                  = 53
+FloatBtn.Parent                  = FloatIcon
+
+local FloatTip = Instance.new("Frame")
+FloatTip.Size                    = UDim2.new(0, 110, 0, 24)
+FloatTip.Position                = UDim2.new(1, 8, 0.5, -12)
+FloatTip.BackgroundColor3        = Color3.fromRGB(38, 18, 24)
+FloatTip.BackgroundTransparency  = 0.1
+FloatTip.BorderSizePixel         = 0
+FloatTip.ZIndex                  = 54
+FloatTip.Visible                 = false
+FloatTip.Parent                  = FloatIcon
+Corner(FloatTip, 6)
+Stroke(FloatTip, Color3.fromRGB(220, 90, 140), 1)
+local FloatTipL = Label(FloatTip, "♡  แตะเพื่อเปิด", 10, Enum.Font.GothamBold, Color3.fromRGB(255, 192, 215), Enum.TextXAlignment.Center, 55)
+FloatTipL.Size = UDim2.new(1, 0, 1, 0)
+
+FloatBtn.MouseEnter:Connect(function()
+    FloatTip.Visible = true
+    Tween(FloatRing, {BackgroundTransparency=0.2}, 0.15)
+end)
+FloatBtn.MouseLeave:Connect(function()
+    FloatTip.Visible = false
+    Tween(FloatRing, {BackgroundTransparency=0.5}, 0.2)
+end)
+
+task.spawn(function()
+    while FloatIcon.Parent do
+        if FloatIcon.Visible then
+            Tween(FloatRing,  {BackgroundTransparency=0.3, Size=UDim2.new(1,22,1,22), Position=UDim2.new(0,-11,0,-11)}, 0.8, Enum.EasingStyle.Sine)
+            Tween(FloatRing2, {BackgroundTransparency=0.4}, 0.8, Enum.EasingStyle.Sine)
+            task.wait(0.85)
+            Tween(FloatRing,  {BackgroundTransparency=0.65, Size=UDim2.new(1,12,1,12), Position=UDim2.new(0,-6,0,-6)}, 0.8, Enum.EasingStyle.Sine)
+            Tween(FloatRing2, {BackgroundTransparency=0.7}, 0.8, Enum.EasingStyle.Sine)
+            task.wait(0.85)
+        else
+            task.wait(0.5)   -- [FIX] รอนานขึ้นตอนซ่อน
+        end
     end
 end)
 
-UserInputService.InputEnded:Connect(function(i)
+-- ══════════════════════════════
+--  MINIMIZE
+-- ══════════════════════════════
+local minimized  = false
+local savedMainPos = UDim2.new(0.5, -155, 0.5, -190)
+
+local function showMinimized()
+    savedMainPos = Main.Position
+    local abs      = Main.AbsolutePosition
+    local floatPos = UDim2.new(0, abs.X, 0, abs.Y)
+
+    FloatIcon.Size     = UDim2.new(0, 64, 0, 64)
+    FloatIcon.Position = floatPos
+    FloatIcon.Visible  = true
+    FloatBase.BackgroundTransparency  = 1
+    FloatRing.BackgroundTransparency  = 1
+    FloatRing.Size     = UDim2.new(1, 16, 1, 16)
+    FloatRing.Position = UDim2.new(0, -8, 0, -8)
+    FloatRing2.BackgroundTransparency = 1
+    FloatLogo.ImageTransparency       = 1
+
+    Main.BackgroundTransparency = 0
+    Tween(Main, {
+        Size     = UDim2.new(0, 64, 0, 64),
+        Position = floatPos,
+    }, 0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In)
+
+    task.delay(0.28, function()
+        Main.Visible = false
+        Main.BackgroundTransparency = 0
+        Tween(FloatBase,  {BackgroundTransparency = 0},   0.25)
+        Tween(FloatRing,  {BackgroundTransparency = 0.5}, 0.25)
+        Tween(FloatRing2, {BackgroundTransparency = 0.6}, 0.25)
+        Tween(FloatLogo,  {ImageTransparency = 0},        0.2)
+    end)
+end
+
+local function showMain()
+    Tween(FloatBase,  {BackgroundTransparency = 1}, 0.15)
+    Tween(FloatRing,  {BackgroundTransparency = 1}, 0.15)
+    Tween(FloatRing2, {BackgroundTransparency = 1}, 0.15)
+    Tween(FloatLogo,  {ImageTransparency = 1},      0.15)
+
+    task.delay(0.15, function()
+        FloatIcon.Visible           = false
+        Main.Size                   = UDim2.new(0, 64, 0, 64)
+        Main.Position               = FloatIcon.Position
+        Main.BackgroundTransparency = 0
+        Main.Visible                = true
+
+        Tween(Main, {
+            Size     = UDim2.new(0, 310, 0, 360),
+            Position = savedMainPos,
+        }, 0.35, Enum.EasingStyle.Back)
+    end)
+end
+
+-- ══════════════════════════════
+--  FLOAT ICON: drag + tap
+--  [FIX] ใช้ state แยก fDragging จาก dragging ของ Main
+-- ══════════════════════════════
+local fDragging = false
+local fDidDrag  = false
+local fDragStart, fStartPos
+local DRAG_THRESHOLD = 10
+
+FloatBtn.InputBegan:Connect(function(i)
     if i.UserInputType == Enum.UserInputType.MouseButton1
     or i.UserInputType == Enum.UserInputType.Touch then
-        onDragEnd()
+        fDragging  = true
+        fDidDrag   = false
+        fDragStart = i.Position
+        fStartPos  = FloatIcon.Position
+        Tween(FloatIcon, {Size=UDim2.new(0,56,0,56)}, 0.08)
+        Tween(FloatBase, {BackgroundTransparency=0.25}, 0.08)
     end
+end)
+
+-- ══════════════════════════════
+--  [FIX] MERGED InputChanged — 1 handler แทน 2
+-- ══════════════════════════════
+UserInputService.InputChanged:Connect(function(i)
+    if i.UserInputType ~= Enum.UserInputType.MouseMovement
+    and i.UserInputType ~= Enum.UserInputType.Touch then return end
+
+    -- drag Main
+    if dragging then
+        local delta = i.Position - dragStart
+        Main.Position = UDim2.new(
+            startPos.X.Scale, startPos.X.Offset + delta.X,
+            startPos.Y.Scale, startPos.Y.Offset + delta.Y
+        )
+    end
+
+    -- drag FloatIcon
+    if fDragging then
+        local delta = i.Position - fDragStart
+        if math.abs(delta.X) > DRAG_THRESHOLD or math.abs(delta.Y) > DRAG_THRESHOLD then
+            fDidDrag = true
+        end
+        if fDidDrag then
+            FloatIcon.Position = UDim2.new(
+                fStartPos.X.Scale, fStartPos.X.Offset + delta.X,
+                fStartPos.Y.Scale, fStartPos.Y.Offset + delta.Y
+            )
+        end
+    end
+end)
+
+-- ══════════════════════════════
+--  [FIX] MERGED InputEnded — 1 handler แทน 2
+-- ══════════════════════════════
+UserInputService.InputEnded:Connect(function(i)
+    if i.UserInputType ~= Enum.UserInputType.MouseButton1
+    and i.UserInputType ~= Enum.UserInputType.Touch then return end
+
+    -- end drag Main
+    if dragging then onDragEnd() end
+
+    -- end drag FloatIcon
+    if fDragging then
+        Tween(FloatIcon, {Size=UDim2.new(0,64,0,64)}, 0.15, Enum.EasingStyle.Back)
+        Tween(FloatBase, {BackgroundTransparency=0},   0.12)
+        if not fDidDrag then
+            minimized = false
+            showMain()
+        else
+            savedMainPos = FloatIcon.Position
+        end
+        fDragging = false
+        fDidDrag  = false
+    end
+end)
+
+-- ══════════════════════════════
+--  MINIMIZE BUTTON
+-- ══════════════════════════════
+MinBtn.Activated:Connect(function()
+    minimized = not minimized
+    if minimized then showMinimized() else showMain() end
+end)
+
+CloseBtn.Activated:Connect(function()
+    masterConn:Disconnect()   -- [FIX] disconnect Heartbeat ก่อน destroy
+    Tween(Main,{BackgroundTransparency=1},0.25)
+    task.wait(0.3)
+    SG:Destroy()
 end)
 
 -- ══════════════════════════════
@@ -661,248 +910,4 @@ end)
 RunBtn.MouseEnter:Connect(function() Tween(RunBtn,{BackgroundColor3=Color3.fromRGB(245, 120, 165)},0.15) end)
 RunBtn.MouseLeave:Connect(function() Tween(RunBtn,{BackgroundColor3=Color3.fromRGB(220, 90, 140)},0.2) end)
 
--- ══════════════════════════════
---  FLOATING LOGO ICON (ตอนซ่อน UI)
--- ══════════════════════════════
-local FloatIcon = Instance.new("Frame")
-FloatIcon.Name = "FloatIcon"
-FloatIcon.Size = UDim2.new(0, 64, 0, 64)
-FloatIcon.Position = UDim2.new(0, 20, 0.5, -32)
-FloatIcon.BackgroundColor3 = Color3.fromRGB(28, 14, 18)
-FloatIcon.BackgroundTransparency = 1
-FloatIcon.BorderSizePixel = 0
-FloatIcon.ZIndex = 50
-FloatIcon.Visible = false
-FloatIcon.Parent = SG
-Corner(FloatIcon, 32)
-
--- Outer glow ring pulse
-local FloatRing = Instance.new("Frame")
-FloatRing.Size = UDim2.new(1, 16, 1, 16)
-FloatRing.Position = UDim2.new(0, -8, 0, -8)
-FloatRing.BackgroundColor3 = Color3.fromRGB(220, 90, 140)
-FloatRing.BackgroundTransparency = 0.5
-FloatRing.BorderSizePixel = 0
-FloatRing.ZIndex = 49
-FloatRing.Parent = FloatIcon
-Corner(FloatRing, 40)
-
--- Inner ring stroke
-local FloatRing2 = Instance.new("Frame")
-FloatRing2.Size = UDim2.new(1, 6, 1, 6)
-FloatRing2.Position = UDim2.new(0, -3, 0, -3)
-FloatRing2.BackgroundColor3 = Color3.fromRGB(255, 140, 185)
-FloatRing2.BackgroundTransparency = 0.6
-FloatRing2.BorderSizePixel = 0
-FloatRing2.ZIndex = 49
-FloatRing2.Parent = FloatIcon
-Corner(FloatRing2, 36)
-
--- Dark circle base
-local FloatBase = Instance.new("Frame")
-FloatBase.Size = UDim2.new(1, 0, 1, 0)
-FloatBase.BackgroundColor3 = Color3.fromRGB(28, 14, 18)
-FloatBase.BackgroundTransparency = 0
-FloatBase.BorderSizePixel = 0
-FloatBase.ZIndex = 50
-FloatBase.Parent = FloatIcon
-Corner(FloatBase, 32)
-Grad(FloatBase, Color3.fromRGB(50, 22, 30), Color3.fromRGB(18, 8, 12), 135)
-
--- Logo image inside
-local FloatLogo = Instance.new("ImageLabel")
-FloatLogo.Size = UDim2.new(0, 44, 0, 44)
-FloatLogo.Position = UDim2.new(0.5, -22, 0.5, -22)
-FloatLogo.BackgroundTransparency = 1
-FloatLogo.Image = "rbxassetid://80921423835608"
-FloatLogo.ScaleType = Enum.ScaleType.Fit
-FloatLogo.ZIndex = 52
-FloatLogo.Parent = FloatIcon
-
--- Click button บน float icon
-local FloatBtn = Instance.new("TextButton")
-FloatBtn.Size = UDim2.new(1, 0, 1, 0)
-FloatBtn.BackgroundTransparency = 1
-FloatBtn.Text = ""
-FloatBtn.AutoButtonColor = false
-FloatBtn.ZIndex = 53
-FloatBtn.Parent = FloatIcon
-
--- Tooltip "คลิกเพื่อเปิด"
-local FloatTip = Instance.new("Frame")
-FloatTip.Size = UDim2.new(0, 110, 0, 24)
-FloatTip.Position = UDim2.new(1, 8, 0.5, -12)
-FloatTip.BackgroundColor3 = Color3.fromRGB(38, 18, 24)
-FloatTip.BackgroundTransparency = 0.1
-FloatTip.BorderSizePixel = 0
-FloatTip.ZIndex = 54
-FloatTip.Visible = false
-FloatTip.Parent = FloatIcon
-Corner(FloatTip, 6)
-Stroke(FloatTip, Color3.fromRGB(220, 90, 140), 1)
-local FloatTipL = Label(FloatTip, "♡  แตะเพื่อเปิด", 10, Enum.Font.GothamBold, Color3.fromRGB(255, 192, 215), Enum.TextXAlignment.Center, 55)
-FloatTipL.Size = UDim2.new(1, 0, 1, 0)
-
-FloatBtn.MouseEnter:Connect(function()
-    FloatTip.Visible = true
-    Tween(FloatRing, {BackgroundTransparency=0.2}, 0.15)
-end)
-FloatBtn.MouseLeave:Connect(function()
-    FloatTip.Visible = false
-    Tween(FloatRing, {BackgroundTransparency=0.5}, 0.2)
-end)
-
--- Pulse animation loop
-task.spawn(function()
-    while FloatIcon.Parent do
-        if FloatIcon.Visible then
-            Tween(FloatRing,  {BackgroundTransparency=0.3, Size=UDim2.new(1,22,1,22), Position=UDim2.new(0,-11,0,-11)}, 0.8, Enum.EasingStyle.Sine)
-            Tween(FloatRing2, {BackgroundTransparency=0.4}, 0.8, Enum.EasingStyle.Sine)
-            task.wait(0.85)
-            Tween(FloatRing,  {BackgroundTransparency=0.65, Size=UDim2.new(1,12,1,12), Position=UDim2.new(0,-6,0,-6)}, 0.8, Enum.EasingStyle.Sine)
-            Tween(FloatRing2, {BackgroundTransparency=0.7}, 0.8, Enum.EasingStyle.Sine)
-            task.wait(0.85)
-        else
-            task.wait(0.1)
-        end
-    end
-end)
-
--- ══════════════════════════════
---  MINIMIZE
--- ══════════════════════════════
-local minimized = false
-local savedMainPos = UDim2.new(0.5, -155, 0.5, -190)  -- เก็บตำแหน่งล่าสุดของ Main
-
-local function showMinimized()
-    savedMainPos = Main.Position
-
-    local abs      = Main.AbsolutePosition
-    local floatPos = UDim2.new(0, abs.X, 0, abs.Y)
-
-    -- เตรียม FloatIcon ให้พร้อม (ซ่อนอยู่ ณ ตำแหน่งเดียวกับ Main)
-    FloatIcon.Size     = UDim2.new(0, 64, 0, 64)
-    FloatIcon.Position = floatPos
-    FloatIcon.Visible  = true
-    FloatBase.BackgroundTransparency  = 1
-    FloatRing.BackgroundTransparency  = 1
-    FloatRing.Size     = UDim2.new(1, 16, 1, 16)
-    FloatRing.Position = UDim2.new(0, -8, 0, -8)
-    FloatRing2.BackgroundTransparency = 1
-    FloatLogo.ImageTransparency       = 1
-
-    -- ย่อ Main ให้เหลือ 64x64 โดยยัง opaque → ดูเหมือน pill หดตัว ไม่มี flash
-    Main.BackgroundTransparency = 0
-    Tween(Main, {
-        Size     = UDim2.new(0, 64, 0, 64),
-        Position = floatPos,
-    }, 0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In)
-
-    -- พอ Main หดเสร็จ → ซ่อน Main แล้ว fade in FloatIcon
-    task.delay(0.28, function()
-        Main.Visible = false
-        Main.BackgroundTransparency = 0
-        Tween(FloatBase,  {BackgroundTransparency = 0},   0.25, Enum.EasingStyle.Quad)
-        Tween(FloatRing,  {BackgroundTransparency = 0.5}, 0.25, Enum.EasingStyle.Quad)
-        Tween(FloatRing2, {BackgroundTransparency = 0.6}, 0.25, Enum.EasingStyle.Quad)
-        Tween(FloatLogo,  {ImageTransparency = 0},        0.2,  Enum.EasingStyle.Quad)
-    end)
-end
-
-local function showMain()
-    -- fade out FloatIcon ก่อน
-    Tween(FloatBase,  {BackgroundTransparency = 1}, 0.15, Enum.EasingStyle.Quad)
-    Tween(FloatRing,  {BackgroundTransparency = 1}, 0.15)
-    Tween(FloatRing2, {BackgroundTransparency = 1}, 0.15)
-    Tween(FloatLogo,  {ImageTransparency = 1},      0.15)
-
-    task.delay(0.15, function()
-        FloatIcon.Visible = false
-
-        -- snap Main ให้อยู่ที่ตำแหน่ง FloatIcon, ขนาด 64x64, opaque
-        Main.Size                   = UDim2.new(0, 64, 0, 64)
-        Main.Position               = FloatIcon.Position
-        Main.BackgroundTransparency = 0
-        Main.Visible                = true
-
-        -- ขยาย Main กลับตำแหน่งเดิม
-        Tween(Main, {
-            Size     = UDim2.new(0, 310, 0, 360),
-            Position = savedMainPos,
-        }, 0.35, Enum.EasingStyle.Back)
-    end)
-end
-
--- ══════════════════════════════
---  FLOAT ICON: drag + tap (PC & Mobile)
--- ══════════════════════════════
-local fDragging = false
-local fDidDrag  = false
-local fDragStart, fStartPos
-local DRAG_THRESHOLD = 10
-
-FloatBtn.InputBegan:Connect(function(i)
-    if i.UserInputType == Enum.UserInputType.MouseButton1
-    or i.UserInputType == Enum.UserInputType.Touch then
-        fDragging  = true
-        fDidDrag   = false
-        fDragStart = i.Position
-        fStartPos  = FloatIcon.Position
-        Tween(FloatIcon, {Size=UDim2.new(0,56,0,56)}, 0.08)
-        Tween(FloatBase, {BackgroundTransparency=0.25}, 0.08)
-    end
-end)
-
--- ใช้ UserInputService แทน FloatBtn.InputChanged → รองรับ mobile ทุก device
-UserInputService.InputChanged:Connect(function(i)
-    if not fDragging then return end
-    if i.UserInputType == Enum.UserInputType.MouseMovement
-    or i.UserInputType == Enum.UserInputType.Touch then
-        local delta = i.Position - fDragStart
-        if math.abs(delta.X) > DRAG_THRESHOLD or math.abs(delta.Y) > DRAG_THRESHOLD then
-            fDidDrag = true
-        end
-        if fDidDrag then
-            FloatIcon.Position = UDim2.new(
-                fStartPos.X.Scale, fStartPos.X.Offset + delta.X,
-                fStartPos.Y.Scale, fStartPos.Y.Offset + delta.Y
-            )
-        end
-    end
-end)
-
-UserInputService.InputEnded:Connect(function(i)
-    if not fDragging then return end
-    if i.UserInputType == Enum.UserInputType.MouseButton1
-    or i.UserInputType == Enum.UserInputType.Touch then
-        Tween(FloatIcon, {Size=UDim2.new(0,64,0,64)}, 0.15, Enum.EasingStyle.Back)
-        Tween(FloatBase, {BackgroundTransparency=0},   0.12)
-        if not fDidDrag then
-            -- TAP → เปิด UI
-            minimized = false
-            showMain()
-        else
-            -- ลากแล้ว → บันทึกตำแหน่งใหม่ให้ showMain() restore ถูกที่
-            savedMainPos = FloatIcon.Position
-        end
-        fDragging = false
-        fDidDrag  = false
-    end
-end)
-
--- ══════════════════════════════
---  MINIMIZE BUTTON
---  ใช้แค่ Activated เพื่อป้องกัน double-trigger บน mobile
--- ══════════════════════════════
-MinBtn.Activated:Connect(function()
-    minimized = not minimized
-    if minimized then showMinimized() else showMain() end
-end)
-
-CloseBtn.Activated:Connect(function()
-    Tween(Main,{BackgroundTransparency=1},0.25)
-    task.wait(0.3)
-    SG:Destroy()
-end)
-
-print("[BloxburgUI] โหลดสำเร็จ ✓")
+print("[BloxburgUI] โหลดสำเร็จ ✓ (optimized)")
