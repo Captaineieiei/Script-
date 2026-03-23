@@ -13,88 +13,44 @@ local PL  = game:GetService("Players").LocalPlayer
 local MPS = game:GetService("MarketplaceService")
 
 -- ══════════════════════════════════════════════
---  ANSI COLOR PALETTE
+--  PRINT HELPERS  (Roblox console = no ANSI)
 -- ══════════════════════════════════════════════
-local C = {
-    reset   = "\27[0m",
-    bold    = "\27[1m",
-    dim     = "\27[0;90m",
-    white   = "\27[0;97m",
-    cyan    = "\27[0;36m",
-    green   = "\27[0;32m",
-    red     = "\27[0;31m",
-    yellow  = "\27[0;33m",
-    magenta = "\27[0;35m",
-    pink    = "\27[38;5;213m",
-    lblue   = "\27[38;5;117m",
-    gray    = "\27[38;5;245m",
-}
+local W = 44
 
--- ══════════════════════════════════════════════
---  BOX DRAWING HELPERS
--- ══════════════════════════════════════════════
-local BOX_W = 42  -- visible inner width
-
-local function ansiStrip(s)
-    return (s:gsub("\27%[[%d;]*m", ""))
+local function pad(str, len)
+    str = tostring(str or "")
+    if #str > len then return str:sub(1, len) end
+    return str .. string.rep(" ", len - #str)
 end
 
-local function boxLine(text, col)
-    col = col or ""
-    local visible = ansiStrip(text)
-    local pad = BOX_W - #visible
-    if pad < 0 then pad = 0 end
-    return C.dim .. "║" .. C.reset .. " " .. col .. text .. C.reset
-        .. string.rep(" ", pad) .. C.dim .. "║" .. C.reset
-end
-
-local function boxBlank()
-    return C.dim .. "║" .. string.rep(" ", BOX_W + 2) .. "║" .. C.reset
-end
-
-local BOX_TOP = C.dim .. "╔" .. string.rep("═", BOX_W + 2) .. "╗" .. C.reset
-local BOX_MID = C.dim .. "╠" .. string.rep("═", BOX_W + 2) .. "╣" .. C.reset
-local BOX_BOT = C.dim .. "╚" .. string.rep("═", BOX_W + 2) .. "╝" .. C.reset
-
--- ══════════════════════════════════════════════
---  STARTUP BANNER
--- ══════════════════════════════════════════════
 local function printBanner()
     print("")
-    print(C.pink  .. "  ╔══════════════════════════════════════════╗" .. C.reset)
-    print(C.pink  .. "  ║" .. C.reset .. C.bold .. C.white
-        .. "    ✦  S P E C T R E W A R E  ✦         " .. C.reset .. C.pink .. "║" .. C.reset)
-    print(C.pink  .. "  ║" .. C.reset .. C.gray
-        .. "       Loader v2  •  Key Authentication  " .. C.reset .. C.pink .. "║" .. C.reset)
-    print(C.pink  .. "  ╚══════════════════════════════════════════╝" .. C.reset)
+    print("╔" .. string.rep("═", W) .. "╗")
+    print("║" .. pad("", W) .. "║")
+    print("║" .. pad("   ✦  S P E C T R E W A R E  ✦", W) .. "║")
+    print("║" .. pad("      Loader v2  •  Key Auth", W) .. "║")
+    print("║" .. pad("", W) .. "║")
+    print("╚" .. string.rep("═", W) .. "╝")
     print("")
 end
 
--- ══════════════════════════════════════════════
---  LOGGER  (FIX: เพิ่ม ║ ขวา + จัด padding ให้ตรง)
--- ══════════════════════════════════════════════
-local LOG_TYPES = {
-    info    = { icon = "🔹", label = " INFO   ", color = C.lblue,   duration = 4 },
-    success = { icon = "✅", label = " OK     ", color = C.green,   duration = 5 },
-    error   = { icon = "❌", label = " ERROR  ", color = C.red,     duration = 6 },
-    loading = { icon = "🔄", label = " WAIT   ", color = C.yellow,  duration = 4 },
-    warn    = { icon = "⚠️", label = " WARN   ", color = C.yellow,  duration = 5 },
+local LOG_CFG = {
+    info    = { icon = "🔹", label = "INFO",    duration = 4 },
+    success = { icon = "✅", label = "OK",      duration = 5 },
+    error   = { icon = "❌", label = "ERROR",   duration = 6 },
+    loading = { icon = "🔄", label = "LOADING", duration = 4 },
+    warn    = { icon = "⚠️", label = "WARN",    duration = 5 },
 }
 
 local function log(msg, logType)
     logType = logType or "info"
-    local t = LOG_TYPES[logType] or LOG_TYPES.info
-
-    local labelStr = t.color .. t.label .. C.reset
-    local tagStr   = C.dim .. "[SpectreWare]" .. C.reset
-    local header   = t.icon .. " " .. labelStr .. " " .. tagStr
-
-    print(BOX_TOP)
-    print(boxLine(header))
-    print(BOX_MID)
-    print(boxLine(msg, t.color))
-    print(BOX_BOT)
-
+    local t = LOG_CFG[logType] or LOG_CFG.info
+    local header = t.icon .. "  " .. t.label .. "  |  SpectreWare"
+    print("╔" .. string.rep("═", W) .. "╗")
+    print("║  " .. pad(header, W - 2) .. "║")
+    print("╠" .. string.rep("═", W) .. "╣")
+    print("║  " .. pad(msg, W - 2) .. "║")
+    print("╚" .. string.rep("═", W) .. "╝")
     pcall(function()
         game:GetService("StarterGui"):SetCore("SendNotification", {
             Title    = "SpectreWare  " .. t.icon,
@@ -104,25 +60,15 @@ local function log(msg, logType)
     end)
 end
 
--- ══════════════════════════════════════════════
---  SUCCESS SUMMARY BOX
--- ══════════════════════════════════════════════
-local function printSummary(data, timeLeft, hwid)
+local function printSummary(timeLeft, hwid)
     print("")
-    print(C.green .. "  ╔══════════════════════════════════════════╗" .. C.reset)
-    print(C.green .. "  ║" .. C.reset .. C.bold .. C.green
-        .. "  ✅  KEY VERIFIED — WELCOME              " .. C.reset .. C.green .. "║" .. C.reset)
-    print(C.green .. "  ╠══════════════════════════════════════════╣" .. C.reset)
-    print(C.green .. "  ║" .. C.reset
-        .. string.format("  %-12s %s%-24s", "Username", C.white, tostring(PL.Name):sub(1,24))
-        .. C.reset .. C.green .. "  ║" .. C.reset)
-    print(C.green .. "  ║" .. C.reset
-        .. string.format("  %-12s %s%-24s", "HWID", C.gray, tostring(hwid):sub(1,24))
-        .. C.reset .. C.green .. "  ║" .. C.reset)
-    print(C.green .. "  ║" .. C.reset
-        .. string.format("  %-12s %s%-24s", "หมดอายุ", C.cyan, tostring(timeLeft):sub(1,24))
-        .. C.reset .. C.green .. "  ║" .. C.reset)
-    print(C.green .. "  ╚══════════════════════════════════════════╝" .. C.reset)
+    print("╔" .. string.rep("═", W) .. "╗")
+    print("║  " .. pad("✅  KEY VERIFIED — WELCOME!", W - 2) .. "║")
+    print("╠" .. string.rep("═", W) .. "╣")
+    print("║  " .. pad("👤  Username  :  " .. tostring(PL.Name), W - 2) .. "║")
+    print("║  " .. pad("🔑  HWID      :  " .. tostring(hwid):sub(1, 20) .. "...", W - 2) .. "║")
+    print("║  " .. pad("⏳  หมดอายุ   :  " .. tostring(timeLeft), W - 2) .. "║")
+    print("╚" .. string.rep("═", W) .. "╝")
     print("")
 end
 
@@ -143,7 +89,7 @@ local function httpSend(opts)
     elseif httpRequest then
         return httpRequest(opts)
     else
-        warn("[SpectreWare] ไม่พบ http function ใน executor นี้!")
+        warn("[SpectreWare] ไม่พบ http function ใน executor!")
     end
 end
 
@@ -154,7 +100,9 @@ local function getHWID()
     local id = "UNKNOWN"
     pcall(function() id = game:GetService("RbxAnalyticsService"):GetClientId() end)
     if id == "UNKNOWN" then
-        pcall(function() id = tostring(PL.UserId) .. "_" .. tostring(game.JobId):sub(1,8) end)
+        pcall(function()
+            id = tostring(PL.UserId) .. "_" .. tostring(game.JobId):sub(1, 8)
+        end)
     end
     return id
 end
@@ -226,37 +174,36 @@ local function sendWebhook(info)
             username   = "SpectreWare Logger",
             avatar_url = avatar,
             embeds = {{
-                title       = "╔══ 🌌 SpectreWare Detector ══╗",
-                description = "```ansi\n\27[0;36m◈ ตรวจพบการใช้งานใหม่ ◈\27[0m\n```",
+                title       = "🌌 SpectreWare — ตรวจพบการใช้งานใหม่",
                 color       = 0x00C8FF,
                 thumbnail   = { url = avatar },
                 fields = {
-                    { name  = "『 👤 』ข้อมูลผู้ใช้",
-                      value = "```ansi\n\27[0;32mUsername   \27[0m: " .. PL.Name ..
-                              "\n\27[0;32mDisplayName\27[0m: " .. PL.DisplayName ..
-                              "\n\27[0;32mUser ID    \27[0m: " .. tostring(PL.UserId) ..
-                              "\n\27[0;32mอายุบัญชี  \27[0m: " .. getAccountAge() .. "```",
+                    { name  = "👤 ข้อมูลผู้ใช้",
+                      value = "```\nUsername   : " .. PL.Name
+                           .. "\nDisplayName: " .. PL.DisplayName
+                           .. "\nUser ID    : " .. tostring(PL.UserId)
+                           .. "\nอายุบัญชี  : " .. getAccountAge() .. "```",
                       inline = false },
-                    { name  = "『 🔐 』ข้อมูล Key",
-                      value = "```ansi\n\27[0;33mKey    \27[0m: " .. info.key ..
-                              "\n\27[0;33mHWID   \27[0m: " .. info.hwid ..
-                              "\n\27[0;33mหมดอายุ\27[0m: " .. info.timeLeft .. "```",
+                    { name  = "🔐 ข้อมูล Key",
+                      value = "```\nKey    : " .. info.key
+                           .. "\nHWID   : " .. info.hwid
+                           .. "\nหมดอายุ: " .. info.timeLeft .. "```",
                       inline = false },
-                    { name  = "『 🎮 』ข้อมูลเกม",
-                      value = "```ansi\n\27[0;35mGame    \27[0m: " .. gameName ..
-                              "\n\27[0;35mPlace ID\27[0m: " .. tostring(game.PlaceId) ..
-                              "\n\27[0;35mJob ID  \27[0m: " .. tostring(game.JobId) .. "```" ..
-                              "\n🗺️ **[เปิด Map](https://www.roblox.com/games/" .. tostring(game.PlaceId) .. ")**",
+                    { name  = "🎮 ข้อมูลเกม",
+                      value = "```\nGame    : " .. gameName
+                           .. "\nPlace ID: " .. tostring(game.PlaceId)
+                           .. "\nJob ID  : " .. tostring(game.JobId) .. "```"
+                           .. "\n🗺️ **[เปิด Map](https://www.roblox.com/games/" .. tostring(game.PlaceId) .. ")**",
                       inline = false },
-                    { name  = "『 ⚡ 』ระบบ & อุปกรณ์",
-                      value = "```ansi\n\27[0;36mPlatform\27[0m: " .. getPlatform() ..
-                              "\n\27[0;36mPing    \27[0m: " .. getPing() ..
-                              "\n\27[0;36mServer  \27[0m: " .. getServerInfo() .. " ผู้เล่น```",
+                    { name  = "⚡ ระบบ & อุปกรณ์",
+                      value = "```\nPlatform: " .. getPlatform()
+                           .. "\nPing    : " .. getPing()
+                           .. "\nServer  : " .. getServerInfo() .. " ผู้เล่น```",
                       inline = false },
-                    { name  = "『 🧬 』สถานะตัวละคร",
-                      value = "```ansi\n\27[0;31mHP      \27[0m: " .. char.health ..
-                              "\n\27[0;31mSpeed   \27[0m: " .. char.speed ..
-                              "\n\27[0;31mJump    \27[0m: " .. char.jump .. "```",
+                    { name  = "🧬 สถานะตัวละคร",
+                      value = "```\nHP      : " .. char.health
+                           .. "\nSpeed   : " .. char.speed
+                           .. "\nJump    : " .. char.jump .. "```",
                       inline = false },
                 },
                 footer    = { text = "SpectreWare  •  " .. os.date("!%d/%m/%Y %H:%M:%S") .. " UTC", icon_url = avatar },
@@ -295,19 +242,16 @@ if KEY == "" then
 end
 
 local hwid = getHWID()
+log("HWID: " .. tostring(hwid):sub(1, 24) .. "...", "info")
 
--- FIX: รวม HWID เข้าใน log แทน raw print ที่ไม่มีรูปแบบ
-log("กำลังตรวจสอบ Key...   HWID: " .. tostring(hwid):sub(1, 20) .. "…", "loading")
-
--- FIX: retry loop — ไม่ wait หลัง attempt สุดท้ายโดยไม่จำเป็น
 local ok, raw
 for i = 1, 3 do
-    log(string.format("เชื่อมต่อ API... ครั้งที่ %d/3", i), "loading")
+    log(string.format("เชื่อมต่อ API... (%d/3)", i), "loading")
     ok, raw = pcall(function()
         return game:HttpGet(API .. "/api/lookup?key=" .. KEY .. "&hwid=" .. hwid, true)
     end)
     if ok and raw and raw ~= "" then break end
-    if i < 3 then task.wait(1.5) end   -- FIX: ไม่ wait หลัง attempt สุดท้าย
+    if i < 3 then task.wait(1.5) end
 end
 
 if not ok or not raw or raw == "" then
@@ -321,7 +265,6 @@ if not ok2 or type(result) ~= "table" then
     return
 end
 
--- FIX: รองรับทั้ง boolean true และ string "true"
 if result.success ~= true and result.success ~= "true" then
     log("Key ไม่ถูกต้องหรือหมดอายุแล้ว", "error")
     return
@@ -336,9 +279,9 @@ local data = result.data
 
 if type(data.hwid) == "string" and data.hwid ~= "" then
     if data.hwid ~= hwid then
-        log("HWID ไม่ตรง — Key นี้ผูกกับอุปกรณ์อื่น", "error")
+        log("HWID ไม่ตรง — Key ผูกกับอุปกรณ์อื่น", "error")
         task.spawn(function()
-            sendWebhook({ key = KEY, hwid = hwid .. " ⚠️MISMATCH", timeLeft = "BLOCKED" })
+            sendWebhook({ key = KEY, hwid = hwid .. " MISMATCH", timeLeft = "BLOCKED" })
         end)
         return
     end
@@ -358,7 +301,7 @@ if data.expiresAt ~= nil and data.expiresAt ~= -1 then
     timeLeft = d .. "d " .. h .. "h " .. m .. "m"
 end
 
-printSummary(data, timeLeft, hwid)
+printSummary(timeLeft, hwid)
 
 task.spawn(function()
     sendWebhook({ key = KEY, hwid = hwid, timeLeft = timeLeft })
