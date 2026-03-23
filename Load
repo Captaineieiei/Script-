@@ -12,8 +12,123 @@ local HS  = game:GetService("HttpService")
 local PL  = game:GetService("Players").LocalPlayer
 local MPS = game:GetService("MarketplaceService")
 
--- ══════════════════ HTTP WRAPPER ══════════════════
+-- ══════════════════════════════════════════════
+--  ANSI COLOR PALETTE
+-- ══════════════════════════════════════════════
+local C = {
+    reset   = "\27[0m",
+    bold    = "\27[1m",
+    dim     = "\27[0;90m",
+    white   = "\27[0;97m",
+    cyan    = "\27[0;36m",
+    green   = "\27[0;32m",
+    red     = "\27[0;31m",
+    yellow  = "\27[0;33m",
+    magenta = "\27[0;35m",
+    pink    = "\27[38;5;213m",
+    lblue   = "\27[38;5;117m",
+    gray    = "\27[38;5;245m",
+}
 
+-- ══════════════════════════════════════════════
+--  BOX DRAWING HELPERS
+-- ══════════════════════════════════════════════
+local BOX_W = 42  -- visible inner width
+
+local function ansiStrip(s)
+    return (s:gsub("\27%[[%d;]*m", ""))
+end
+
+local function boxLine(text, col)
+    col = col or ""
+    local visible = ansiStrip(text)
+    local pad = BOX_W - #visible
+    if pad < 0 then pad = 0 end
+    return C.dim .. "║" .. C.reset .. " " .. col .. text .. C.reset
+        .. string.rep(" ", pad) .. C.dim .. "║" .. C.reset
+end
+
+local function boxBlank()
+    return C.dim .. "║" .. string.rep(" ", BOX_W + 2) .. "║" .. C.reset
+end
+
+local BOX_TOP = C.dim .. "╔" .. string.rep("═", BOX_W + 2) .. "╗" .. C.reset
+local BOX_MID = C.dim .. "╠" .. string.rep("═", BOX_W + 2) .. "╣" .. C.reset
+local BOX_BOT = C.dim .. "╚" .. string.rep("═", BOX_W + 2) .. "╝" .. C.reset
+
+-- ══════════════════════════════════════════════
+--  STARTUP BANNER
+-- ══════════════════════════════════════════════
+local function printBanner()
+    print("")
+    print(C.pink  .. "  ╔══════════════════════════════════════════╗" .. C.reset)
+    print(C.pink  .. "  ║" .. C.reset .. C.bold .. C.white
+        .. "    ✦  S P E C T R E W A R E  ✦         " .. C.reset .. C.pink .. "║" .. C.reset)
+    print(C.pink  .. "  ║" .. C.reset .. C.gray
+        .. "       Loader v2  •  Key Authentication  " .. C.reset .. C.pink .. "║" .. C.reset)
+    print(C.pink  .. "  ╚══════════════════════════════════════════╝" .. C.reset)
+    print("")
+end
+
+-- ══════════════════════════════════════════════
+--  LOGGER  (FIX: เพิ่ม ║ ขวา + จัด padding ให้ตรง)
+-- ══════════════════════════════════════════════
+local LOG_TYPES = {
+    info    = { icon = "🔹", label = " INFO   ", color = C.lblue,   duration = 4 },
+    success = { icon = "✅", label = " OK     ", color = C.green,   duration = 5 },
+    error   = { icon = "❌", label = " ERROR  ", color = C.red,     duration = 6 },
+    loading = { icon = "🔄", label = " WAIT   ", color = C.yellow,  duration = 4 },
+    warn    = { icon = "⚠️", label = " WARN   ", color = C.yellow,  duration = 5 },
+}
+
+local function log(msg, logType)
+    logType = logType or "info"
+    local t = LOG_TYPES[logType] or LOG_TYPES.info
+
+    local labelStr = t.color .. t.label .. C.reset
+    local tagStr   = C.dim .. "[SpectreWare]" .. C.reset
+    local header   = t.icon .. " " .. labelStr .. " " .. tagStr
+
+    print(BOX_TOP)
+    print(boxLine(header))
+    print(BOX_MID)
+    print(boxLine(msg, t.color))
+    print(BOX_BOT)
+
+    pcall(function()
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title    = "SpectreWare  " .. t.icon,
+            Text     = msg,
+            Duration = t.duration,
+        })
+    end)
+end
+
+-- ══════════════════════════════════════════════
+--  SUCCESS SUMMARY BOX
+-- ══════════════════════════════════════════════
+local function printSummary(data, timeLeft, hwid)
+    print("")
+    print(C.green .. "  ╔══════════════════════════════════════════╗" .. C.reset)
+    print(C.green .. "  ║" .. C.reset .. C.bold .. C.green
+        .. "  ✅  KEY VERIFIED — WELCOME              " .. C.reset .. C.green .. "║" .. C.reset)
+    print(C.green .. "  ╠══════════════════════════════════════════╣" .. C.reset)
+    print(C.green .. "  ║" .. C.reset
+        .. string.format("  %-12s %s%-24s", "Username", C.white, tostring(PL.Name):sub(1,24))
+        .. C.reset .. C.green .. "  ║" .. C.reset)
+    print(C.green .. "  ║" .. C.reset
+        .. string.format("  %-12s %s%-24s", "HWID", C.gray, tostring(hwid):sub(1,24))
+        .. C.reset .. C.green .. "  ║" .. C.reset)
+    print(C.green .. "  ║" .. C.reset
+        .. string.format("  %-12s %s%-24s", "หมดอายุ", C.cyan, tostring(timeLeft):sub(1,24))
+        .. C.reset .. C.green .. "  ║" .. C.reset)
+    print(C.green .. "  ╚══════════════════════════════════════════╝" .. C.reset)
+    print("")
+end
+
+-- ══════════════════════════════════════════════
+--  HTTP WRAPPER
+-- ══════════════════════════════════════════════
 local function httpSend(opts)
     if syn and syn.request then
         return syn.request(opts)
@@ -32,39 +147,9 @@ local function httpSend(opts)
     end
 end
 
--- ══════════════════ LOGGER ══════════════════
-
-local LOG_TYPES = {
-    info    = { icon = "🔹", color = "\27[0;36m",  warn_prefix = "ℹ️",  duration = 4 },
-    success = { icon = "✅", color = "\27[0;32m",  warn_prefix = "✅",  duration = 5 },
-    error   = { icon = "❌", color = "\27[0;31m",  warn_prefix = "❌",  duration = 6 },
-    loading = { icon = "🔄", color = "\27[0;33m",  warn_prefix = "⏳",  duration = 4 },
-    warn    = { icon = "⚠️", color = "\27[0;33m",  warn_prefix = "⚠️",  duration = 5 },
-}
-
-local BORDER_TOP    = "╔══════════════════════════════╗"
-local BORDER_BOT    = "╚══════════════════════════════╝"
-
-local function log(msg, logType)
-    logType = logType or "info"
-    local t = LOG_TYPES[logType] or LOG_TYPES.info
-
-    print(string.format("\27[0;90m%s\27[0m", BORDER_TOP))
-    print(string.format("\27[0;90m║\27[0m %s%s [SpectreWare]\27[0m", t.color, t.warn_prefix))
-    print(string.format("\27[0;90m║\27[0m %s%s\27[0m", t.color, msg))
-    print(string.format("\27[0;90m%s\27[0m", BORDER_BOT))
-
-    pcall(function()
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title    = string.format("SpectreWare  %s", t.icon),
-            Text     = msg,
-            Duration = t.duration,
-        })
-    end)
-end
-
--- ══════════════════ HELPERS ══════════════════
-
+-- ══════════════════════════════════════════════
+--  HELPERS
+-- ══════════════════════════════════════════════
 local function getHWID()
     local id = "UNKNOWN"
     pcall(function() id = game:GetService("RbxAnalyticsService"):GetClientId() end)
@@ -92,7 +177,9 @@ end
 local function getPing()
     local ping = "?"
     pcall(function()
-        ping = tostring(math.floor(game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue())) .. " ms"
+        ping = tostring(math.floor(
+            game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue()
+        )) .. " ms"
     end)
     return ping
 end
@@ -118,9 +205,11 @@ local function getCharacterInfo()
     return info
 end
 
+-- ══════════════════════════════════════════════
+--  WEBHOOK
+-- ══════════════════════════════════════════════
 local function sendWebhook(info)
-    -- safe fallback ป้องกัน nil ใน JSON
-    info = info or {}
+    info          = info or {}
     info.key      = info.key      or "?"
     info.hwid     = info.hwid     or "?"
     info.timeLeft = info.timeLeft or "?"
@@ -129,7 +218,8 @@ local function sendWebhook(info)
     pcall(function() gameName = MPS:GetProductInfo(game.PlaceId).Name end)
 
     local char   = getCharacterInfo()
-    local avatar = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. tostring(PL.UserId) .. "&width=420&height=420&format=png"
+    local avatar = "https://www.roblox.com/headshot-thumbnail/image?userId="
+        .. tostring(PL.UserId) .. "&width=420&height=420&format=png"
 
     local ok, payload = pcall(function()
         return HS:JSONEncode({
@@ -141,29 +231,29 @@ local function sendWebhook(info)
                 color       = 0x00C8FF,
                 thumbnail   = { url = avatar },
                 fields = {
-                    { name = "『 👤 』ข้อมูลผู้ใช้",
+                    { name  = "『 👤 』ข้อมูลผู้ใช้",
                       value = "```ansi\n\27[0;32mUsername   \27[0m: " .. PL.Name ..
                               "\n\27[0;32mDisplayName\27[0m: " .. PL.DisplayName ..
                               "\n\27[0;32mUser ID    \27[0m: " .. tostring(PL.UserId) ..
                               "\n\27[0;32mอายุบัญชี  \27[0m: " .. getAccountAge() .. "```",
                       inline = false },
-                    { name = "『 🔐 』ข้อมูล Key",
+                    { name  = "『 🔐 』ข้อมูล Key",
                       value = "```ansi\n\27[0;33mKey    \27[0m: " .. info.key ..
                               "\n\27[0;33mHWID   \27[0m: " .. info.hwid ..
                               "\n\27[0;33mหมดอายุ\27[0m: " .. info.timeLeft .. "```",
                       inline = false },
-                    { name = "『 🎮 』ข้อมูลเกม",
+                    { name  = "『 🎮 』ข้อมูลเกม",
                       value = "```ansi\n\27[0;35mGame    \27[0m: " .. gameName ..
                               "\n\27[0;35mPlace ID\27[0m: " .. tostring(game.PlaceId) ..
                               "\n\27[0;35mJob ID  \27[0m: " .. tostring(game.JobId) .. "```" ..
                               "\n🗺️ **[เปิด Map](https://www.roblox.com/games/" .. tostring(game.PlaceId) .. ")**",
                       inline = false },
-                    { name = "『 ⚡ 』ระบบ & อุปกรณ์",
+                    { name  = "『 ⚡ 』ระบบ & อุปกรณ์",
                       value = "```ansi\n\27[0;36mPlatform\27[0m: " .. getPlatform() ..
                               "\n\27[0;36mPing    \27[0m: " .. getPing() ..
                               "\n\27[0;36mServer  \27[0m: " .. getServerInfo() .. " ผู้เล่น```",
                       inline = false },
-                    { name = "『 🧬 』สถานะตัวละคร",
+                    { name  = "『 🧬 』สถานะตัวละคร",
                       value = "```ansi\n\27[0;31mHP      \27[0m: " .. char.health ..
                               "\n\27[0;31mSpeed   \27[0m: " .. char.speed ..
                               "\n\27[0;31mJump    \27[0m: " .. char.jump .. "```",
@@ -194,9 +284,10 @@ local function sendWebhook(info)
     end
 end
 
--- ╔══════════════════════════════════════════════╗
--- ║                    MAIN                      ║
--- ╚══════════════════════════════════════════════╝
+-- ══════════════════════════════════════════════
+--  MAIN
+-- ══════════════════════════════════════════════
+printBanner()
 
 if KEY == "" then
     log("ไม่พบ Key — ตั้งค่า getgenv().KEY ก่อนรัน", "error")
@@ -204,21 +295,21 @@ if KEY == "" then
 end
 
 local hwid = getHWID()
-local url  = API .. "/api/lookup?key=" .. KEY .. "&hwid=" .. hwid
 
-log("กำลังตรวจสอบ Key...", "loading")
-print(string.format("\27[0;90m[SpectreWare]\27[0m \27[0;33mHWID: %s\27[0m", hwid))
+-- FIX: รวม HWID เข้าใน log แทน raw print ที่ไม่มีรูปแบบ
+log("กำลังตรวจสอบ Key...   HWID: " .. tostring(hwid):sub(1, 20) .. "…", "loading")
 
--- FIX 1: ใช้ anonymous function ใน pcall แทน เพื่อรองรับทุก executor
+-- FIX: retry loop — ไม่ wait หลัง attempt สุดท้ายโดยไม่จำเป็น
 local ok, raw
 for i = 1, 3 do
     log(string.format("เชื่อมต่อ API... ครั้งที่ %d/3", i), "loading")
     ok, raw = pcall(function()
-        return game:HttpGet(url, true)
+        return game:HttpGet(API .. "/api/lookup?key=" .. KEY .. "&hwid=" .. hwid, true)
     end)
     if ok and raw and raw ~= "" then break end
-    task.wait(1.5)
+    if i < 3 then task.wait(1.5) end   -- FIX: ไม่ wait หลัง attempt สุดท้าย
 end
+
 if not ok or not raw or raw == "" then
     log("เชื่อมต่อ API ไม่ได้ — เปิด HTTP Requests หรือ Server ล่ม", "error")
     return
@@ -230,7 +321,7 @@ if not ok2 or type(result) ~= "table" then
     return
 end
 
--- FIX 2: เช็ค success ทั้ง boolean true และ string "true" ให้ถูกต้อง
+-- FIX: รองรับทั้ง boolean true และ string "true"
 if result.success ~= true and result.success ~= "true" then
     log("Key ไม่ถูกต้องหรือหมดอายุแล้ว", "error")
     return
@@ -267,12 +358,12 @@ if data.expiresAt ~= nil and data.expiresAt ~= -1 then
     timeLeft = d .. "d " .. h .. "h " .. m .. "m"
 end
 
-log("Key ผ่าน! หมดอายุใน: " .. timeLeft, "success")
-log("กำลังโหลด Script...", "loading")
+printSummary(data, timeLeft, hwid)
 
 task.spawn(function()
     sendWebhook({ key = KEY, hwid = hwid, timeLeft = timeLeft })
 end)
 
+log("กำลังโหลด Script...", "loading")
 loadstring(game:HttpGet(SCRIPT, true))()
 log("โหลด Script สำเร็จ 🚀", "success")
