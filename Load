@@ -1,7 +1,4 @@
--- ╔══════════════════════════════════════════════╗
--- ║          SpectreWare  •  Loader v2           ║
--- ║         ✦ Powered by SpectreWare ✦           ║
--- ╚══════════════════════════════════════════════╝
+-- SpectreWare • Loader v2
 
 local KEY     = getgenv().KEY or ""
 local API     = "http://37.27.169.207:20745"
@@ -12,150 +9,119 @@ local HS  = game:GetService("HttpService")
 local PL  = game:GetService("Players").LocalPlayer
 local MPS = game:GetService("MarketplaceService")
 
--- ══════════════════════════════════════════════
---  PRINT HELPERS  (Roblox console = no ANSI)
--- ══════════════════════════════════════════════
-local W = 44
-
-local function pad(str, len)
-    str = tostring(str or "")
-    if #str > len then return str:sub(1, len) end
-    return str .. string.rep(" ", len - #str)
-end
-
-local function printBanner()
-    print("")
-    print("╔" .. string.rep("═", W) .. "╗")
-    print("║" .. pad("", W) .. "║")
-    print("║" .. pad("   ✦  S P E C T R E W A R E  ✦", W) .. "║")
-    print("║" .. pad("      Loader v2  •  Key Auth", W) .. "║")
-    print("║" .. pad("", W) .. "║")
-    print("╚" .. string.rep("═", W) .. "╝")
-    print("")
-end
-
-local LOG_CFG = {
-    info    = { icon = "🔹", label = "INFO",    duration = 4 },
-    success = { icon = "✅", label = "OK",      duration = 5 },
-    error   = { icon = "❌", label = "ERROR",   duration = 6 },
-    loading = { icon = "🔄", label = "LOADING", duration = 4 },
-    warn    = { icon = "⚠️", label = "WARN",    duration = 5 },
+-- ─────────────────────────────────────────
+--  LOGGER
+-- ─────────────────────────────────────────
+local ICONS = {
+    info    = "🔹",
+    success = "✅",
+    error   = "❌",
+    loading = "🔄",
+    warn    = "⚠️",
 }
+local DURATION = { info=4, success=5, error=6, loading=4, warn=5 }
 
-local function log(msg, logType)
-    logType = logType or "info"
-    local t = LOG_CFG[logType] or LOG_CFG.info
-    local header = t.icon .. "  " .. t.label .. "  |  SpectreWare"
-    print("╔" .. string.rep("═", W) .. "╗")
-    print("║  " .. pad(header, W - 2) .. "║")
-    print("╠" .. string.rep("═", W) .. "╣")
-    print("║  " .. pad(msg, W - 2) .. "║")
-    print("╚" .. string.rep("═", W) .. "╝")
+local function log(msg, t)
+    t = t or "info"
+    print((ICONS[t] or "▪") .. "  " .. msg)
     pcall(function()
         game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title    = "SpectreWare  " .. t.icon,
+            Title    = "SpectreWare",
             Text     = msg,
-            Duration = t.duration,
+            Duration = DURATION[t] or 4,
         })
     end)
 end
 
-local function printSummary(timeLeft, hwid)
+local function banner()
     print("")
-    print("╔" .. string.rep("═", W) .. "╗")
-    print("║  " .. pad("✅  KEY VERIFIED — WELCOME!", W - 2) .. "║")
-    print("╠" .. string.rep("═", W) .. "╣")
-    print("║  " .. pad("👤  Username  :  " .. tostring(PL.Name), W - 2) .. "║")
-    print("║  " .. pad("🔑  HWID      :  " .. tostring(hwid):sub(1, 20) .. "...", W - 2) .. "║")
-    print("║  " .. pad("⏳  หมดอายุ   :  " .. tostring(timeLeft), W - 2) .. "║")
-    print("╚" .. string.rep("═", W) .. "╝")
+    print("  ✦  SpectreWare  ✦")
+    print("  Loader v2  •  Key Auth")
     print("")
 end
 
--- ══════════════════════════════════════════════
+local function summary(timeLeft, hwid)
+    print("")
+    print("✅  KEY VERIFIED")
+    print("👤  " .. tostring(PL.Name))
+    print("🔑  " .. tostring(hwid):sub(1,28) .. "...")
+    print("⏳  " .. tostring(timeLeft))
+    print("")
+end
+
+-- ─────────────────────────────────────────
 --  HTTP WRAPPER
--- ══════════════════════════════════════════════
+-- ─────────────────────────────────────────
 local function httpSend(opts)
-    if syn and syn.request then
-        return syn.request(opts)
-    elseif http and http.request then
-        return http.request(opts)
-    elseif http_request then
-        return http_request(opts)
-    elseif request then
-        return request(opts)
-    elseif HttpRequest then
-        return HttpRequest(opts)
-    elseif httpRequest then
-        return httpRequest(opts)
-    else
-        warn("[SpectreWare] ไม่พบ http function ใน executor!")
-    end
+    if syn and syn.request       then return syn.request(opts)   end
+    if http and http.request     then return http.request(opts)  end
+    if http_request              then return http_request(opts)  end
+    if request                   then return request(opts)       end
+    if HttpRequest               then return HttpRequest(opts)   end
+    if httpRequest               then return httpRequest(opts)   end
+    warn("SpectreWare: ไม่พบ http function")
 end
 
--- ══════════════════════════════════════════════
+-- ─────────────────────────────────────────
 --  HELPERS
--- ══════════════════════════════════════════════
+-- ─────────────────────────────────────────
 local function getHWID()
     local id = "UNKNOWN"
     pcall(function() id = game:GetService("RbxAnalyticsService"):GetClientId() end)
     if id == "UNKNOWN" then
         pcall(function()
-            id = tostring(PL.UserId) .. "_" .. tostring(game.JobId):sub(1, 8)
+            id = tostring(PL.UserId) .. "_" .. tostring(game.JobId):sub(1,8)
         end)
     end
     return id
 end
 
 local function getAccountAge()
-    local age = "?"
-    pcall(function() age = tostring(PL.AccountAge) .. " วัน" end)
-    return age
+    local v = "?"
+    pcall(function() v = tostring(PL.AccountAge) .. " วัน" end)
+    return v
 end
 
 local function getPlatform()
-    local p = "Unknown"
+    local v = "Unknown"
     pcall(function()
-        p = tostring(game:GetService("UserInputService"):GetPlatform())
+        v = tostring(game:GetService("UserInputService"):GetPlatform())
             :gsub("Enum.Platform.", "")
     end)
-    return p
+    return v
 end
 
 local function getPing()
-    local ping = "?"
+    local v = "?"
     pcall(function()
-        ping = tostring(math.floor(
+        v = tostring(math.floor(
             game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue()
         )) .. " ms"
     end)
-    return ping
+    return v
 end
 
 local function getServerInfo()
     local pl = game:GetService("Players")
-    return tostring(#pl:GetPlayers()) .. "/" .. tostring(pl.MaxPlayers)
+    return #pl:GetPlayers() .. "/" .. pl.MaxPlayers
 end
 
-local function getCharacterInfo()
-    local info = { speed = "?", jump = "?", health = "?" }
+local function getCharInfo()
+    local i = { speed="?", jump="?", health="?" }
     pcall(function()
-        local char = PL.Character
-        if char then
-            local hum = char:FindFirstChildOfClass("Humanoid")
-            if hum then
-                info.speed  = tostring(math.floor(hum.WalkSpeed))
-                info.jump   = tostring(math.floor(hum.JumpPower))
-                info.health = tostring(math.floor(hum.Health)) .. "/" .. tostring(math.floor(hum.MaxHealth))
-            end
+        local h = PL.Character and PL.Character:FindFirstChildOfClass("Humanoid")
+        if h then
+            i.speed  = tostring(math.floor(h.WalkSpeed))
+            i.jump   = tostring(math.floor(h.JumpPower))
+            i.health = math.floor(h.Health) .. "/" .. math.floor(h.MaxHealth)
         end
     end)
-    return info
+    return i
 end
 
--- ══════════════════════════════════════════════
+-- ─────────────────────────────────────────
 --  WEBHOOK
--- ══════════════════════════════════════════════
+-- ─────────────────────────────────────────
 local function sendWebhook(info)
     info          = info or {}
     info.key      = info.key      or "?"
@@ -165,7 +131,7 @@ local function sendWebhook(info)
     local gameName = "Unknown"
     pcall(function() gameName = MPS:GetProductInfo(game.PlaceId).Name end)
 
-    local char   = getCharacterInfo()
+    local char   = getCharInfo()
     local avatar = "https://www.roblox.com/headshot-thumbnail/image?userId="
         .. tostring(PL.UserId) .. "&width=420&height=420&format=png"
 
@@ -174,9 +140,9 @@ local function sendWebhook(info)
             username   = "SpectreWare Logger",
             avatar_url = avatar,
             embeds = {{
-                title       = "🌌 SpectreWare — ตรวจพบการใช้งานใหม่",
-                color       = 0x00C8FF,
-                thumbnail   = { url = avatar },
+                title     = "🌌 SpectreWare — ตรวจพบการใช้งานใหม่",
+                color     = 0x00C8FF,
+                thumbnail = { url = avatar },
                 fields = {
                     { name  = "👤 ข้อมูลผู้ใช้",
                       value = "```\nUsername   : " .. PL.Name
@@ -201,9 +167,9 @@ local function sendWebhook(info)
                            .. "\nServer  : " .. getServerInfo() .. " ผู้เล่น```",
                       inline = false },
                     { name  = "🧬 สถานะตัวละคร",
-                      value = "```\nHP      : " .. char.health
-                           .. "\nSpeed   : " .. char.speed
-                           .. "\nJump    : " .. char.jump .. "```",
+                      value = "```\nHP   : " .. char.health
+                           .. "\nSpeed: " .. char.speed
+                           .. "\nJump : " .. char.jump .. "```",
                       inline = false },
                 },
                 footer    = { text = "SpectreWare  •  " .. os.date("!%d/%m/%Y %H:%M:%S") .. " UTC", icon_url = avatar },
@@ -212,29 +178,18 @@ local function sendWebhook(info)
         })
     end)
 
-    if not ok then
-        warn("[SpectreWare] JSONEncode failed: " .. tostring(payload))
-        return
-    end
+    if not ok then warn("SpectreWare: JSONEncode failed — " .. tostring(payload)) return end
 
-    local sendOk, sendErr = pcall(function()
-        httpSend({
-            Url     = WEBHOOK,
-            Method  = "POST",
-            Headers = { ["Content-Type"] = "application/json" },
-            Body    = payload,
-        })
+    local sok, serr = pcall(function()
+        httpSend({ Url=WEBHOOK, Method="POST", Headers={["Content-Type"]="application/json"}, Body=payload })
     end)
-
-    if not sendOk then
-        warn("[SpectreWare] Webhook send failed: " .. tostring(sendErr))
-    end
+    if not sok then warn("SpectreWare: Webhook failed — " .. tostring(serr)) end
 end
 
--- ══════════════════════════════════════════════
+-- ─────────────────────────────────────────
 --  MAIN
--- ══════════════════════════════════════════════
-printBanner()
+-- ─────────────────────────────────────────
+banner()
 
 if KEY == "" then
     log("ไม่พบ Key — ตั้งค่า getgenv().KEY ก่อนรัน", "error")
@@ -242,7 +197,7 @@ if KEY == "" then
 end
 
 local hwid = getHWID()
-log("HWID: " .. tostring(hwid):sub(1, 24) .. "...", "info")
+log("HWID: " .. tostring(hwid):sub(1,28) .. "...", "info")
 
 local ok, raw
 for i = 1, 3 do
@@ -261,7 +216,7 @@ end
 
 local ok2, result = pcall(HS.JSONDecode, HS, raw)
 if not ok2 or type(result) ~= "table" then
-    log("API ตอบกลับผิดพลาด (JSON decode failed)", "error")
+    log("API ตอบกลับผิดพลาด", "error")
     return
 end
 
@@ -281,7 +236,7 @@ if type(data.hwid) == "string" and data.hwid ~= "" then
     if data.hwid ~= hwid then
         log("HWID ไม่ตรง — Key ผูกกับอุปกรณ์อื่น", "error")
         task.spawn(function()
-            sendWebhook({ key = KEY, hwid = hwid .. " MISMATCH", timeLeft = "BLOCKED" })
+            sendWebhook({ key=KEY, hwid=hwid.." MISMATCH", timeLeft="BLOCKED" })
         end)
         return
     end
@@ -301,10 +256,10 @@ if data.expiresAt ~= nil and data.expiresAt ~= -1 then
     timeLeft = d .. "d " .. h .. "h " .. m .. "m"
 end
 
-printSummary(timeLeft, hwid)
+summary(timeLeft, hwid)
 
 task.spawn(function()
-    sendWebhook({ key = KEY, hwid = hwid, timeLeft = timeLeft })
+    sendWebhook({ key=KEY, hwid=hwid, timeLeft=timeLeft })
 end)
 
 log("กำลังโหลด Script...", "loading")
