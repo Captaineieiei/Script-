@@ -29,7 +29,7 @@ local Scripts = {
         Tag   = "FARM",
         Color = Color3.fromRGB(255, 182, 213),
         Code  = function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/auto.farm_obfuscated.lua.txt", true))()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/Auto.farm.%E0%B8%9A%E0%B8%B5%E0%B9%89%E0%B8%94%E0%B8%B5%E0%B9%89", true))()
         end
     },
 }
