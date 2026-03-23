@@ -12,7 +12,42 @@ local HS  = game:GetService("HttpService")
 local PL  = game:GetService("Players").LocalPlayer
 local MPS = game:GetService("MarketplaceService")
 
+-- ══════════════════ LOGGER ══════════════════
+
+local LOG_TYPES = {
+    info    = { icon = "🔹", color = "\27[0;36m",  warn_prefix = "ℹ️",  duration = 4 },
+    success = { icon = "✅", color = "\27[0;32m",  warn_prefix = "✅",  duration = 5 },
+    error   = { icon = "❌", color = "\27[0;31m",  warn_prefix = "❌",  duration = 6 },
+    loading = { icon = "🔄", color = "\27[0;33m",  warn_prefix = "⏳",  duration = 4 },
+    warn    = { icon = "⚠️", color = "\27[0;33m",  warn_prefix = "⚠️",  duration = 5 },
+}
+
+local BORDER_TOP    = "╔══════════════════════════════╗"
+local BORDER_BOT    = "╚══════════════════════════════╝"
+local BORDER_MID    = "╟──────────────────────────────╢"
+
+local function log(msg, logType)
+    logType = logType or "info"
+    local t = LOG_TYPES[logType] or LOG_TYPES.info
+
+    -- Console output (colored box style)
+    print(string.format("\27[0;90m%s\27[0m", BORDER_TOP))
+    print(string.format("\27[0;90m║\27[0m %s%s [SpectreWare]\27[0m", t.color, t.warn_prefix))
+    print(string.format("\27[0;90m║\27[0m %s%s\27[0m", t.color, msg))
+    print(string.format("\27[0;90m%s\27[0m", BORDER_BOT))
+
+    -- In-game notification
+    pcall(function()
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title    = string.format("SpectreWare  %s", t.icon),
+            Text     = msg,
+            Duration = t.duration,
+        })
+    end)
+end
+
 -- ══════════════════ HELPERS ══════════════════
+
 local function getHWID()
     local id = "UNKNOWN"
     pcall(function() id = game:GetService("RbxAnalyticsService"):GetClientId() end)
@@ -128,52 +163,41 @@ end
 -- ║                    MAIN                      ║
 -- ╚══════════════════════════════════════════════╝
 
-local function log(msg)
-    warn("[SpectreWare] " .. msg)
-    pcall(function()
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title    = "SpectreWare",
-            Text     = msg,
-            Duration = 5,
-        })
-    end)
-end
-
 if KEY == "" then
-    log("❌ ไม่พบ Key — ตั้งค่า getgenv().KEY ก่อนรัน")
+    log("ไม่พบ Key — ตั้งค่า getgenv().KEY ก่อนรัน", "error")
     return
 end
 
 local hwid = getHWID()
 local url  = API .. "/api/lookup?key=" .. KEY .. "&hwid=" .. hwid
 
-log("🔍 กำลังตรวจสอบ Key...")
-warn("[SpectreWare] HWID: " .. hwid)
+log("กำลังตรวจสอบ Key...", "loading")
+print(string.format("\27[0;90m[SpectreWare]\27[0m \27[0;33mHWID: %s\27[0m", hwid))
 
 -- ตรวจสอบ Key กับ Server
 local ok, raw
 for i = 1, 3 do
-    warn("[SpectreWare] 🌐 เชื่อมต่อ API... ครั้งที่ " .. i)
+    log(string.format("เชื่อมต่อ API... ครั้งที่ %d/3", i), "loading")
     ok, raw = pcall(game.HttpGet, game, url, true)
     if ok and raw and raw ~= "" then break end
     task.wait(1.5)
 end
 if not ok or not raw or raw == "" then
-    log("❌ เชื่อมต่อ API ไม่ได้ — เปิด HTTP Requests หรือ Server ล่ม")
+    log("เชื่อมต่อ API ไม่ได้ — เปิด HTTP Requests หรือ Server ล่ม", "error")
     return
 end
 
 local ok2, result = pcall(HS.JSONDecode, HS, raw)
 if not ok2 or type(result) ~= "table" then
-    log("❌ API ตอบกลับผิดพลาด (JSON decode failed)")
+    log("API ตอบกลับผิดพลาด (JSON decode failed)", "error")
     return
 end
 if not result.success and result.success ~= "true" then
-    log("❌ Key ไม่ถูกต้องหรือหมดอายุแล้ว")
+    log("Key ไม่ถูกต้องหรือหมดอายุแล้ว", "error")
     return
 end
 if type(result.data) ~= "table" then
-    log("❌ ข้อมูลจาก API ไม่สมบูรณ์")
+    log("ข้อมูลจาก API ไม่สมบูรณ์", "error")
     return
 end
 
@@ -182,21 +206,21 @@ local data = result.data
 -- ตรวจสอบ HWID
 if type(data.hwid) == "string" and data.hwid ~= "" then
     if data.hwid ~= hwid then
-        log("❌ HWID ไม่ตรง — Key นี้ผูกกับอุปกรณ์อื่น")
+        log("HWID ไม่ตรง — Key นี้ผูกกับอุปกรณ์อื่น", "error")
         task.spawn(function()
             sendWebhook({ key = KEY, hwid = hwid .. " ⚠️MISMATCH", timeLeft = "BLOCKED" })
         end)
         return
     end
 end
-warn("[SpectreWare] ✅ HWID ผ่าน")
+log("HWID ผ่านแล้ว ✓", "success")
 
 -- ตรวจสอบวันหมดอายุ
 local timeLeft = "Permanent"
 if data.expiresAt ~= nil and data.expiresAt ~= -1 then
     local diff = math.floor((data.expiresAt - os.time() * 1000) / 1000)
     if diff <= 0 then
-        log("❌ Key หมดอายุแล้ว")
+        log("Key หมดอายุแล้ว", "error")
         return
     end
     local d = math.floor(diff / 86400)
@@ -205,8 +229,8 @@ if data.expiresAt ~= nil and data.expiresAt ~= -1 then
     timeLeft = d .. "d " .. h .. "h " .. m .. "m"
 end
 
-log("✅ Key ผ่าน! หมดอายุใน: " .. timeLeft)
-warn("[SpectreWare] 🚀 กำลังโหลด Script...")
+log("Key ผ่าน! หมดอายุใน: " .. timeLeft, "success")
+log("กำลังโหลด Script...", "loading")
 
 -- ผ่านทุกอย่าง → ส่ง webhook แล้วรันสคริปต์
 task.spawn(function()
@@ -214,4 +238,4 @@ task.spawn(function()
 end)
 
 loadstring(game:HttpGet(SCRIPT, true))()
-warn("[SpectreWare] ✅ โหลด Script สำเร็จ")
+log("โหลด Script สำเร็จ 🚀", "success")
