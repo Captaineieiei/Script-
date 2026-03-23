@@ -209,10 +209,13 @@ local url  = API .. "/api/lookup?key=" .. KEY .. "&hwid=" .. hwid
 log("กำลังตรวจสอบ Key...", "loading")
 print(string.format("\27[0;90m[SpectreWare]\27[0m \27[0;33mHWID: %s\27[0m", hwid))
 
+-- FIX 1: ใช้ anonymous function ใน pcall แทน เพื่อรองรับทุก executor
 local ok, raw
 for i = 1, 3 do
     log(string.format("เชื่อมต่อ API... ครั้งที่ %d/3", i), "loading")
-    ok, raw = pcall(game.HttpGet, game, url, true)
+    ok, raw = pcall(function()
+        return game:HttpGet(url, true)
+    end)
     if ok and raw and raw ~= "" then break end
     task.wait(1.5)
 end
@@ -226,10 +229,13 @@ if not ok2 or type(result) ~= "table" then
     log("API ตอบกลับผิดพลาด (JSON decode failed)", "error")
     return
 end
+
+-- FIX 2: เช็ค success ทั้ง boolean true และ string "true" ให้ถูกต้อง
 if result.success ~= true and result.success ~= "true" then
     log("Key ไม่ถูกต้องหรือหมดอายุแล้ว", "error")
     return
 end
+
 if type(result.data) ~= "table" then
     log("ข้อมูลจาก API ไม่สมบูรณ์", "error")
     return
