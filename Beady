@@ -716,6 +716,20 @@ FloatBtn.MouseLeave:Connect(function()
     Tween(FloatRing, {BackgroundTransparency=0.5}, 0.2)
 end)
 
+-- [FIX MOBILE] ดัก touch drag บน button โดยตรง (UserInputService.InputChanged ไม่รับ touch ที่ถูก consume โดย GuiObject)
+FloatBtn.InputChanged:Connect(function(i)
+    if i.UserInputType ~= Enum.UserInputType.Touch then return end
+    if not fDragging then return end
+    local delta = Vector2.new(i.Position.X, i.Position.Y) - fDragStart
+    fLastPos = Vector2.new(i.Position.X, i.Position.Y)  -- [FIX] เก็บ position ล่าสุด
+    if math.abs(delta.X) > DRAG_THRESHOLD or math.abs(delta.Y) > DRAG_THRESHOLD then
+        fDidDrag = true
+    end
+    if fDidDrag then
+        applyFloatPos(fStartAbsPos.X + delta.X, fStartAbsPos.Y + delta.Y)
+    end
+end)
+
 task.spawn(function()
     while FloatIcon.Parent do
         if FloatIcon.Visible then
@@ -790,20 +804,27 @@ end
 
 -- ══════════════════════════════
 --  FLOAT ICON: drag + tap
---  [FIX] ใช้ state แยก fDragging จาก dragging ของ Main
+--  [FIX SMOOTH] ใช้ AbsolutePosition แทน UDim2 Scale กัน drift + clamp ในจอ
 -- ══════════════════════════════
-local fDragging = false
-local fDidDrag  = false
-local fDragStart, fStartPos
-local DRAG_THRESHOLD = 10
+local fDragging    = false
+local fDidDrag     = false
+local fDragStart, fStartAbsPos, fLastPos
+local DRAG_THRESHOLD = 6
+
+local function applyFloatPos(absX, absY)
+    local vp = workspace.CurrentCamera.ViewportSize
+    absX = math.clamp(absX, 0, vp.X - 64)
+    absY = math.clamp(absY, 0, vp.Y - 64)
+    FloatIcon.Position = UDim2.new(0, absX, 0, absY)
+end
 
 FloatBtn.InputBegan:Connect(function(i)
     if i.UserInputType == Enum.UserInputType.MouseButton1
     or i.UserInputType == Enum.UserInputType.Touch then
-        fDragging  = true
-        fDidDrag   = false
-        fDragStart = i.Position
-        fStartPos  = FloatIcon.Position
+        fDragging    = true
+        fDidDrag     = false
+        fDragStart   = Vector2.new(i.Position.X, i.Position.Y)
+        fStartAbsPos = Vector2.new(FloatIcon.AbsolutePosition.X, FloatIcon.AbsolutePosition.Y)
         Tween(FloatIcon, {Size=UDim2.new(0,56,0,56)}, 0.08)
         Tween(FloatBase, {BackgroundTransparency=0.25}, 0.08)
     end
@@ -825,17 +846,15 @@ UserInputService.InputChanged:Connect(function(i)
         )
     end
 
-    -- drag FloatIcon
+    -- drag FloatIcon (mouse / touch นอก button)
     if fDragging then
-        local delta = i.Position - fDragStart
+        local delta = Vector2.new(i.Position.X, i.Position.Y) - fDragStart
+        fLastPos = Vector2.new(i.Position.X, i.Position.Y)  -- [FIX] เก็บ position ล่าสุด
         if math.abs(delta.X) > DRAG_THRESHOLD or math.abs(delta.Y) > DRAG_THRESHOLD then
             fDidDrag = true
         end
         if fDidDrag then
-            FloatIcon.Position = UDim2.new(
-                fStartPos.X.Scale, fStartPos.X.Offset + delta.X,
-                fStartPos.Y.Scale, fStartPos.Y.Offset + delta.Y
-            )
+            applyFloatPos(fStartAbsPos.X + delta.X, fStartAbsPos.Y + delta.Y)
         end
     end
 end)
@@ -854,14 +873,24 @@ UserInputService.InputEnded:Connect(function(i)
     if fDragging then
         Tween(FloatIcon, {Size=UDim2.new(0,64,0,64)}, 0.15, Enum.EasingStyle.Back)
         Tween(FloatBase, {BackgroundTransparency=0},   0.12)
+        -- [FIX] ใช้ fLastPos แทน i.Position เพราะ touch InputEnded ส่ง Position (0,0) เสมอบน mobile
+        local checkPos = fLastPos or Vector2.new(i.Position.X, i.Position.Y)
+        if fDragStart then
+            local finalDelta = checkPos - fDragStart
+            if math.abs(finalDelta.X) > DRAG_THRESHOLD or math.abs(finalDelta.Y) > DRAG_THRESHOLD then
+                fDidDrag = true
+            end
+        end
         if not fDidDrag then
             minimized = false
             showMain()
         else
+            -- savedMainPos ใช้ position ล่าสุดของ FloatIcon (offset-only แล้ว)
             savedMainPos = FloatIcon.Position
         end
         fDragging = false
         fDidDrag  = false
+        fLastPos  = nil   -- [FIX] reset
     end
 end)
 
