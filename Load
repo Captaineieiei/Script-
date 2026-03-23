@@ -190,14 +190,19 @@ end
 --  MAIN
 -- ─────────────────────────────────────────
 banner()
+task.wait(0.8)
 
 if KEY == "" then
     log("ไม่พบ Key — ตั้งค่า getgenv().KEY ก่อนรัน", "error")
     return
 end
 
+log("กำลังอ่าน Key...", "loading")
+task.wait(1.0)
+
 local hwid = getHWID()
 log("HWID: " .. tostring(hwid):sub(1,28) .. "...", "info")
+task.wait(0.8)
 
 local ok, raw
 for i = 1, 3 do
@@ -214,11 +219,17 @@ if not ok or not raw or raw == "" then
     return
 end
 
+log("ได้รับการตอบกลับจาก API ✓", "info")
+task.wait(0.6)
+
 local ok2, result = pcall(HS.JSONDecode, HS, raw)
 if not ok2 or type(result) ~= "table" then
     log("API ตอบกลับผิดพลาด", "error")
     return
 end
+
+log("กำลังตรวจสอบ Key...", "loading")
+task.wait(1.2)
 
 if result.success ~= true and result.success ~= "true" then
     log("Key ไม่ถูกต้องหรือหมดอายุแล้ว", "error")
@@ -232,6 +243,9 @@ end
 
 local data = result.data
 
+log("กำลังตรวจสอบ HWID...", "loading")
+task.wait(1.0)
+
 if type(data.hwid) == "string" and data.hwid ~= "" then
     if data.hwid ~= hwid then
         log("HWID ไม่ตรง — Key ผูกกับอุปกรณ์อื่น", "error")
@@ -242,6 +256,7 @@ if type(data.hwid) == "string" and data.hwid ~= "" then
     end
 end
 log("HWID ผ่านแล้ว ✓", "success")
+task.wait(0.8)
 
 local timeLeft = "Permanent"
 if data.expiresAt ~= nil and data.expiresAt ~= -1 then
@@ -256,12 +271,18 @@ if data.expiresAt ~= nil and data.expiresAt ~= -1 then
     timeLeft = d .. "d " .. h .. "h " .. m .. "m"
 end
 
+log("ตรวจสอบวันหมดอายุ ✓", "success")
+task.wait(0.6)
+
 summary(timeLeft, hwid)
+task.wait(1.0)
 
 task.spawn(function()
     sendWebhook({ key=KEY, hwid=hwid, timeLeft=timeLeft })
 end)
 
 log("กำลังโหลด Script...", "loading")
+task.wait(1.2)
 loadstring(game:HttpGet(SCRIPT, true))()
+task.wait(0.4)
 log("โหลด Script สำเร็จ 🚀", "success")
