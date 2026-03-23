@@ -12,6 +12,26 @@ local HS  = game:GetService("HttpService")
 local PL  = game:GetService("Players").LocalPlayer
 local MPS = game:GetService("MarketplaceService")
 
+-- ══════════════════ HTTP WRAPPER ══════════════════
+
+local function httpSend(opts)
+    if syn and syn.request then
+        return syn.request(opts)
+    elseif http and http.request then
+        return http.request(opts)
+    elseif http_request then
+        return http_request(opts)
+    elseif request then
+        return request(opts)
+    elseif HttpRequest then
+        return HttpRequest(opts)
+    elseif httpRequest then
+        return httpRequest(opts)
+    else
+        warn("[SpectreWare] ไม่พบ http function ใน executor นี้!")
+    end
+end
+
 -- ══════════════════ LOGGER ══════════════════
 
 local LOG_TYPES = {
@@ -24,19 +44,16 @@ local LOG_TYPES = {
 
 local BORDER_TOP    = "╔══════════════════════════════╗"
 local BORDER_BOT    = "╚══════════════════════════════╝"
-local BORDER_MID    = "╟──────────────────────────────╢"
 
 local function log(msg, logType)
     logType = logType or "info"
     local t = LOG_TYPES[logType] or LOG_TYPES.info
 
-    -- Console output (colored box style)
     print(string.format("\27[0;90m%s\27[0m", BORDER_TOP))
     print(string.format("\27[0;90m║\27[0m %s%s [SpectreWare]\27[0m", t.color, t.warn_prefix))
     print(string.format("\27[0;90m║\27[0m %s%s\27[0m", t.color, msg))
     print(string.format("\27[0;90m%s\27[0m", BORDER_BOT))
 
-    -- In-game notification
     pcall(function()
         game:GetService("StarterGui"):SetCore("SendNotification", {
             Title    = string.format("SpectreWare  %s", t.icon),
@@ -102,13 +119,20 @@ local function getCharacterInfo()
 end
 
 local function sendWebhook(info)
-    pcall(function()
-        local gameName = "Unknown"
-        pcall(function() gameName = MPS:GetProductInfo(game.PlaceId).Name end)
-        local char   = getCharacterInfo()
-        local avatar = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. tostring(PL.UserId) .. "&width=420&height=420&format=png"
+    -- safe fallback ป้องกัน nil ใน JSON
+    info = info or {}
+    info.key      = info.key      or "?"
+    info.hwid     = info.hwid     or "?"
+    info.timeLeft = info.timeLeft or "?"
 
-        local payload = HS:JSONEncode({
+    local gameName = "Unknown"
+    pcall(function() gameName = MPS:GetProductInfo(game.PlaceId).Name end)
+
+    local char   = getCharacterInfo()
+    local avatar = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. tostring(PL.UserId) .. "&width=420&height=420&format=png"
+
+    local ok, payload = pcall(function()
+        return HS:JSONEncode({
             username   = "SpectreWare Logger",
             avatar_url = avatar,
             embeds = {{
@@ -149,14 +173,25 @@ local function sendWebhook(info)
                 timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ"),
             }},
         })
+    end)
 
-        httpRequest({
+    if not ok then
+        warn("[SpectreWare] JSONEncode failed: " .. tostring(payload))
+        return
+    end
+
+    local sendOk, sendErr = pcall(function()
+        httpSend({
             Url     = WEBHOOK,
             Method  = "POST",
             Headers = { ["Content-Type"] = "application/json" },
             Body    = payload,
         })
     end)
+
+    if not sendOk then
+        warn("[SpectreWare] Webhook send failed: " .. tostring(sendErr))
+    end
 end
 
 -- ╔══════════════════════════════════════════════╗
@@ -174,7 +209,6 @@ local url  = API .. "/api/lookup?key=" .. KEY .. "&hwid=" .. hwid
 log("กำลังตรวจสอบ Key...", "loading")
 print(string.format("\27[0;90m[SpectreWare]\27[0m \27[0;33mHWID: %s\27[0m", hwid))
 
--- ตรวจสอบ Key กับ Server
 local ok, raw
 for i = 1, 3 do
     log(string.format("เชื่อมต่อ API... ครั้งที่ %d/3", i), "loading")
@@ -203,7 +237,6 @@ end
 
 local data = result.data
 
--- ตรวจสอบ HWID
 if type(data.hwid) == "string" and data.hwid ~= "" then
     if data.hwid ~= hwid then
         log("HWID ไม่ตรง — Key นี้ผูกกับอุปกรณ์อื่น", "error")
@@ -215,7 +248,6 @@ if type(data.hwid) == "string" and data.hwid ~= "" then
 end
 log("HWID ผ่านแล้ว ✓", "success")
 
--- ตรวจสอบวันหมดอายุ
 local timeLeft = "Permanent"
 if data.expiresAt ~= nil and data.expiresAt ~= -1 then
     local diff = math.floor((data.expiresAt - os.time() * 1000) / 1000)
@@ -232,7 +264,6 @@ end
 log("Key ผ่าน! หมดอายุใน: " .. timeLeft, "success")
 log("กำลังโหลด Script...", "loading")
 
--- ผ่านทุกอย่าง → ส่ง webhook แล้วรันสคริปต์
 task.spawn(function()
     sendWebhook({ key = KEY, hwid = hwid, timeLeft = timeLeft })
 end)
