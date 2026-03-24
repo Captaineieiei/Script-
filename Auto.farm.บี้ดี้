@@ -37,7 +37,7 @@ local Window = WindUI:CreateWindow({
     MinSize = Vector2.new(560, 350),
     MaxSize = Vector2.new(850, 560),
     Transparent = true,
-    Theme = "Dark",
+    Theme = "SpectreTheme",
     Resizable = true,
     SideBarWidth = 200,
     BackgroundImageTransparency = 0.42,
@@ -121,7 +121,7 @@ local farmItemMap = {
 
 -- 1. Item Dropdown
 FarmSection:Dropdown({
-    Flag   = "SelectFarmJob",   -- Flag นี้จะถูกบันทึก/โหลดอัตโนมัติ
+    Flag   = "SelectFarmJob",
     Title  = "1. Select Item to Farm",
     Desc   = "Choose the item to deliver (must select before starting)",
     Values = {
@@ -137,7 +137,7 @@ FarmSection:Dropdown({
 
 -- 2. Truck Dropdown
 FarmSection:Dropdown({
-    Flag   = "SelectTruck",     -- Flag นี้จะถูกบันทึก/โหลดอัตโนมัติ
+    Flag   = "SelectTruck",
     Title  = "2. Select Delivery Truck",
     Desc   = "Must be in character (choose manually)",
     Values = {
@@ -156,7 +156,8 @@ FarmSection:Dropdown({
 })
 
 -- 3. Auto Farm Toggle
-FarmSection:Toggle({
+local AutoFarmToggle
+AutoFarmToggle = FarmSection:Toggle({
     Flag     = "AutoFarm",
     Title    = "Auto Farm (Start / Stop)",
     Desc     = "Beady City Safe Mode",
@@ -173,6 +174,7 @@ FarmSection:Toggle({
                     Duration = 3.3,
                 })
                 _G.LoopActive = false
+                AutoFarmToggle:Set(false)
                 return
             end
 
@@ -183,6 +185,7 @@ FarmSection:Toggle({
                 if not remote then
                     WindUI:Notify({ Title = "ERROR", Content = "Remote not found!", Duration = 10 })
                     _G.LoopActive = false
+                    AutoFarmToggle:Set(false)
                     return
                 end
 
@@ -275,7 +278,7 @@ local teleportLocations = {
 local selectedTeleportLocation = nil
 
 TeleportSection:Dropdown({
-    Flag   = "SelectTeleport",  -- Flag นี้จะถูกบันทึก/โหลดอัตโนมัติ
+    Flag   = "SelectTeleport",
     Title  = "Select Location",
     Desc   = "เลือก Location ที่จะ Teleport ไป",
     Values = {
@@ -335,7 +338,7 @@ TeleportSection:Button({
 local UISettings = Tabs.Settings:Section({ Title = "UI Configuration", Opened = true })
 
 UISettings:Keybind({
-    Flag     = "UIKeybind",     -- Flag นี้จะถูกบันทึก/โหลดอัตโนมัติ
+    Flag     = "UIKeybind",
     Title    = "Toggle Menu Key",
     Value    = "LeftControl",
     Callback = function(v)
@@ -347,78 +350,16 @@ local themes = {}
 for n, _ in pairs(WindUI.Themes) do table.insert(themes, n) end
 
 UISettings:Dropdown({
-    Flag     = "UITheme",       -- Flag นี้จะถูกบันทึก/โหลดอัตโนมัติ
+    Flag     = "UITheme",
     Title    = "UI Theme",
     Values   = themes,
     Default  = "Dark",
     Callback = function(t) pcall(function() WindUI:SetTheme(t) end) end,
 })
 
--- ══════════════════════════════════════════════════════════════
--- ── AUTO CONFIG (writefile / readfile) ───────────────────────
--- ══════════════════════════════════════════════════════════════
-local HttpService = game:GetService("HttpService")
-local CONFIG_PATH = "MySuperHub/SpectreWare_config.json"
-
--- สร้างโฟลเดอร์ถ้ายังไม่มี
-pcall(function()
-    if not isfolder("MySuperHub") then
-        makefolder("MySuperHub")
-    end
-end)
-
-local function saveConfig()
-    local data = {
-        SelectFarmJob  = WindUI.Flags["SelectFarmJob"]  and WindUI.Flags["SelectFarmJob"].Value  or nil,
-        SelectTruck    = WindUI.Flags["SelectTruck"]    and WindUI.Flags["SelectTruck"].Value    or nil,
-        SelectTeleport = WindUI.Flags["SelectTeleport"] and WindUI.Flags["SelectTeleport"].Value or nil,
-        UITheme        = WindUI.Flags["UITheme"]        and WindUI.Flags["UITheme"].Value        or nil,
-        UIKeybind      = WindUI.Flags["UIKeybind"]      and WindUI.Flags["UIKeybind"].Value      or nil,
-    }
-    pcall(function()
-        writefile(CONFIG_PATH, HttpService:JSONEncode(data))
-    end)
-end
-
-local function loadConfig()
-    local ok, raw = pcall(readfile, CONFIG_PATH)
-    if not ok or not raw or raw == "" then return end
-
-    local ok2, data = pcall(function() return HttpService:JSONDecode(raw) end)
-    if not ok2 or type(data) ~= "table" then return end
-
-    -- โหลดค่ากลับเข้า Flag แต่ละตัว
-    for flag, value in pairs(data) do
-        pcall(function()
-            if WindUI.Flags[flag] and value ~= nil then
-                WindUI.Flags[flag]:SetValue(value)
-            end
-        end)
-    end
-end
-
--- โหลด config อัตโนมัติตอนเปิด (หลังจาก UI สร้างเสร็จ)
-task.defer(function()
-    loadConfig()
-
-    -- Auto-save ทุกครั้งที่ flag เปลี่ยนค่า
-    local flagsToWatch = { "SelectFarmJob", "SelectTruck", "SelectTeleport", "UITheme", "UIKeybind" }
-    for _, flagName in ipairs(flagsToWatch) do
-        task.spawn(function()
-            -- รอจน Flag พร้อม
-            local timeout = 10
-            local t = 0
-            while not (WindUI.Flags[flagName]) and t < timeout do
-                task.wait(0.1)
-                t += 0.1
-            end
-            if WindUI.Flags[flagName] then
-                WindUI.Flags[flagName].OnChanged:Connect(function()
-                    saveConfig()
-                end)
-            end
-        end)
-    end
-end)
-
-
+-- ── Ready Notification ──────────────────────────────────────────────────────
+WindUI:Notify({
+    Title    = "SpectreWare",
+    Content  = "✅ Ready! Select item + truck, then toggle Auto Farm",
+    Duration = 3.3,
+})
