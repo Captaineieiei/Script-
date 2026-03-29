@@ -5,8 +5,8 @@ local API     = "http://37.27.169.207:20745"
 local WEBHOOK = "https://discord.com/api/webhooks/1485552264855687258/WQ5OdpcgjSsiqMFQc3pA28JdF7KnLnfHwHNJIPw26OBVhstqAJosQdoZbQ-dJJZIxWsk"
 
 local scripts = {
-    [17766863403]     = "https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/Beady",
-    [139434492338574] = "https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/Never",
+    [17766863403] = "https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/Beady",
+    [9836690467]  = "https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/Never",
 }
 local SCRIPT = scripts[game.PlaceId]
 
@@ -14,9 +14,6 @@ local HS  = game:GetService("HttpService")
 local PL  = game:GetService("Players").LocalPlayer
 local MPS = game:GetService("MarketplaceService")
 
--- ─────────────────────────────────────────
---  LOGGER
--- ─────────────────────────────────────────
 local ICONS    = { info="🔹", success="✅", error="❌", loading="🔄", warn="⚠️" }
 local DURATION = { info=4, success=5, error=6, loading=4, warn=5 }
 
@@ -30,7 +27,11 @@ local function log(msg, t)
 end
 
 local function banner()
-    print("") print("  ✦  SpectreWare  ✦") print("  Loader v2  •  Key Auth") print("")
+    print("")
+    print("  ✦  SpectreWare  ✦")
+    print("  Loader v2  •  Key Auth")
+    print("  ▸ PlaceId: " .. tostring(game.PlaceId))  -- ← เพิ่ม debug PlaceId
+    print("")
 end
 
 local function summary(timeLeft, hwid)
@@ -39,9 +40,6 @@ local function summary(timeLeft, hwid)
     print("⏳  "..timeLeft) print("")
 end
 
--- ─────────────────────────────────────────
---  HTTP WRAPPER
--- ─────────────────────────────────────────
 local function httpSend(opts)
     if syn and syn.request   then return syn.request(opts)  end
     if http and http.request then return http.request(opts) end
@@ -52,9 +50,6 @@ local function httpSend(opts)
     warn("SpectreWare: ไม่พบ http function")
 end
 
--- ─────────────────────────────────────────
---  HELPERS
--- ─────────────────────────────────────────
 local function getHWID()
     local id = "UNKNOWN"
     pcall(function() id = game:GetService("RbxAnalyticsService"):GetClientId() end)
@@ -82,9 +77,6 @@ local function getPing()
     return v
 end
 
--- ─────────────────────────────────────────
---  WEBHOOK
--- ─────────────────────────────────────────
 local function sendWebhook(info)
     info = info or {}
     info.key      = info.key      or "?"
@@ -121,18 +113,18 @@ local function sendWebhook(info)
                 color     = isMismatch and 0xFF3C3C or 0x8A2BE2,
                 thumbnail = { url = avatar },
                 fields = {
-                    { name   = "👤 ผู้ใช้",
-                      value  = "`"..PL.Name.."` • `"..tostring(PL.UserId)
-                             .."` • "..getPlatform().." • "..getPing(),
-                      inline = false },
-                    { name   = "🔑 Key / หมดอายุ",
-                      value  = "`"..tostring(info.key):sub(1,16).."...` • `"..info.timeLeft.."`",
-                      inline = false },
-                    { name   = "🎮 เกม",
-                      value  = "["..gameName.."](https://www.roblox.com/games/"
-                             ..tostring(game.PlaceId)..") • HWID: `"
-                             ..tostring(info.hwid):sub(1,20).."...`",
-                      inline = false },
+                    { name="👤 ผู้ใช้",
+                      value="`"..PL.Name.."` • `"..tostring(PL.UserId)
+                           .."` • "..getPlatform().." • "..getPing(),
+                      inline=false },
+                    { name="🔑 Key / หมดอายุ",
+                      value="`"..tostring(info.key):sub(1,16).."...` • `"..info.timeLeft.."`",
+                      inline=false },
+                    { name="🎮 เกม",
+                      value="["..gameName.."](https://www.roblox.com/games/"
+                           ..tostring(game.PlaceId)..") • HWID: `"
+                           ..tostring(info.hwid):sub(1,20).."...`",
+                      inline=false },
                 },
                 footer    = { text="SpectreWare v2  •  "..os.date("!%d %b %Y %H:%M UTC"), icon_url=headshot },
                 timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ"),
@@ -141,19 +133,23 @@ local function sendWebhook(info)
     end)
 
     if not ok then warn("SpectreWare: JSONEncode failed — "..tostring(payload)) return end
-    local sok, serr = pcall(function()
+    pcall(function()
         httpSend({ Url=WEBHOOK, Method="POST", Headers={["Content-Type"]="application/json"}, Body=payload })
     end)
-    if not sok then warn("SpectreWare: Webhook failed — "..tostring(serr)) end
 end
 
--- ─────────────────────────────────────────
---  MAIN
--- ─────────────────────────────────────────
+-- ── MAIN ──
 banner()
 task.wait(0.8)
 
 if KEY == "" then log("ไม่พบ Key — ตั้งค่า getgenv().KEY ก่อนรัน","error") return end
+
+-- เช็ค map รองรับไหม (เช็คก่อน auth เพื่อ debug ได้เร็ว)
+if not SCRIPT then
+    log("Map นี้ไม่รองรับ — PlaceId จริง: "..tostring(game.PlaceId), "error")
+    warn("SpectreWare: ถ้า PlaceId ไม่ตรงให้แจ้ง dev เพื่ออัปเดต scripts table")
+    return
+end
 
 log("กำลังอ่าน Key...","loading") task.wait(1.0)
 local hwid = getHWID()
@@ -210,8 +206,6 @@ log("ตรวจสอบวันหมดอายุ ✓","success") task.wa
 summary(timeLeft, hwid) task.wait(1.0)
 
 task.spawn(function() sendWebhook({ key=KEY, hwid=hwid, timeLeft=timeLeft }) end)
-
-if not SCRIPT then log("Map ID: "..tostring(game.PlaceId).." ไม่รองรับ","error") return end
 
 log("กำลังโหลด Script สำหรับ Map: "..tostring(game.PlaceId),"loading") task.wait(1.2)
 loadstring(game:HttpGet(SCRIPT, true))()
