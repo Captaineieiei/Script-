@@ -6,7 +6,7 @@ local WEBHOOK = "https://discord.com/api/webhooks/1485552264855687258/WQ5OdpcgjS
 
 local scripts = {
     [17766863403] = "https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/Beady",
-    [8514985969]  = "https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/Never",
+    [139434492338574]  = "https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/Never",
 }
 local SCRIPT = scripts[game.PlaceId]
 
