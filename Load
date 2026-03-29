@@ -1,4 +1,4 @@
--- SpectreWare • Loader v2
+-- SpectreWare • Loader v
 
 local KEY     = getgenv().KEY or ""
 local API     = "http://37.27.169.207:20745"
