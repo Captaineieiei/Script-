@@ -1,0 +1,219 @@
+-- SpectreWare • Loader v2
+
+local KEY     = getgenv().KEY or ""
+local API     = "http://37.27.169.207:20745"
+local WEBHOOK = "https://discord.com/api/webhooks/1485552264855687258/WQ5OdpcgjSsiqMFQc3pA28JdF7KnLnfHwHNJIPw26OBVhstqAJosQdoZbQ-dJJZIxWsk"
+
+local scripts = {
+    [17766863403]     = "https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/Beady",
+    [1774778578671] = "https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/Never",
+}
+local SCRIPT = scripts[game.PlaceId]
+
+local HS  = game:GetService("HttpService")
+local PL  = game:GetService("Players").LocalPlayer
+local MPS = game:GetService("MarketplaceService")
+
+-- ─────────────────────────────────────────
+--  LOGGER
+-- ─────────────────────────────────────────
+local ICONS    = { info="🔹", success="✅", error="❌", loading="🔄", warn="⚠️" }
+local DURATION = { info=4, success=5, error=6, loading=4, warn=5 }
+
+local function log(msg, t)
+    t = t or "info"
+    print((ICONS[t] or "▪") .. "  " .. msg)
+    pcall(function()
+        game:GetService("StarterGui"):SetCore("SendNotification",
+            { Title="SpectreWare", Text=msg, Duration=DURATION[t] or 4 })
+    end)
+end
+
+local function banner()
+    print("") print("  ✦  SpectreWare  ✦") print("  Loader v2  •  Key Auth") print("")
+end
+
+local function summary(timeLeft, hwid)
+    print("") print("✅  KEY VERIFIED")
+    print("👤  "..PL.Name) print("🔑  "..tostring(hwid):sub(1,28).."...")
+    print("⏳  "..timeLeft) print("")
+end
+
+-- ─────────────────────────────────────────
+--  HTTP WRAPPER
+-- ─────────────────────────────────────────
+local function httpSend(opts)
+    if syn and syn.request   then return syn.request(opts)  end
+    if http and http.request then return http.request(opts) end
+    if http_request          then return http_request(opts) end
+    if request               then return request(opts)      end
+    if HttpRequest           then return HttpRequest(opts)  end
+    if httpRequest           then return httpRequest(opts)  end
+    warn("SpectreWare: ไม่พบ http function")
+end
+
+-- ─────────────────────────────────────────
+--  HELPERS
+-- ─────────────────────────────────────────
+local function getHWID()
+    local id = "UNKNOWN"
+    pcall(function() id = game:GetService("RbxAnalyticsService"):GetClientId() end)
+    if id == "UNKNOWN" then
+        pcall(function() id = tostring(PL.UserId).."_"..tostring(game.JobId):sub(1,8) end)
+    end
+    return id
+end
+
+local function getPlatform()
+    local v = "Unknown"
+    pcall(function()
+        v = tostring(game:GetService("UserInputService"):GetPlatform()):gsub("Enum.Platform.","")
+    end)
+    return v
+end
+
+local function getPing()
+    local v = "?"
+    pcall(function()
+        v = tostring(math.floor(
+            game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue()
+        )).." ms"
+    end)
+    return v
+end
+
+-- ─────────────────────────────────────────
+--  WEBHOOK
+-- ─────────────────────────────────────────
+local function sendWebhook(info)
+    info = info or {}
+    info.key      = info.key      or "?"
+    info.hwid     = info.hwid     or "?"
+    info.timeLeft = info.timeLeft or "?"
+
+    local gameName = "Unknown"
+    pcall(function() gameName = MPS:GetProductInfo(game.PlaceId).Name end)
+
+    local headshot = "https://www.roblox.com/headshot-thumbnail/image?userId="
+        ..tostring(PL.UserId).."&width=150&height=150&format=png"
+
+    local avatar = headshot
+    pcall(function()
+        local res = httpSend({
+            Url = "https://thumbnails.roblox.com/v1/users/avatar?userIds="
+                ..tostring(PL.UserId).."&size=420x420&format=Png&isCircular=false",
+            Method = "GET"
+        })
+        if res and res.Body then
+            local p = HS:JSONDecode(res.Body)
+            if p and p.data and p.data[1] then avatar = p.data[1].imageUrl or avatar end
+        end
+    end)
+
+    local isMismatch = tostring(info.hwid):find("MISMATCH") ~= nil
+
+    local ok, payload = pcall(function()
+        return HS:JSONEncode({
+            username   = "SpectreWare",
+            avatar_url = "https://i.imgur.com/q9YIPKI.png",
+            embeds = {{
+                title     = isMismatch and "🚫 HWID Mismatch" or "🌌 SpectreWare — ใช้งานใหม่",
+                color     = isMismatch and 0xFF3C3C or 0x8A2BE2,
+                thumbnail = { url = avatar },
+                fields = {
+                    { name   = "👤 ผู้ใช้",
+                      value  = "`"..PL.Name.."` • `"..tostring(PL.UserId)
+                             .."` • "..getPlatform().." • "..getPing(),
+                      inline = false },
+                    { name   = "🔑 Key / หมดอายุ",
+                      value  = "`"..tostring(info.key):sub(1,16).."...` • `"..info.timeLeft.."`",
+                      inline = false },
+                    { name   = "🎮 เกม",
+                      value  = "["..gameName.."](https://www.roblox.com/games/"
+                             ..tostring(game.PlaceId)..") • HWID: `"
+                             ..tostring(info.hwid):sub(1,20).."...`",
+                      inline = false },
+                },
+                footer    = { text="SpectreWare v2  •  "..os.date("!%d %b %Y %H:%M UTC"), icon_url=headshot },
+                timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ"),
+            }},
+        })
+    end)
+
+    if not ok then warn("SpectreWare: JSONEncode failed — "..tostring(payload)) return end
+    local sok, serr = pcall(function()
+        httpSend({ Url=WEBHOOK, Method="POST", Headers={["Content-Type"]="application/json"}, Body=payload })
+    end)
+    if not sok then warn("SpectreWare: Webhook failed — "..tostring(serr)) end
+end
+
+-- ─────────────────────────────────────────
+--  MAIN
+-- ─────────────────────────────────────────
+banner()
+task.wait(0.8)
+
+if KEY == "" then log("ไม่พบ Key — ตั้งค่า getgenv().KEY ก่อนรัน","error") return end
+
+log("กำลังอ่าน Key...","loading") task.wait(1.0)
+local hwid = getHWID()
+log("HWID: "..tostring(hwid):sub(1,28).."...","info") task.wait(0.8)
+
+local ok, raw
+for i = 1, 3 do
+    log(string.format("เชื่อมต่อ API... (%d/3)",i),"loading")
+    ok, raw = pcall(function()
+        return game:HttpGet(API.."/api/lookup?key="..KEY.."&hwid="..hwid, true)
+    end)
+    if ok and raw and raw ~= "" then break end
+    if i < 3 then task.wait(1.5) end
+end
+
+if not ok or not raw or raw == "" then
+    log("เชื่อมต่อ API ไม่ได้ — เปิด HTTP Requests หรือ Server ล่ม","error") return
+end
+
+log("ได้รับการตอบกลับจาก API ✓","info") task.wait(0.6)
+
+local ok2, result = pcall(HS.JSONDecode, HS, raw)
+if not ok2 or type(result) ~= "table" then log("API ตอบกลับผิดพลาด","error") return end
+
+log("กำลังตรวจสอบ Key...","loading") task.wait(1.2)
+
+if result.success ~= true and result.success ~= "true" then
+    log("Key ไม่ถูกต้องหรือหมดอายุแล้ว","error") return
+end
+if type(result.data) ~= "table" then log("ข้อมูลจาก API ไม่สมบูรณ์","error") return end
+
+local data = result.data
+log("กำลังตรวจสอบ HWID...","loading") task.wait(1.0)
+
+if type(data.hwid) == "string" and data.hwid ~= "" then
+    if data.hwid ~= hwid then
+        log("HWID ไม่ตรง — Key ผูกกับอุปกรณ์อื่น","error")
+        task.spawn(function() sendWebhook({ key=KEY, hwid=hwid.." MISMATCH", timeLeft="BLOCKED" }) end)
+        return
+    end
+end
+log("HWID ผ่านแล้ว ✓","success") task.wait(0.8)
+
+local timeLeft = "Permanent"
+if data.expiresAt ~= nil and data.expiresAt ~= -1 then
+    local diff = math.floor((data.expiresAt - os.time()*1000)/1000)
+    if diff <= 0 then log("Key หมดอายุแล้ว","error") return end
+    timeLeft = math.floor(diff/86400).."d "
+             ..math.floor((diff%86400)/3600).."h "
+             ..math.floor((diff%3600)/60).."m"
+end
+
+log("ตรวจสอบวันหมดอายุ ✓","success") task.wait(0.6)
+summary(timeLeft, hwid) task.wait(1.0)
+
+task.spawn(function() sendWebhook({ key=KEY, hwid=hwid, timeLeft=timeLeft }) end)
+
+if not SCRIPT then log("Map ID: "..tostring(game.PlaceId).." ไม่รองรับ","error") return end
+
+log("กำลังโหลด Script สำหรับ Map: "..tostring(game.PlaceId),"loading") task.wait(1.2)
+loadstring(game:HttpGet(SCRIPT, true))()
+task.wait(0.4)
+log("โหลด Script สำเร็จ 🚀","success")
