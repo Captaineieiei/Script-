@@ -1,4 +1,4 @@
--- SpectreWare • Loader v
+-- SpectreWareX • Loader v
 
 local function banner()
     print([[
@@ -196,7 +196,19 @@ if not ok2 or type(result) ~= "table" then log("API ตอบกลับผิ�
 log("กำลังตรวจสอบ Key...","loading") task.wait(1.2)
 
 if result.success ~= true and result.success ~= "true" then
-    log("Key ไม่ถูกต้องหรือหมดอายุแล้ว","error") return
+    local msg = tostring(result.message or ""):lower()
+    if msg:find("expired") or msg:find("not found") then
+        log("Key หมดอายุแล้ว — กรุณา Redeem Key ใหม่","error")
+    elseif msg:find("not activated") then
+        log("Key ยังไม่ได้ Activate","error")
+    elseif msg:find("blacklist") then
+        log("Key ถูก Blacklist","error")
+    elseif msg:find("hwid") then
+        log("HWID ไม่ตรง — Key ผูกกับอุปกรณ์อื่น","error")
+    else
+        log("เชื่อมต่อ API ไม่ได้ — ลองใหม่อีกครั้ง","error")
+    end
+    return
 end
 if type(result.data) ~= "table" then log("ข้อมูลจาก API ไม่สมบูรณ์","error") return end
 
@@ -218,8 +230,7 @@ if data.expiresAt ~= nil and data.expiresAt ~= -1 then
     if diff <= 0 then log("Key หมดอายุแล้ว","error") return end
     timeLeft = math.floor(diff/86400).."d "
              ..math.floor((diff%86400)/3600).."h "
-             ..math.floor((diff%3600)/60).."m "
-             ..(diff%60).."s"
+             ..math.floor((diff%3600)/60).."m"
 end
 
 log("ตรวจสอบวันหมดอายุ ✓","success") task.wait(0.6)
@@ -252,9 +263,13 @@ task.spawn(function()
             if cok2 and type(cresult) == "table" then
                 local expired = false
 
-                -- API บอก key ไม่ valid แล้ว
+                -- API บอก key ไม่ valid — not found = หมดอายุแล้วถูกลบ
                 if cresult.success ~= true and cresult.success ~= "true" then
-                    expired = true
+                    local msg = tostring(cresult.message or ""):lower()
+                    if msg:find("expired") or msg:find("not found") or msg:find("blacklist") then
+                        expired = true
+                    end
+                    -- error อื่น (server ล่ม ฯลฯ) — ไม่ kick
                 end
 
                 -- เช็ค expiresAt จาก data
