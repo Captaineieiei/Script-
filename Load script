@@ -1,4 +1,4 @@
--- SpectreWareXxxxx • Loader v2
+-- SpectreWare • Loader v2
 
 local function banner()
     print([[
@@ -259,7 +259,7 @@ if data.expiresAt ~= nil and data.expiresAt ~= -1 then
     local diff = math.floor((data.expiresAt - os.time()*1000)/1000)
     if diff <= 0 then log("Key หมดอายุแล้ว","error") return end
     timeLeft = math.floor(diff/86400).."d "
-             ..math.floor((diffSpectreWare0).."h "
+             ..math.floor((diff%86400)/3600).."h "
              ..math.floor((diff%3600)/60).."m"
 end
 
@@ -279,7 +279,7 @@ log("โหลด Script สำเร็จ 🚀","success")
 --  SESSION GUARD — ตรวจสอบ Key ทุก 5 นาที
 --  ถ้าหมดอายุระหว่างเล่น → Kick ทันที
 -- ─────────────────────────────────────────
-local CHECK_INTERVAL = 300  -- 5 นาที (วินาที)
+local CHECK_INTERVAL = 60   -- 1 นาที (วินาที)
 
 task.spawn(function()
     while task.wait(CHECK_INTERVAL) do
