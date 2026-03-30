@@ -1,4 +1,4 @@
--- SpectreWare • Loader v2
+-- SpectreWareXxxxx • Loader v2
 
 local function banner()
     print([[
@@ -259,7 +259,7 @@ if data.expiresAt ~= nil and data.expiresAt ~= -1 then
     local diff = math.floor((data.expiresAt - os.time()*1000)/1000)
     if diff <= 0 then log("Key หมดอายุแล้ว","error") return end
     timeLeft = math.floor(diff/86400).."d "
-             ..math.floor((diff%86400)/3600).."h "
+             ..math.floor((diffSpectreWare0).."h "
              ..math.floor((diff%3600)/60).."m"
 end
 
