@@ -35,6 +35,15 @@ local PL  = game:GetService("Players").LocalPlayer
 local MPS = game:GetService("MarketplaceService")
 
 -- ─────────────────────────────────────────
+--  GUARD FLAG — ป้องกันรันซ้ำ (รั่ว)
+-- ─────────────────────────────────────────
+if getgenv()._SpectreRunning then
+    warn("SpectreWare: กำลังรันอยู่แล้ว — ยกเลิก")
+    return
+end
+getgenv()._SpectreRunning = true
+
+-- ─────────────────────────────────────────
 --  LOGGER
 -- ─────────────────────────────────────────
 local ICONS    = { info="🔹", success="✅", error="❌", loading="🔄", warn="⚠️" }
@@ -56,15 +65,42 @@ local function summary(timeLeft, hwid)
 end
 
 -- ─────────────────────────────────────────
---  HTTP WRAPPER
+--  HTTP WRAPPER — pcall แต่ละตัวป้องกัน crash
 -- ─────────────────────────────────────────
 local function httpSend(opts)
-    if syn and syn.request   then return syn.request(opts)  end
-    if http and http.request then return http.request(opts) end
-    if http_request          then return http_request(opts) end
-    if request               then return request(opts)      end
-    if HttpRequest           then return HttpRequest(opts)  end
-    if httpRequest           then return httpRequest(opts)  end
+    -- pcall แต่ละ executor ป้องกันกรณี global ไม่มีแต่เข้าถึงแล้ว error
+    local ok, res
+
+    ok, res = pcall(function()
+        if typeof(syn) == "table" and syn.request then return syn.request(opts) end
+    end)
+    if ok and res then return res end
+
+    ok, res = pcall(function()
+        if typeof(http) == "table" and http.request then return http.request(opts) end
+    end)
+    if ok and res then return res end
+
+    ok, res = pcall(function()
+        if http_request then return http_request(opts) end
+    end)
+    if ok and res then return res end
+
+    ok, res = pcall(function()
+        if request then return request(opts) end
+    end)
+    if ok and res then return res end
+
+    ok, res = pcall(function()
+        if HttpRequest then return HttpRequest(opts) end
+    end)
+    if ok and res then return res end
+
+    ok, res = pcall(function()
+        if httpRequest then return httpRequest(opts) end
+    end)
+    if ok and res then return res end
+
     warn("SpectreWare: ไม่พบ http function")
 end
 
@@ -113,27 +149,19 @@ local function parseApiError(message)
 end
 
 -- ─────────────────────────────────────────
---  SAFE HTTP — คืน body string ทั้งกรณี 2xx และ non-2xx
---  (exploit บางตัว throw error เมื่อ status != 200)
+--  SAFE HTTP
 -- ─────────────────────────────────────────
 local function safeGet(url)
-    -- ลองดึงแบบปกติก่อน
     local ok, res = pcall(httpSend, { Url=url, Method="GET" })
     if ok and res then
         return true, res.Body or ""
     end
-
-    -- ถ้า pcall fail อาจเป็น non-200 หรือ network error จริง
-    -- ลอง parse error message ดูว่ามี JSON ซ่อนอยู่ไหม
     local errStr = tostring(res or "")
-    -- บาง exploit ใส่ Body ไว้ใน error message เลย
     local jsonStart = errStr:find("{")
     if jsonStart then
-        local body = errStr:sub(jsonStart)
-        return true, body  -- ได้ body แม้ pcall fail
+        return true, errStr:sub(jsonStart)
     end
-
-    return false, errStr  -- network error จริง
+    return false, errStr
 end
 
 -- ─────────────────────────────────────────
@@ -206,7 +234,11 @@ end
 -- ─────────────────────────────────────────
 task.wait(0.8)
 
-if KEY == "" then log("ไม่พบ Key — ตั้งค่า getgenv().KEY ก่อนรัน","error") return end
+if KEY == "" then
+    log("ไม่พบ Key — ตั้งค่า getgenv().KEY ก่อนรัน","error")
+    getgenv()._SpectreRunning = nil
+    return
+end
 
 log("กำลังอ่าน Key...","loading") task.wait(1.0)
 local hwid = getHWID()
@@ -221,26 +253,39 @@ for i = 1, 3 do
     if i < 3 then task.wait(1.5) end
 end
 
--- ── Network error จริง (ไม่ใช่แค่ key หมดอายุ) ──
 if not callOk or not raw or raw == "" then
-    log("เชื่อมต่อ API ไม่ได้ — เปิด HTTP Requests หรือ Server ล่ม","error") return
+    log("เชื่อมต่อ API ไม่ได้ — เปิด HTTP Requests หรือ Server ล่ม","error")
+    getgenv()._SpectreRunning = nil
+    return
 end
 
 log("ได้รับการตอบกลับจาก API ✓","info") task.wait(0.6)
 
 local ok2, result = pcall(HS.JSONDecode, HS, raw)
 if not ok2 or type(result) ~= "table" then
-    log("API ตอบกลับผิดพลาด (parse error)","error") return
+    log("API ตอบกลับผิดพลาด (parse error)","error")
+    getgenv()._SpectreRunning = nil
+    return
 end
 
 log("กำลังตรวจสอบ Key...","loading") task.wait(1.2)
 
--- ── Key ไม่ผ่าน — แสดง reason ที่ถูกต้อง (ไม่ใช่ "เชื่อม API ไม่ได้") ──
 if result.success ~= true and result.success ~= "true" then
-    log(parseApiError(result.message), "error") return
+    local reason = parseApiError(result.message)
+    log(reason, "error")
+    if tostring(result.message or ""):lower():find("expired") then
+        task.wait(2)
+        PL:Kick("[ SpectreWare ]  Key ของคุณหมดอายุแล้ว\nกรุณา Redeem Key ใหม่ใน Discord")
+    end
+    getgenv()._SpectreRunning = nil
+    return
 end
 
-if type(result.data) ~= "table" then log("ข้อมูลจาก API ไม่สมบูรณ์","error") return end
+if type(result.data) ~= "table" then
+    log("ข้อมูลจาก API ไม่สมบูรณ์","error")
+    getgenv()._SpectreRunning = nil
+    return
+end
 
 local data = result.data
 log("กำลังตรวจสอบ HWID...","loading") task.wait(1.0)
@@ -249,6 +294,7 @@ if type(data.hwid) == "string" and data.hwid ~= "" then
     if data.hwid ~= hwid then
         log("HWID ไม่ตรง — Key ผูกกับอุปกรณ์อื่น","error")
         task.spawn(function() sendWebhook({ key=KEY, hwid=hwid.." MISMATCH", timeLeft="BLOCKED" }) end)
+        getgenv()._SpectreRunning = nil
         return
     end
 end
@@ -257,7 +303,11 @@ log("HWID ผ่านแล้ว ✓","success") task.wait(0.8)
 local timeLeft = "Permanent"
 if data.expiresAt ~= nil and data.expiresAt ~= -1 then
     local diff = math.floor((data.expiresAt - os.time()*1000)/1000)
-    if diff <= 0 then log("Key หมดอายุแล้ว","error") return end
+    if diff <= 0 then
+        log("Key หมดอายุแล้ว","error")
+        getgenv()._SpectreRunning = nil
+        return
+    end
     timeLeft = math.floor(diff/86400).."d "
              ..math.floor((diff%86400)/3600).."h "
              ..math.floor((diff%3600)/60).."m"
@@ -268,7 +318,11 @@ summary(timeLeft, hwid) task.wait(1.0)
 
 task.spawn(function() sendWebhook({ key=KEY, hwid=hwid, timeLeft=timeLeft }) end)
 
-if not SCRIPT then log("Map ID: "..tostring(game.PlaceId).." ไม่รองรับ","error") return end
+if not SCRIPT then
+    log("Map ID: "..tostring(game.PlaceId).." ไม่รองรับ","error")
+    getgenv()._SpectreRunning = nil
+    return
+end
 
 log("กำลังโหลด Script สำหรับ Map: "..tostring(game.PlaceId),"loading") task.wait(1.2)
 loadstring(game:HttpGet(SCRIPT, true))()
@@ -276,16 +330,35 @@ task.wait(0.4)
 log("โหลด Script สำเร็จ 🚀","success")
 
 -- ─────────────────────────────────────────
---  SESSION GUARD — ตรวจสอบ Key ทุก 5 นาที
---  ถ้าหมดอายุระหว่างเล่น → Kick ทันที
+--  SESSION GUARD — ตรวจสอบทุก 10 วิ
+--  หยุดอัตโนมัติเมื่อ Player ออกจากเกม
 -- ─────────────────────────────────────────
-local CHECK_INTERVAL = 60   -- 1 นาที (วินาที)
+local CHECK_INTERVAL = 10   -- 10 วิ
+
+-- flag หยุด loop
+local _sessionActive = true
+
+-- ฟัง event player ออก → หยุด loop ทันที (ไม่รั่ว)
+local _conn
+_conn = game:GetService("Players").PlayerRemoving:Connect(function(p)
+    if p == PL then
+        _sessionActive = false
+        getgenv()._SpectreRunning = nil
+        if _conn then _conn:Disconnect() end
+    end
+end)
 
 task.spawn(function()
-    while task.wait(CHECK_INTERVAL) do
+    while _sessionActive and task.wait(CHECK_INTERVAL) do
+        -- ตรวจ player ยังอยู่ในเกมไหม
+        if not PL or not PL.Parent then
+            _sessionActive = false
+            break
+        end
+
         local cOk, cRaw = safeGet(API.."/api/lookup?key="..KEY.."&hwid="..getHWID())
         if not cOk or not cRaw or cRaw == "" then
-            -- API ตอบไม่ได้ชั่วคราว — ข้ามรอบนี้ (ไม่ kick)
+            -- API ตอบไม่ได้ชั่วคราว — ข้ามรอบนี้ ไม่ kick
         else
             local cok2, cresult = pcall(HS.JSONDecode, HS, cRaw)
             if cok2 and type(cresult) == "table" then
@@ -305,6 +378,7 @@ task.spawn(function()
                 end
 
                 if expired then
+                    _sessionActive = false
                     log("⛔  Key หมดอายุแล้ว — กำลัง Kick...","error")
                     task.wait(2)
                     pcall(function()
@@ -312,9 +386,15 @@ task.spawn(function()
                     end)
                     task.wait(1)
                     PL:Kick("[ SpectreWare ]  Key ของคุณหมดอายุแล้ว\nกรุณา Redeem Key ใหม่ใน Discord")
+                    getgenv()._SpectreRunning = nil
+                    if _conn then _conn:Disconnect() end
                     return
                 end
             end
         end
     end
+
+    -- loop จบปกติ — cleanup
+    getgenv()._SpectreRunning = nil
+    if _conn then _conn:Disconnect() end
 end)
