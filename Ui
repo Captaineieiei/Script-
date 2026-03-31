@@ -9083,46 +9083,20 @@ function Library:CreateWindow(WindowInfo)
         GlossCorner.CornerRadius = UDim.new(0.5, 0)
         GlossCorner.Parent = Gloss
 
-        -- ── Lock Button วงกลมเล็ก ──
-        local LockButton = Library:AddDraggableButton("", function(self)
+        -- ── Lock Button (เหมือนเดิม) ──
+        local LockButton = Library:AddDraggableButton("Lock", function(self)
             Library.CantDragForced = not Library.CantDragForced
-            LockIcon.Text = Library.CantDragForced and "🔒" or "🔓"
+            self:SetText(Library.CantDragForced and "Unlock" or "Lock")
         end, true)
-
-        local LBtn = LockButton.Button
-        LBtn.Text = ""
-        LBtn.Size = UDim2.fromOffset(40, 40)
-        LBtn.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
-
-        for _, v in ipairs(LBtn:GetChildren()) do
-            if v:IsA("UICorner") then v:Destroy() end
-        end
-        local LCircle = Instance.new("UICorner")
-        LCircle.CornerRadius = UDim.new(0.5, 0)
-        LCircle.Parent = LBtn
-
-        local LStroke = Instance.new("UIStroke")
-        LStroke.Color = Color3.fromRGB(70, 70, 70)
-        LStroke.Thickness = 2
-        LStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-        LStroke.Parent = LBtn
-
-        local LockIcon = Instance.new("TextLabel")
-        LockIcon.Size = UDim2.fromScale(1, 1)
-        LockIcon.BackgroundTransparency = 1
-        LockIcon.Text = "🔓"
-        LockIcon.TextScaled = true
-        LockIcon.ZIndex = LBtn.ZIndex + 1
-        LockIcon.Parent = LBtn
 
         if WindowInfo.MobileButtonsSide == "Right" then
             Btn.Position = UDim2.new(1, -6, 0, 6)
             Btn.AnchorPoint = Vector2.new(1, 0)
-            LBtn.Position = UDim2.new(1, -6, 0, 70)
-            LBtn.AnchorPoint = Vector2.new(1, 0)
+            LockButton.Button.Position = UDim2.new(1, -6, 0, 70)
+            LockButton.Button.AnchorPoint = Vector2.new(1, 0)
         else
             Btn.Position = UDim2.fromOffset(6, 6)
-            LBtn.Position = UDim2.fromOffset(6, 70)
+            LockButton.Button.Position = UDim2.fromOffset(6, 70)
         end
     end
 
