@@ -1,4 +1,5 @@
-local cloneref = (cloneref or clonereference or function(instance: any)
+-- lol
+locall cloneref = (cloneref or clonereference or function(instance: any)
     return instance
 end)
 local CoreGui: CoreGui = cloneref(game:GetService("CoreGui"))
@@ -6317,10 +6318,11 @@ function Library:Notify(...)
     function Data:Resize()
         local ExtraWidth = BigIconLabel and 32 or 0
         local IconWidth = IconLabel and 21 or 0
+        local AreaWidth = (NotificationArea.AbsoluteSize.X > 0 and NotificationArea.AbsoluteSize.X or 300) / Library.DPIScale
 
         if Title then
             local X, Y =
-                Library:GetTextBounds(Title.Text, Title.FontFace, Title.TextSize, (NotificationArea.AbsoluteSize.X / Library.DPIScale) - 24 - ExtraWidth - IconWidth)
+                Library:GetTextBounds(Title.Text, Title.FontFace, Title.TextSize, AreaWidth - 24 - ExtraWidth - IconWidth)
             Title.Size = UDim2.fromOffset(X, Y)
             TitleX = X + IconWidth
             TitleContainer.Size = UDim2.fromOffset(TitleX, math.max(Y, IconLabel and 16 or 0))
@@ -6328,7 +6330,7 @@ function Library:Notify(...)
 
         if Desc then
             local X, Y =
-                Library:GetTextBounds(Desc.Text, Desc.FontFace, Desc.TextSize, (NotificationArea.AbsoluteSize.X / Library.DPIScale) - 24 - ExtraWidth)
+                Library:GetTextBounds(Desc.Text, Desc.FontFace, Desc.TextSize, AreaWidth - 24 - ExtraWidth)
             Desc.Size = UDim2.fromOffset(X, Y)
             DescX = X
         end
@@ -6382,7 +6384,7 @@ function Library:Notify(...)
         end)
     end
 
-    Data:Resize()
+    task.defer(function() Data:Resize() end)
 
     local TimerHolder = New("Frame", {
         BackgroundTransparency = 1,
