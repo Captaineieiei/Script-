@@ -9013,23 +9013,116 @@ function Library:CreateWindow(WindowInfo)
     end
 
     if Library.IsMobile then
-        local ToggleButton = Library:AddDraggableButton("Toggle", function()
+        -- ── Toggle Button แบบวงกลม "C" ──
+        local ToggleButton = Library:AddDraggableButton("", function()
             Library:Toggle()
         end, true)
 
-        local LockButton = Library:AddDraggableButton("Lock", function(self)
+        local Btn = ToggleButton.Button
+        Btn.Text = ""
+        Btn.Size = UDim2.fromOffset(56, 56)
+        Btn.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+        Btn.BackgroundTransparency = 0
+
+        -- ลบ UICorner เดิมแล้วใส่ใหม่เป็นวงกลม
+        for _, v in ipairs(Btn:GetChildren()) do
+            if v:IsA("UICorner") then v:Destroy() end
+        end
+        local Circle = Instance.new("UICorner")
+        Circle.CornerRadius = UDim.new(0.5, 0)
+        Circle.Parent = Btn
+
+        -- ขอบ stroke
+        local Stroke = Instance.new("UIStroke")
+        Stroke.Color = Color3.fromRGB(70, 70, 70)
+        Stroke.Thickness = 2
+        Stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        Stroke.Parent = Btn
+
+        -- เงาด้านใน (inner glow effect)
+        local InnerGlow = Instance.new("Frame")
+        InnerGlow.Size = UDim2.fromScale(0.85, 0.85)
+        InnerGlow.AnchorPoint = Vector2.new(0.5, 0.5)
+        InnerGlow.Position = UDim2.fromScale(0.5, 0.45)
+        InnerGlow.BackgroundColor3 = Color3.fromRGB(40, 28, 40)
+        InnerGlow.BackgroundTransparency = 0.4
+        InnerGlow.ZIndex = Btn.ZIndex + 1
+        InnerGlow.Parent = Btn
+        local InnerCircle = Instance.new("UICorner")
+        InnerCircle.CornerRadius = UDim.new(0.5, 0)
+        InnerCircle.Parent = InnerGlow
+
+        -- ตัวอักษร "C" สีชมพู
+        local CLabel = Instance.new("TextLabel")
+        CLabel.Size = UDim2.fromScale(1, 1)
+        CLabel.BackgroundTransparency = 1
+        CLabel.Text = "C"
+        CLabel.TextColor3 = Color3.fromRGB(255, 120, 170)
+        CLabel.TextScaled = true
+        CLabel.Font = Enum.Font.GothamBold
+        CLabel.ZIndex = Btn.ZIndex + 2
+        CLabel.Parent = Btn
+
+        local CPadding = Instance.new("UIPadding")
+        CPadding.PaddingTop = UDim.new(0, 8)
+        CPadding.PaddingBottom = UDim.new(0, 8)
+        CPadding.PaddingLeft = UDim.new(0, 8)
+        CPadding.PaddingRight = UDim.new(0, 8)
+        CPadding.Parent = CLabel
+
+        -- highlight เงาบนสุด (glossy)
+        local Gloss = Instance.new("Frame")
+        Gloss.Size = UDim2.new(0.7, 0, 0.35, 0)
+        Gloss.AnchorPoint = Vector2.new(0.5, 0)
+        Gloss.Position = UDim2.new(0.5, 0, 0.05, 0)
+        Gloss.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        Gloss.BackgroundTransparency = 0.82
+        Gloss.ZIndex = Btn.ZIndex + 3
+        Gloss.Parent = Btn
+        local GlossCorner = Instance.new("UICorner")
+        GlossCorner.CornerRadius = UDim.new(0.5, 0)
+        GlossCorner.Parent = Gloss
+
+        -- ── Lock Button วงกลมเล็ก ──
+        local LockButton = Library:AddDraggableButton("", function(self)
             Library.CantDragForced = not Library.CantDragForced
-            self:SetText(Library.CantDragForced and "Unlock" or "Lock")
+            LockIcon.Text = Library.CantDragForced and "🔒" or "🔓"
         end, true)
 
-        if WindowInfo.MobileButtonsSide == "Right" then
-            ToggleButton.Button.Position = UDim2.new(1, -6, 0, 6)
-            ToggleButton.Button.AnchorPoint = Vector2.new(1, 0)
+        local LBtn = LockButton.Button
+        LBtn.Text = ""
+        LBtn.Size = UDim2.fromOffset(40, 40)
+        LBtn.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
 
-            LockButton.Button.Position = UDim2.new(1, -6, 0, 46)
-            LockButton.Button.AnchorPoint = Vector2.new(1, 0)
+        for _, v in ipairs(LBtn:GetChildren()) do
+            if v:IsA("UICorner") then v:Destroy() end
+        end
+        local LCircle = Instance.new("UICorner")
+        LCircle.CornerRadius = UDim.new(0.5, 0)
+        LCircle.Parent = LBtn
+
+        local LStroke = Instance.new("UIStroke")
+        LStroke.Color = Color3.fromRGB(70, 70, 70)
+        LStroke.Thickness = 2
+        LStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        LStroke.Parent = LBtn
+
+        local LockIcon = Instance.new("TextLabel")
+        LockIcon.Size = UDim2.fromScale(1, 1)
+        LockIcon.BackgroundTransparency = 1
+        LockIcon.Text = "🔓"
+        LockIcon.TextScaled = true
+        LockIcon.ZIndex = LBtn.ZIndex + 1
+        LockIcon.Parent = LBtn
+
+        if WindowInfo.MobileButtonsSide == "Right" then
+            Btn.Position = UDim2.new(1, -6, 0, 6)
+            Btn.AnchorPoint = Vector2.new(1, 0)
+            LBtn.Position = UDim2.new(1, -6, 0, 70)
+            LBtn.AnchorPoint = Vector2.new(1, 0)
         else
-            LockButton.Button.Position = UDim2.fromOffset(6, 46)
+            Btn.Position = UDim2.fromOffset(6, 6)
+            LBtn.Position = UDim2.fromOffset(6, 70)
         end
     end
 
