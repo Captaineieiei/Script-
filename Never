@@ -1,1 +1,792 @@
 
+---> SpectreWare | NEVER TOWN <---
+---> by #Captain <---
+
+if not game:IsLoaded() then game.Loaded:Wait() end
+
+---> SERVICES <---
+local Players     = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local VirtualUser = game:GetService("VirtualUser")
+
+---> CHARACTER <---
+local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local humanoid  = character:WaitForChild("Humanoid")
+
+-- อัพเดท character/humanoid อัตโนมัติเมื่อ respawn
+LocalPlayer.CharacterAdded:Connect(function(newChar)
+    character = newChar
+    humanoid  = newChar:WaitForChild("Humanoid")
+end)
+
+---> TREE SETUP (declare ก่อน โหลดทีหลังหลัง UI พร้อม) <---
+local folderName      = "PlantedTrees_" .. LocalPlayer.UserId
+local allTrees        = nil
+local parentFolder    = nil
+local giveWaterRemote = nil
+
+---> WINDUI SETUP <---
+local WindUI = loadstring(game:HttpGet(
+    "https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"
+))()
+
+local SpectreAccent = Color3.fromRGB(139, 92, 246)
+pcall(function()
+    if WindUI.Gradient then
+        SpectreAccent = WindUI:Gradient({
+            ["0"]   = { Color = Color3.fromRGB(139, 92, 246), Transparency = 0 },
+            ["100"] = { Color = Color3.fromRGB(91,  33, 182), Transparency = 0 },
+        }, { Rotation = 45 })
+    end
+end)
+
+pcall(function()
+    WindUI:AddTheme({
+        Name        = "SpectreTheme",
+        Accent      = SpectreAccent,
+        Outline     = Color3.fromRGB(46,  42,  54),
+        Text        = Color3.fromRGB(248, 250, 252),
+        Placeholder = Color3.fromRGB(148, 163, 184),
+        Background  = Color3.fromRGB(15,  12,  22),
+        Button      = Color3.fromRGB(30,  26,  41),
+        Icon        = Color3.fromRGB(196, 181, 253),
+    })
+end)
+
+---> WINDOW <---
+local Window = WindUI:CreateWindow({
+    Title                       = "SpectreWare | NEVER TOWN",
+    Icon                        = "rbxassetid://71815202801684",
+    Author = "#Captain",
+    Folder = "MySuperHub",
+    Size = UDim2.fromOffset(580, 460),
+    MinSize = Vector2.new(560, 350),
+    MaxSize = Vector2.new(850, 560),
+    Transparent = true,
+    Theme = "SpectreTheme",
+    Resizable = true,
+    SideBarWidth = 200,
+    BackgroundImageTransparency = 0.42,
+    HideSearchBar = true,
+    ScrollBarEnabled = false,
+    HideSearchBar = false,
+})
+
+Window:EditOpenButton({
+    Title           = "SpectreWare",
+    Icon            = "swords",
+    CornerRadius    = UDim.new(0, 10),
+    StrokeThickness = 2,
+    Color           = ColorSequence.new({
+        ColorSequenceKeypoint.new(0,   Color3.fromHex("#8b5cf6")),
+        ColorSequenceKeypoint.new(1,   Color3.fromHex("#5b21b6")),
+    }),
+})
+
+Window:Tag({
+    Title = "v1.6.6",
+    Icon = "github",
+    Color = Color3.fromRGB(139, 92, 246),
+    Radius = 13,
+})
+
+Window:SetIconSize(55)
+
+-- โหลด Tree/Remote หลัง UI พร้อม (ไม่บล็อก)
+task.spawn(function()
+    allTrees = workspace:WaitForChild("AllPlantedTrees", 30)
+    if allTrees then
+        parentFolder = allTrees:WaitForChild(folderName, 15)
+    end
+    pcall(function()
+        giveWaterRemote = game:GetService("ReplicatedStorage")
+            :WaitForChild("Grow_vegetables", 15)
+            :WaitForChild("GiveWater", 10)
+    end)
+end)
+
+---> HELPERS <---
+local function findLabelByText(searchText)
+    local found = nil
+    local function search(root)
+        if not root then return end
+        for _, v in ipairs(root:GetDescendants()) do
+            if v:IsA("TextLabel") and v.Text == searchText then
+                found = v
+                return
+            end
+        end
+    end
+    pcall(search, game:GetService("CoreGui"))
+    if not found then pcall(search, LocalPlayer.PlayerGui) end
+    return found
+end
+
+local function resolveRemotePath(root, path, timeout)
+    timeout = timeout or 1
+    local current = root
+    for _, name in ipairs(path) do
+        if not current then return nil end
+        local next = current:WaitForChild(name, timeout)
+        if not next then return nil end
+        current = next
+    end
+    return current
+end
+
+---> LIVE LABEL HELPERS <---
+local AmountDescLabel = nil
+local TotalDescLabel  = nil
+local function setAmount(text)
+    if AmountDescLabel and AmountDescLabel.Parent then
+        pcall(function() AmountDescLabel.Text = tostring(text) end)
+    end
+end
+local function setTotal(text)
+    if TotalDescLabel and TotalDescLabel.Parent then
+        pcall(function() TotalDescLabel.Text = tostring(text) end)
+    end
+end
+
+---> ==================== TAB: MENU ==================== <---
+local FarmTab = Window:Tab({
+    Title  = "Menu",
+    Icon   = "wheat",
+    Locked = false,
+})
+
+local DepositRemote = nil
+local FarmRunning   = false
+
+local function loadBackpackItems()
+    local titles = {}
+    local itemMap = {}
+    local ok, scrolling = pcall(function()
+        return LocalPlayer.PlayerGui
+            :WaitForChild("Backpack",      5)
+            :WaitForChild("BG",            5)
+            :WaitForChild("item",          5)
+            :WaitForChild("Scrollingitem", 5)
+    end)
+    if ok and scrolling then
+        for _, slot in ipairs(scrolling:GetChildren()) do
+            local name = slot.Name
+            if not slot:IsA("UIBase") and not slot:IsA("UIComponent")
+                and name ~= "" and name ~= "Animation"
+            then
+                local max = 60
+                local nameLower = name:lower()
+                if nameLower:find("stone") or nameLower:find("gold") or nameLower:find("iron") then
+                    max = 500
+                end
+                pcall(function()
+                    local amout = slot:FindFirstChild("Amout")
+                    if amout and amout:IsA("TextLabel") then
+                        local maxFromText = tonumber(string.match(amout.Text, "%d+|(%d+)"))
+                        if maxFromText and maxFromText > 0 then max = maxFromText end
+                    end
+                end)
+                -- icon = "" ก่อน โหลดทีหลังใน loadIconsAsync
+                table.insert(titles, name)
+                itemMap[name] = { Title = name, value = name, max = max, icon = "" }
+            end
+        end
+    end
+    if #titles == 0 then
+        titles = { "(ไม่พบไอเทม)" }
+        itemMap["(ไม่พบไอเทม)"] = { Title = "(ไม่พบไอเทม)", value = "", max = 0, icon = "" }
+    end
+    return titles, itemMap
+end
+
+-- โหลดรูปทีหลัง หลัง UI พร้อมแล้ว
+local function loadIconsAsync(itemMap)
+    task.spawn(function()
+        task.wait(1.5) -- รอให้ UI render เสร็จก่อน
+        local ok, scrolling = pcall(function()
+            return LocalPlayer.PlayerGui
+                :WaitForChild("Backpack",      5)
+                :WaitForChild("BG",            5)
+                :WaitForChild("item",          5)
+                :WaitForChild("Scrollingitem", 5)
+        end)
+        if not ok or not scrolling then return end
+        for _, slot in ipairs(scrolling:GetChildren()) do
+            local name = slot.Name
+            if itemMap[name] then
+                local imageId = ""
+                pcall(function()
+                    local img = slot:FindFirstChild("ItemImage")
+                    if img and img:IsA("ImageLabel") and img.Image ~= "" then
+                        imageId = img.Image
+                    end
+                    if imageId == "" then
+                        for _, child in ipairs(slot:GetChildren()) do
+                            if child:IsA("ImageLabel") and child.Image ~= "" then
+                                imageId = child.Image
+                                break
+                            end
+                        end
+                    end
+                end)
+                if imageId ~= "" then
+                    itemMap[name].icon = imageId
+                    -- ถ้าไอเทมนี้ถูกเลือกอยู่ → อัพเดท preview ทันที
+                    if SelectedItem and SelectedItem.value == name then
+                        updatePreview(itemMap[name])
+                    end
+                end
+            end
+        end
+    end)
+end
+
+local PLACEHOLDER    = "Reload"
+local FarmItemTitles = { PLACEHOLDER }
+local FarmItemMap    = { [PLACEHOLDER] = { Title = PLACEHOLDER, value = "", max = 60, icon = "" } }
+local SelectedItem   = FarmItemMap[FarmItemTitles[1]]
+local CustomMax      = 60
+local ItemDropdown
+local ItemPreviewLabel = nil  -- สำหรับอัพเดทรูป preview
+local FarmSection = FarmTab:Section({ Title = "⚙️ ตั้งค่าของที่จะเก็บใส่ตู้", Opened = true })
+
+-- สร้าง values array แบบ plain string (ไม่มีไอคอนใน list)
+local function buildValuesWithIcons(titles, itemMap)
+    local values = {}
+    for _, t in ipairs(titles) do
+        table.insert(values, t)
+    end
+    return values
+end
+
+-- อัพเดทรูป preview ใต้ dropdown
+local function updatePreview(item)
+    if not ItemPreviewLabel or not ItemPreviewLabel.Parent then return end
+    pcall(function()
+        if item and item.icon and item.icon ~= "" then
+            ItemPreviewLabel.Image = item.icon
+            ItemPreviewLabel.Visible = true
+        else
+            ItemPreviewLabel.Visible = false
+        end
+    end)
+end
+
+local function createItemDropdown(titles, itemMap)
+    local valuesWithIcons = buildValuesWithIcons(titles, itemMap)
+
+    if ItemDropdown then
+        -- ลอง Refresh ก่อน ถ้าไม่ได้ค่อย Destroy แล้วสร้างใหม่
+        local success = pcall(function() ItemDropdown:Refresh(valuesWithIcons) end)
+        if not success then
+            pcall(function() ItemDropdown:Destroy() end)
+            ItemDropdown = nil
+        end
+    end
+
+    if not ItemDropdown then
+        ItemDropdown = FarmSection:Dropdown({
+            Title    = "เลือกของที่จะเก็บ",
+            Desc     = "อ่านจาก Backpack ของคุณโดยตรง",
+            Values   = valuesWithIcons,
+            Value    = valuesWithIcons[1],
+            Callback = function(option)
+                -- option อาจเป็น string หรือ Title จาก table
+                local key = type(option) == "table" and option.Title or tostring(option)
+                SelectedItem = FarmItemMap[key]
+                if SelectedItem then
+                    CustomMax = SelectedItem.max
+                    updatePreview(SelectedItem)
+                end
+            end,
+        })
+
+        -- Inject รูป preview ขนาดใหญ่เข้าไปใน frame ของ Dropdown โดยตรง
+        task.spawn(function()
+            task.wait(0.5)
+            pcall(function()
+                local dropContainer = nil
+                local function findContainer(root)
+                    for _, v in ipairs(root:GetDescendants()) do
+                        if v:IsA("TextLabel") and v.Text == "เลือกของที่จะเก็บ" then
+                            local p = v.Parent and v.Parent.Parent and v.Parent.Parent.Parent
+                            if p and p:IsA("Frame") then dropContainer = p end
+                            return
+                        end
+                    end
+                end
+                findContainer(game:GetService("CoreGui"))
+                if not dropContainer then
+                    for _, gui in ipairs(LocalPlayer.PlayerGui:GetChildren()) do
+                        if gui:IsA("ScreenGui") then
+                            findContainer(gui)
+                            if dropContainer then break end
+                        end
+                    end
+                end
+                if not dropContainer then return end
+
+                local old2 = dropContainer:FindFirstChild("SW_InlinePreview")
+                if old2 then old2:Destroy() end
+
+                local img = Instance.new("ImageLabel")
+                img.Name                   = "SW_InlinePreview"
+                img.Size                   = UDim2.new(0, 44, 0, 44)
+                img.Position               = UDim2.new(1, -56, 0.5, -22)
+                img.BackgroundTransparency = 1
+                img.ScaleType              = Enum.ScaleType.Fit
+                img.ZIndex                 = dropContainer.ZIndex + 2
+                img.Visible                = false
+                img.Parent                 = dropContainer
+
+                ItemPreviewLabel = img
+
+                updatePreview = function(item)
+                    pcall(function()
+                        if item and item.icon and item.icon ~= "" then
+                            img.Image   = item.icon
+                            img.Visible = true
+                        else
+                            img.Visible = false
+                        end
+                    end)
+                end
+
+                if SelectedItem and SelectedItem.icon ~= "" then
+                    updatePreview(SelectedItem)
+                end
+            end)
+        end)
+    end
+
+    SelectedItem = itemMap[titles[1]]
+    CustomMax    = (SelectedItem and SelectedItem.max) or 60
+    -- อัพเดท preview สำหรับไอเทมแรก
+    task.defer(function() updatePreview(SelectedItem) end)
+end
+
+local function reloadItems()
+    task.spawn(function()
+        WindUI:Notify({ Title = "⏳ กำลังโหลด...", Content = "กำลังดึงข้อมูลกระเป๋า...", Duration = 2 })
+        local titles, itemMap
+        for _ = 1, 5 do
+            titles, itemMap = loadBackpackItems()
+            if #titles > 0 and titles[1] ~= "(ไม่พบไอเทม)" then break end
+            task.wait(1)
+        end
+        if titles and titles[1] ~= "(ไม่พบไอเทม)" then
+            FarmItemTitles = titles
+            FarmItemMap    = itemMap
+            createItemDropdown(titles, itemMap)
+            WindUI:Notify({ Title = "✅ โหลดแล้ว", Content = "อัพเดทรายการไอเทมสำเร็จ", Duration = 3 })
+            loadIconsAsync(itemMap) -- โหลดรูปทีหลัง
+        else
+            WindUI:Notify({ Title = "⚠️ โหลดไม่ได้", Content = "ลองกด Reload อีกครั้ง", Duration = 3 })
+        end
+    end)
+end
+
+createItemDropdown(FarmItemTitles, FarmItemMap)
+task.spawn(function()
+    local titles, itemMap
+    for _ = 1, 5 do
+        titles, itemMap = loadBackpackItems()
+        if #titles > 0 and titles[1] ~= "(ไม่พบไอเทม)" then break end
+        task.wait(1.5)
+    end
+    if titles and #titles > 0 and titles[1] ~= "(ไม่พบไอเทม)" then
+        FarmItemTitles = titles
+        FarmItemMap    = itemMap
+        createItemDropdown(titles, itemMap)
+        loadIconsAsync(itemMap) -- โหลดรูปทีหลังตอน UI พร้อม
+    end
+end)
+
+FarmSection:Input({
+    Title       = "จำนวนของที่จะเก็บก่อน Deposit",
+    Desc        = "พิมตัวเลข เช่น 30 / 60 / 500",
+    Placeholder = tostring(CustomMax),
+    Numeric     = true,
+    Finished    = true,
+    Callback    = function(value)
+        local num = tonumber(value)
+        if num and num > 0 then
+            CustomMax = num
+            WindUI:Notify({ Title = "✅ อัพเดทจำนวนแล้ว", Content = "Deposit ที่ " .. tostring(CustomMax) .. " ชิ้น", Duration = 3 })
+        end
+    end,
+})
+
+FarmSection:Button({
+    Title    = "Reload Items",
+    Desc     = "กดถ้า Dropdown ยังแสดง placeholder",
+    Icon     = "refresh-cw",
+    Callback = function() reloadItems() end,
+})
+
+local AmountLabel     = FarmSection:Paragraph({ Title = "📦 จำนวนปัจจุบัน", Desc = "__AMOUNT_INIT__" })
+local BackpackSection = FarmTab:Section({ Title = "🎒 จำนวนกระเป๋าทั้งหมด", Opened = false })
+local TotalLabel      = BackpackSection:Paragraph({ Title = "รายการของ", Desc = "__TOTAL_INIT__" })
+
+task.spawn(function()
+    task.wait(0.5)
+    AmountDescLabel = findLabelByText("__AMOUNT_INIT__")
+    TotalDescLabel  = findLabelByText("__TOTAL_INIT__")
+    if AmountDescLabel then AmountDescLabel.Text = "-- รอเลือกไอเทม..." end
+    if TotalDescLabel  then TotalDescLabel.Text  = "-- รอข้อมูล..."    end
+end)
+
+local slotLabelCache = {}
+local function getSlotCount(slot)
+    local lbl = slotLabelCache[slot]
+    if not lbl or not lbl.Parent then
+        lbl = slot:FindFirstChild("Amout")
+        if not lbl then
+            for _, child in ipairs(slot:GetChildren()) do
+                if child:IsA("TextLabel") or child:IsA("TextButton") then
+                    lbl = child
+                    break
+                end
+            end
+        end
+        slotLabelCache[slot] = lbl
+    end
+    if not lbl then return 0 end
+    local txt = ""
+    pcall(function() txt = lbl.Text end)
+    if txt ~= "" then
+        return tonumber(string.match(txt, "^(%d+)"))
+            or tonumber(string.match(txt, "(%d+)"))
+            or 0
+    end
+    return 0
+end
+
+task.spawn(function()
+    local cachedScrolling = nil
+    while true do
+        pcall(function()
+            if not cachedScrolling or not cachedScrolling.Parent then
+                cachedScrolling = nil
+                local pg    = LocalPlayer.PlayerGui
+                local guiBP = pg:FindFirstChild("Backpack")     if not guiBP then return end
+                local bg    = guiBP:FindFirstChild("BG")        if not bg    then return end
+                local item  = bg:FindFirstChild("item")         if not item  then return end
+                cachedScrolling = item:FindFirstChild("Scrollingitem")
+                if not cachedScrolling then return end
+            end
+            local scrolling = cachedScrolling
+            if SelectedItem and SelectedItem.value ~= "" then
+                local slot = scrolling:FindFirstChild(SelectedItem.value)
+                if slot then
+                    local cur = getSlotCount(slot)
+                    setAmount(SelectedItem.value .. "  =  " .. cur .. " / " .. CustomMax)
+                else
+                    setAmount("-- " .. SelectedItem.value .. " : ไม่พบใน Backpack")
+                end
+            else
+                setAmount("-- ยังไม่ได้เลือกไอเทม")
+            end
+            local totalCount = 0
+            local itemLines  = {}
+            for _, s in ipairs(scrolling:GetChildren()) do
+                if not s:IsA("UIBase") and not s:IsA("UIComponent") and s.Name ~= "" then
+                    local n = getSlotCount(s)
+                    if n > 0 then
+                        totalCount = totalCount + n
+                        table.insert(itemLines, s.Name .. ": " .. n)
+                    end
+                end
+            end
+            if totalCount == 0 then
+                setTotal("-- กระเป๋าว่างเปล่า")
+            else
+                setTotal("total  =  " .. totalCount .. "\n" .. table.concat(itemLines, "\n"))
+            end
+        end)
+        task.wait(2)
+    end
+end)
+
+local AutoFarmToggle = FarmSection:Toggle({
+    Title    = "Auto Farm",
+    Desc     = "เปิด = เริ่มเก็บ  |  ปิด = หยุดเก็บ",
+    Icon     = "zap",
+    Value    = false,
+    Callback = function(state)
+        FarmRunning = state
+        if not state then
+            WindUI:Notify({ Title = "⏸️ Auto Farm ปิดแล้ว", Content = "หยุดการทำงาน", Duration = 3 })
+            return
+        end
+        task.spawn(function()
+            if not DepositRemote then
+                task.wait(0.5)
+                for _ = 1, 3 do
+                    DepositRemote = resolveRemotePath(
+                        game:GetService("ReplicatedStorage"),
+                        { "Game_Modules", "RemoteEventSafe", "DepositItem" }, 5
+                    )
+                    if DepositRemote then break end
+                    task.wait(1.5)
+                end
+            end
+            if not DepositRemote then
+                FarmRunning = false
+                WindUI:Notify({ Title = "❌ ระบบ Remote", Content = "หา DepositItem ไม่เจอ", Duration = 5 })
+                return
+            end
+            WindUI:Notify({ Title = "✅ Auto Farm เปิดแล้ว", Content = "กำลังเก็บ: " .. SelectedItem.Title, Duration = 3 })
+            local farmScrolling = nil
+            while FarmRunning do
+                pcall(function()
+                    if not farmScrolling or not farmScrolling.Parent then
+                        farmScrolling = nil
+                        local pg = LocalPlayer.PlayerGui
+                        local bp = pg:FindFirstChild("Backpack")    if not bp then return end
+                        local bg = bp:FindFirstChild("BG")          if not bg then return end
+                        local it = bg:FindFirstChild("item")        if not it then return end
+                        farmScrolling = it:FindFirstChild("Scrollingitem")
+                        if not farmScrolling then return end
+                    end
+                    local slot = farmScrolling:FindFirstChild(SelectedItem.value)
+                    if not slot then return end
+                    local amountLabel = slot:FindFirstChild("Amout")
+                    if not amountLabel then
+                        for _, child in ipairs(slot:GetChildren()) do
+                            if child:IsA("TextLabel") or child:IsA("TextButton") then
+                                amountLabel = child
+                                break
+                            end
+                        end
+                    end
+                    if not amountLabel then return end
+                    local txt = ""
+                    pcall(function() txt = amountLabel.Text end)
+                    if txt ~= "" then
+                        local cur = tonumber(string.match(txt, "(%d+)")) or 0
+                        if cur >= CustomMax and SelectedItem and SelectedItem.value ~= "" then
+                            DepositRemote:FireServer(SelectedItem.value, cur)
+                        end
+                    end
+                end)
+                task.wait(0.8)
+            end
+        end)
+    end,
+})
+
+---> ==================== SECTION: AUTO WATER (ในแท็บ Menu) ==================== <---
+local WaterSection = FarmTab:Section({ Title = "🌿 ต้นแคนดี้ - Auto Water", Opened = true })
+
+local autoWaterEnabled = false
+
+local function walkToTarget(model)
+    local targetPart = model:FindFirstChildWhichIsA("BasePart", true)
+    if targetPart then
+        humanoid:MoveTo(targetPart.Position)
+        local arrived = false
+        local conn
+        conn = humanoid.MoveToFinished:Connect(function()
+            arrived = true
+            conn:Disconnect()
+        end)
+        local startTime = tick()
+        repeat task.wait(0.1) until arrived or (tick() - startTime) > 10
+        return true
+    end
+    return false
+end
+
+local function checkAndWater(tree)
+    if not parentFolder then return end
+    local stats = tree:FindFirstChild("Stats")
+    if not stats then return end
+    local waterValue = stats:FindFirstChild("Water")
+    if not waterValue then return end
+    if waterValue.Value < 50 then
+        local success = walkToTarget(tree)
+        if success then
+            while waterValue.Value < 100 and autoWaterEnabled do
+                giveWaterRemote:FireServer()
+                task.wait(0.3)
+            end
+        end
+    end
+end
+
+WaterSection:Toggle({
+    Title    = "Auto Water",
+    Desc     = "รดน้ำอัตโนมัติเมื่อน้ำต่ำกว่า 50%",
+    Icon     = "droplet",
+    Value    = false,
+    Callback = function(state)
+        autoWaterEnabled = state
+        if state then
+            if not parentFolder then
+                WindUI:Notify({ Title = "❌ ไม่พบโฟลเดอร์", Content = folderName, Duration = 4 })
+                autoWaterEnabled = false
+                return
+            end
+            WindUI:Notify({ Title = "💧 Auto Water เปิดแล้ว", Content = "กำลังรดน้ำต้นแคนดี้", Duration = 3 })
+            task.spawn(function()
+                while autoWaterEnabled do
+                    for _, tree in pairs(parentFolder:GetChildren()) do
+                        if not autoWaterEnabled then break end
+                        pcall(function() checkAndWater(tree) end)
+                    end
+                    task.wait(5)
+                end
+            end)
+        else
+            WindUI:Notify({ Title = "⏸️ Auto Water ปิดแล้ว", Content = "หยุดรดน้ำ", Duration = 3 })
+        end
+    end,
+})
+
+---> TREE STATUS DISPLAY <---
+local TreeStatusLabel     = WaterSection:Paragraph({ Title = "🌳 สถานะต้นแคนดี้", Desc = "__TREE_STATUS_INIT__" })
+local TreeStatusDescLabel = nil
+
+task.spawn(function()
+    task.wait(0.5)
+    TreeStatusDescLabel = findLabelByText("__TREE_STATUS_INIT__")
+    if TreeStatusDescLabel then TreeStatusDescLabel.Text = "-- รอข้อมูล..." end
+end)
+
+task.spawn(function()
+    while true do
+        pcall(function()
+            if not parentFolder then return end
+            local lines = {}
+            for _, tree in pairs(parentFolder:GetChildren()) do
+                local stats = tree:FindFirstChild("Stats")
+                if stats then
+                    local w = stats:FindFirstChild("Water")
+                    local f = stats:FindFirstChild("Food")
+                    local g = stats:FindFirstChild("Growth")
+                    table.insert(lines, string.format("🌳 %s | 💧%d%%  🍬%d%%  📈%d%%",
+                        tree.Name,
+                        w and math.floor(w.Value) or 0,
+                        f and math.floor(f.Value) or 0,
+                        g and math.floor(g.Value) or 0
+                    ))
+                end
+            end
+            if TreeStatusDescLabel and TreeStatusDescLabel.Parent then
+                if #lines > 0 then
+                    TreeStatusDescLabel.Text = table.concat(lines, "\n")
+                else
+                    TreeStatusDescLabel.Text = "-- ไม่พบต้นแคนดี้"
+                end
+            end
+        end)
+        task.wait(5)
+    end
+end)
+
+---> TAB: TELEPORT <---
+local TeleportTab = Window:Tab({
+    Title  = "Teleport",
+    Icon   = "map-pin",
+    Locked = false,
+})
+
+local Locations = {
+    { Title = "🛒 ที่ขายของ",         Position = Vector3.new(10559, -328, -3839) },
+    { Title = "🌶️ เก็บพริก",         Position = Vector3.new( 7319, -295,  -616) },
+    { Title = "🥕 เก็บแครอท",         Position = Vector3.new( -3782, -295, 3153) },
+    { Title = "🥛 เก็บนม",            Position = Vector3.new(10311, -293, 27) },
+    { Title = "🍅 เก็บมะเขือเทศ",    Position = Vector3.new(-9181, -260, -238) },
+    { Title = "⚔️ เรเบล",            Position = Vector3.new( 2007, -321, -6963) },
+    { Title = "⛏️ เหมืองทอง+เหล็ก", Position = Vector3.new(-9538, -311,  4862) },
+    { Title = "🏠 ที่โพ เหล็ก+ทอง",  Position = Vector3.new(  -265, -321, -3122) },
+    { Title = "ปลูกแคนดี้",           Position = Vector3.new(  -403, -324, -1617) },
+    { Title = "ที่ขอพร",              Position = Vector3.new(  1424, -239,  1216) },
+}
+
+local LocationTitles = {}
+local LocationMap    = {}
+for _, loc in ipairs(Locations) do
+    table.insert(LocationTitles, loc.Title)
+    LocationMap[loc.Title] = loc
+end
+
+local SelectedLocation = Locations[1]
+
+TeleportTab:Dropdown({
+    Title    = "เลือกสถานที่",
+    Desc     = "เลือกตำแหน่งที่ต้องการ Teleport",
+    Values   = LocationTitles,
+    Value    = LocationTitles[1],
+    Callback = function(option)
+        SelectedLocation = LocationMap[option]
+    end,
+})
+
+TeleportTab:Button({
+    Title    = "Teleport",
+    Desc     = "กด Teleport ไปยังสถานที่ที่เลือก",
+    Icon     = "navigation",
+    Callback = function()
+        pcall(function()
+            local char = LocalPlayer.Character
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                char:PivotTo(CFrame.new(SelectedLocation.Position))
+            end
+        end)
+    end,
+})
+
+---> TAB: SETTINGS <---
+local SettingsTab = Window:Tab({
+    Title  = "Settings",
+    Icon   = "settings",
+    Locked = false,
+})
+
+local AntiAFKEnabled = false
+LocalPlayer.Idled:Connect(function()
+    if AntiAFKEnabled then
+        VirtualUser:CaptureController()
+        VirtualUser:ClickButton2(Vector2.new())
+    end
+end)
+
+local GameplaySettings = SettingsTab:Section({ Title = "Gameplay", Opened = true })
+GameplaySettings:Toggle({
+    Title    = "Anti AFK",
+    Desc     = "ป้องกันถูกเตะออกเกมตอนไม่ได้เล่น",
+    Icon     = "shield",
+    Value    = false,
+    Callback = function(state) AntiAFKEnabled = state end,
+})
+
+local UISettings = SettingsTab:Section({ Title = "UI Configuration", Opened = true })
+UISettings:Keybind({
+    Flag     = "UIKeybind",
+    Title    = "Toggle Menu Key",
+    Value    = "LeftControl",
+    Callback = function(v)
+        if Window.SetToggleKey then
+            Window:SetToggleKey(Enum.KeyCode[v])
+        end
+    end,
+})
+
+local themes = {}
+if WindUI.Themes then
+    for name, _ in pairs(WindUI.Themes) do
+        table.insert(themes, name)
+    end
+end
+if #themes == 0 then themes = { "Dark" } end
+UISettings:Dropdown({
+    Flag     = "UITheme",
+    Title    = "UI Theme",
+    Values   = themes,
+    Default  = "Dark",
+    Callback = function(t)
+        pcall(function() WindUI:SetTheme(t) end)
+    end,
+})
