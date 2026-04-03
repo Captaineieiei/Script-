@@ -426,4 +426,3 @@ task.spawn(function()
     getgenv()._SpectreRunning = nil
     if _conn then _conn:Disconnect() end
 end)
-
