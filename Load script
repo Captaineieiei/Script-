@@ -5,7 +5,7 @@ local function banner()
 
 
 ░▄█▄█▄░█▀▀░█▀█░█▀▀░█▀▀░▀█▀░█▀▄░█▀▀░█░█░█▀█░█▀▄░█▀▀
-░▄█▄█▄░▀▀█░█▀▀░█▀▀░█░░░░█░░█▀▄░█▀▀░█▄█░█▀▀░█▀▄░█▀▀
+░▄█▄█▄░▀▀█░█▀▀░█▀▀░█░░░░█░░█▀▄░█▀▀░█▄█░█▀█░█▀▄░█▀▀
 ░░▀░▀░░▀▀▀░▀░░░▀▀▀░▀▀▀░░▀░░▀░▀░▀▀▀░▀░▀░▀░▀░▀░▀░▀▀▀
 
         ✦  Key Authentication System  ·  Loader v2  ✦
@@ -271,6 +271,7 @@ local function sendWebhook(eventType, info)
     info.hwid     = info.hwid     or "?"
     info.timeLeft = info.timeLeft or "?"
 
+    -- ── Event style ───────────────────────
     local styles = {
         login       = { color=0x00C8FF, emoji="🚀", label="New Session"    },
         mismatch    = { color=0xFF3C3C, emoji="🚫", label="HWID Mismatch"  },
@@ -279,6 +280,7 @@ local function sendWebhook(eventType, info)
     }
     local s = styles[eventType] or styles.login
 
+    -- ── Collect info ──────────────────────
     local avatar, headshot = getAvatar(PL.UserId)
     local gameName, gameCreator, maxPlayers, placeVer = getGameInfo()
 
@@ -295,68 +297,77 @@ local function sendWebhook(eventType, info)
     local jobId       = tostring(game.JobId)
     local fullKey     = tostring(info.key)
     local keyDisplay  = fullKey:sub(1,8).."———"..fullKey:sub(-4)
-    local hwidShort   = tostring(info.hwid):sub(1,36)
+    local hwidFull    = tostring(info.hwid)
 
-    local expiryStr = "Permanent"
+    -- expiry date string
+    local expiryStr = "♾️ Permanent"
     if info.expiresAt and info.expiresAt ~= -1 then
         pcall(function()
-            expiryStr = os.date("!%d %b %Y  %H:%M UTC", math.floor(info.expiresAt / 1000))
+            expiryStr = "📅 "..os.date("!%d %b %Y  %H:%M UTC", math.floor(info.expiresAt / 1000))
         end)
     end
 
+    -- ── Build embed ───────────────────────
     local ok, payload = pcall(function()
         return HS:JSONEncode({
-            username   = "SpectreWare",
+            username   = "SpectreWare Logger",
             avatar_url = "https://i.imgur.com/q9YIPKI.png",
             embeds = {{
                 author = {
                     name     = s.emoji.."  SpectreWare  ·  "..s.label,
                     icon_url = "https://i.imgur.com/q9YIPKI.png",
                 },
-                color     = s.color,
-                thumbnail = { url = avatar },
-                fields    = {
+                color       = s.color,
+                thumbnail   = { url = avatar },
+                description = "```\n───────────────────────\n```",
+                fields      = {
+                    -- ① Player
                     {
-                        name   = "👤  Player",
-                        value  = "**"..PL.Name.."** (`"..displayName.."`)\n"
-                               .."UID: `"..tostring(PL.UserId).."`\n"
-                               .."Age: `"..accAge.."` · Friends: `"..friends.."`\n"
-                               .."Membership: `"..membership.."`",
+                        name   = "👤  __Player__",
+                        value  = "> **"..PL.Name.."** (`"..displayName.."`)\n"
+                               .."> 🆔 `"..tostring(PL.UserId).."`\n"
+                               .."> 🎂 Age: `"..accAge.."` · 👥 Friends: `"..friends.."`\n"
+                               .."> 💎 `"..membership.."`",
+                        inline = false,
+                    },
+                    -- ② Device
+                    {
+                        name   = "📱  __Device__",
+                        value  = "> 📟 Platform: `"..platform.."`\n"
+                               .."> 📡 Ping: `"..ping.."`\n"
+                               .."> ⚙️ Executor: `"..executor.."`",
                         inline = true,
                     },
+                    -- ③ Key
                     {
-                        name   = "📱  Device",
-                        value  = "Platform: `"..platform.."`\n"
-                               .."Ping: `"..ping.."`\n"
-                               .."Executor: `"..executor.."`",
+                        name   = "🔑  __Key__",
+                        value  = "> `"..keyDisplay.."`\n"
+                               .."> ⏳ `"..info.timeLeft.."`\n"
+                               .."> "..expiryStr,
                         inline = true,
                     },
+                    -- spacer
                     { name="\u{200B}", value="\u{200B}", inline=false },
+                    -- ④ HWID
                     {
-                        name   = "🔑  Key",
-                        value  = "Key: `"..keyDisplay.."`\n"
-                               .."Time Left: `"..info.timeLeft.."`\n"
-                               .."Expires: `"..expiryStr.."`",
+                        name   = "🖥️  __HWID__",
+                        value  = "```\n"..hwidFull.."\n```",
+                        inline = false,
+                    },
+                    -- ⑤ Game
+                    {
+                        name   = "🎮  __Game__",
+                        value  = "> 🗺️ ["..gameName.."](https://www.roblox.com/games/"..tostring(game.PlaceId)..")\n"
+                               .."> 👷 `"..gameCreator.."`\n"
+                               .."> 🆔 `"..tostring(game.PlaceId).."` · v`"..placeVer.."`",
                         inline = true,
                     },
+                    -- ⑥ Server
                     {
-                        name   = "🖥️  HWID",
-                        value  = "```"..hwidShort.."```",
-                        inline = true,
-                    },
-                    { name="\u{200B}", value="\u{200B}", inline=false },
-                    {
-                        name   = "🎮  Game",
-                        value  = "["..gameName.."](https://www.roblox.com/games/"..tostring(game.PlaceId)..")\n"
-                               .."Creator: `"..gameCreator.."`\n"
-                               .."Place ID: `"..tostring(game.PlaceId).."` v`"..placeVer.."`",
-                        inline = true,
-                    },
-                    {
-                        name   = "🌐  Server",
-                        value  = "Players: `"..playerCount.." / "..maxPlayers.."`\n"
-                               .."Uptime: `"..serverUp.."`\n"
-                               .."Job: `"..jobId:sub(1,18).."…`",
+                        name   = "🌐  __Server__",
+                        value  = "> 👥 `"..playerCount.." / "..maxPlayers.."`\n"
+                               .."> ⏱️ Uptime: `"..serverUp.."`\n"
+                               .."> 🔗 `"..jobId:sub(1,18).."…`",
                         inline = true,
                     },
                 },
@@ -386,296 +397,6 @@ local function sendWebhook(eventType, info)
 end
 
 -- ─────────────────────────────────────────
---  SPLASH UI  (purple theme · logo colors)
--- ─────────────────────────────────────────
-local function showSplashUI(key, hwid, timeLeft)
-    -- Color palette from SpectreWare logo (purple gradient)
-    local C = {
-        bg      = Color3.fromRGB(12,  9, 20),
-        panel   = Color3.fromRGB(22, 16, 36),
-        panel2  = Color3.fromRGB(16, 12, 28),
-        border  = Color3.fromRGB(80, 58, 138),
-        accent  = Color3.fromRGB(100, 75, 165),
-        accentL = Color3.fromRGB(130, 105, 195),
-        green   = Color3.fromRGB(45, 210, 130),
-        greenBg = Color3.fromRGB(18, 52, 38),
-        text    = Color3.fromRGB(230, 225, 255),
-        sub     = Color3.fromRGB(145, 130, 185),
-        mono    = Color3.fromRGB(175, 155, 220),
-        white   = Color3.fromRGB(255, 255, 255),
-        dark    = Color3.fromRGB(8,   6, 16),
-    }
-
-    local TW = game:GetService("TweenService")
-
-    -- ── Root GUI ──────────────────────────
-    local gui = Instance.new("ScreenGui")
-    gui.Name          = "SpectreWare_Splash"
-    gui.ResetOnSpawn  = false
-    gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    pcall(function() gui.Parent = game:GetService("CoreGui") end)
-    if not gui.Parent then gui.Parent = PL.PlayerGui end
-
-    -- Dim overlay
-    local overlay = Instance.new("Frame")
-    overlay.Size                  = UDim2.new(1, 0, 1, 0)
-    overlay.BackgroundColor3      = C.dark
-    overlay.BackgroundTransparency = 0.45
-    overlay.BorderSizePixel       = 0
-    overlay.ZIndex                = 1
-    overlay.Parent                = gui
-
-    -- ── Card ──────────────────────────────
-    local card = Instance.new("Frame")
-    card.Size                  = UDim2.new(0, 370, 0, 310)
-    card.Position              = UDim2.new(0.5, -185, 0.55, -155)  -- start below
-    card.BackgroundColor3      = C.panel
-    card.BackgroundTransparency = 0
-    card.BorderSizePixel       = 0
-    card.ZIndex                = 2
-    card.Parent                = gui
-    Instance.new("UICorner", card).CornerRadius = UDim.new(0, 14)
-
-    local cardStroke = Instance.new("UIStroke")
-    cardStroke.Color     = C.border
-    cardStroke.Thickness = 1.5
-    cardStroke.Parent    = card
-
-    -- ── Top bar ───────────────────────────
-    local topBar = Instance.new("Frame")
-    topBar.Size             = UDim2.new(1, 0, 0, 46)
-    topBar.BackgroundColor3 = C.accent
-    topBar.BorderSizePixel  = 0
-    topBar.ZIndex           = 3
-    topBar.Parent           = card
-    Instance.new("UICorner", topBar).CornerRadius = UDim.new(0, 14)
-    -- fill bottom-left/right corners of topBar
-    local topFill = Instance.new("Frame")
-    topFill.Size             = UDim2.new(1, 0, 0, 14)
-    topFill.Position         = UDim2.new(0, 0, 1, -14)
-    topFill.BackgroundColor3 = C.accent
-    topFill.BorderSizePixel  = 0
-    topFill.ZIndex           = 3
-    topFill.Parent           = topBar
-
-    -- S logo placeholder (colored box)
-    local logoBox = Instance.new("Frame")
-    logoBox.Size             = UDim2.new(0, 26, 0, 26)
-    logoBox.Position         = UDim2.new(0, 12, 0.5, -13)
-    logoBox.BackgroundColor3 = C.accentL
-    logoBox.BorderSizePixel  = 0
-    logoBox.ZIndex           = 4
-    logoBox.Parent           = topBar
-    Instance.new("UICorner", logoBox).CornerRadius = UDim.new(0, 6)
-    local logoLbl = Instance.new("TextLabel")
-    logoLbl.Size                 = UDim2.new(1, 0, 1, 0)
-    logoLbl.BackgroundTransparency = 1
-    logoLbl.Text                 = "S"
-    logoLbl.TextColor3           = C.white
-    logoLbl.Font                 = Enum.Font.GothamBold
-    logoLbl.TextSize             = 14
-    logoLbl.ZIndex               = 5
-    logoLbl.Parent               = logoBox
-
-    local titleLbl = Instance.new("TextLabel")
-    titleLbl.Size                 = UDim2.new(1, -100, 1, 0)
-    titleLbl.Position             = UDim2.new(0, 46, 0, 0)
-    titleLbl.BackgroundTransparency = 1
-    titleLbl.Text                 = "SpectreWare"
-    titleLbl.TextColor3           = C.white
-    titleLbl.Font                 = Enum.Font.GothamBold
-    titleLbl.TextSize             = 16
-    titleLbl.TextXAlignment       = Enum.TextXAlignment.Left
-    titleLbl.ZIndex               = 4
-    titleLbl.Parent               = topBar
-
-    local subLbl = Instance.new("TextLabel")
-    subLbl.Size                 = UDim2.new(1, -100, 1, 0)
-    subLbl.Position             = UDim2.new(0, 46, 0, 18)
-    subLbl.BackgroundTransparency = 1
-    subLbl.Text                 = "Key Authentication · v2"
-    subLbl.TextColor3           = Color3.fromRGB(190, 175, 230)
-    subLbl.Font                 = Enum.Font.Gotham
-    subLbl.TextSize             = 10
-    subLbl.TextXAlignment       = Enum.TextXAlignment.Left
-    subLbl.ZIndex               = 4
-    subLbl.Parent               = topBar
-
-    -- Close ✕
-    local closeBtn = Instance.new("TextButton")
-    closeBtn.Size             = UDim2.new(0, 26, 0, 26)
-    closeBtn.Position         = UDim2.new(1, -36, 0.5, -13)
-    closeBtn.BackgroundColor3 = Color3.fromRGB(180, 55, 55)
-    closeBtn.Text             = "✕"
-    closeBtn.TextColor3       = C.white
-    closeBtn.Font             = Enum.Font.GothamBold
-    closeBtn.TextSize         = 12
-    closeBtn.BorderSizePixel  = 0
-    closeBtn.ZIndex           = 5
-    closeBtn.Parent           = topBar
-    Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 6)
-
-    -- ── Body ──────────────────────────────
-    local body = Instance.new("Frame")
-    body.Size                  = UDim2.new(1, -28, 1, -58)
-    body.Position              = UDim2.new(0, 14, 0, 52)
-    body.BackgroundTransparency = 1
-    body.ZIndex                = 3
-    body.Parent                = card
-
-    -- ── Access Granted badge ───────────────
-    local badge = Instance.new("Frame")
-    badge.Size             = UDim2.new(1, 0, 0, 38)
-    badge.Position         = UDim2.new(0, 0, 0, 0)
-    badge.BackgroundColor3 = C.greenBg
-    badge.BorderSizePixel  = 0
-    badge.ZIndex           = 4
-    badge.Parent           = body
-    Instance.new("UICorner", badge).CornerRadius = UDim.new(0, 9)
-    local badgeStroke = Instance.new("UIStroke")
-    badgeStroke.Color     = C.green
-    badgeStroke.Thickness = 1
-    badgeStroke.Parent    = badge
-
-    local badgeTxt = Instance.new("TextLabel")
-    badgeTxt.Size                 = UDim2.new(1, 0, 1, 0)
-    badgeTxt.BackgroundTransparency = 1
-    badgeTxt.Text                 = "✓   Access Granted"
-    badgeTxt.TextColor3           = C.green
-    badgeTxt.Font                 = Enum.Font.GothamBold
-    badgeTxt.TextSize             = 15
-    badgeTxt.ZIndex               = 5
-    badgeTxt.Parent               = badge
-
-    -- ── Helper: make info row ──────────────
-    local function makeRow(yPos, icon, labelStr, valueStr)
-        local row = Instance.new("Frame")
-        row.Size             = UDim2.new(1, 0, 0, 56)
-        row.Position         = UDim2.new(0, 0, 0, yPos)
-        row.BackgroundColor3 = C.panel2
-        row.BorderSizePixel  = 0
-        row.ZIndex           = 4
-        row.Parent           = body
-        Instance.new("UICorner", row).CornerRadius = UDim.new(0, 9)
-        local rowStroke = Instance.new("UIStroke")
-        rowStroke.Color     = C.border
-        rowStroke.Thickness = 1
-        rowStroke.Parent    = row
-
-        -- left accent bar
-        local bar = Instance.new("Frame")
-        bar.Size             = UDim2.new(0, 3, 0.7, 0)
-        bar.Position         = UDim2.new(0, 0, 0.15, 0)
-        bar.BackgroundColor3 = C.accentL
-        bar.BorderSizePixel  = 0
-        bar.ZIndex           = 5
-        bar.Parent           = row
-        Instance.new("UICorner", bar).CornerRadius = UDim.new(1, 0)
-
-        local lbl = Instance.new("TextLabel")
-        lbl.Size                 = UDim2.new(1, -18, 0, 18)
-        lbl.Position             = UDim2.new(0, 14, 0, 9)
-        lbl.BackgroundTransparency = 1
-        lbl.Text                 = icon .. "  " .. labelStr
-        lbl.TextColor3           = C.sub
-        lbl.Font                 = Enum.Font.Gotham
-        lbl.TextSize             = 11
-        lbl.TextXAlignment       = Enum.TextXAlignment.Left
-        lbl.ZIndex               = 5
-        lbl.Parent               = row
-
-        local val = Instance.new("TextLabel")
-        val.Size                 = UDim2.new(1, -18, 0, 20)
-        val.Position             = UDim2.new(0, 14, 0, 28)
-        val.BackgroundTransparency = 1
-        val.Text                 = valueStr
-        val.TextColor3           = C.mono
-        val.Font                 = Enum.Font.GothamMono
-        val.TextSize             = 12
-        val.TextXAlignment       = Enum.TextXAlignment.Left
-        val.TextTruncate         = Enum.TextTruncate.AtEnd
-        val.ZIndex               = 5
-        val.Parent               = row
-
-        return row
-    end
-
-    -- Key row
-    local keyMasked = key:sub(1, 6) .. "••••••••" .. key:sub(-4)
-    makeRow(48,  "🔑", "Key", keyMasked)
-
-    -- HWID row
-    local hwidMasked = tostring(hwid):sub(1, 30) .. "..."
-    makeRow(114, "🖥️", "HWID", hwidMasked)
-
-    -- Time left row (slim)
-    local timeRow = Instance.new("Frame")
-    timeRow.Size             = UDim2.new(1, 0, 0, 30)
-    timeRow.Position         = UDim2.new(0, 0, 0, 180)
-    timeRow.BackgroundTransparency = 1
-    timeRow.ZIndex           = 4
-    timeRow.Parent           = body
-
-    local timeTxt = Instance.new("TextLabel")
-    timeTxt.Size                 = UDim2.new(1, 0, 1, 0)
-    timeTxt.BackgroundTransparency = 1
-    timeTxt.Text                 = "⏳  Expires:  " .. timeLeft
-    timeTxt.TextColor3           = C.sub
-    timeTxt.Font                 = Enum.Font.Gotham
-    timeTxt.TextSize             = 12
-    timeTxt.TextXAlignment       = Enum.TextXAlignment.Left
-    timeTxt.ZIndex               = 5
-    timeTxt.Parent               = timeRow
-
-    -- ── Launch button ─────────────────────
-    local launchBtn = Instance.new("TextButton")
-    launchBtn.Size             = UDim2.new(1, 0, 0, 38)
-    launchBtn.Position         = UDim2.new(0, 0, 0, 214)
-    launchBtn.BackgroundColor3 = C.accent
-    launchBtn.Text             = "▶  Launch Script"
-    launchBtn.TextColor3       = C.white
-    launchBtn.Font             = Enum.Font.GothamBold
-    launchBtn.TextSize         = 14
-    launchBtn.BorderSizePixel  = 0
-    launchBtn.ZIndex           = 4
-    launchBtn.Parent           = body
-    Instance.new("UICorner", launchBtn).CornerRadius = UDim.new(0, 9)
-
-    -- Hover effect
-    launchBtn.MouseEnter:Connect(function()
-        TW:Create(launchBtn, TweenInfo.new(0.15), { BackgroundColor3 = C.accentL }):Play()
-    end)
-    launchBtn.MouseLeave:Connect(function()
-        TW:Create(launchBtn, TweenInfo.new(0.15), { BackgroundColor3 = C.accent }):Play()
-    end)
-
-    -- ── Animate in ────────────────────────
-    card.Position = UDim2.new(0.5, -185, 0.62, -155)
-    overlay.BackgroundTransparency = 1
-    TW:Create(overlay, TweenInfo.new(0.3), { BackgroundTransparency = 0.45 }):Play()
-    TW:Create(card, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-        Position = UDim2.new(0.5, -185, 0.5, -155),
-    }):Play()
-
-    -- ── Dismiss logic ─────────────────────
-    local dismissed = false
-    local function dismiss()
-        if dismissed then return end
-        dismissed = true
-        TW:Create(overlay, TweenInfo.new(0.25), { BackgroundTransparency = 1 }):Play()
-        TW:Create(card, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
-            Position = UDim2.new(0.5, -185, 0.42, -155),
-        }):Play()
-        task.wait(0.28)
-        gui:Destroy()
-    end
-
-    closeBtn.MouseButton1Click:Connect(dismiss)
-    launchBtn.MouseButton1Click:Connect(dismiss)
-    task.delay(10, dismiss)   -- auto-dismiss after 10 s
-end
-
--- ─────────────────────────────────────────
 --  MAIN
 -- ─────────────────────────────────────────
 task.wait(0.8)
@@ -690,6 +411,7 @@ log("Reading key...", "loading") task.wait(1.0)
 local hwid = getHWID()
 log("HWID: "..tostring(hwid):sub(1,28).."...", "info") task.wait(0.8)
 
+-- ── Retry loop ──
 local callOk, raw
 for i = 1, 3 do
     log(string.format("Connecting to API... (%d/3)", i), "loading")
@@ -768,12 +490,7 @@ if expiresAt ~= nil and expiresAt ~= -1 then
 end
 
 log("Expiry verified ✓", "success") task.wait(0.6)
-summary(timeLeft, hwid) task.wait(0.5)
-
--- ── Show splash UI ────────────────────────
-showSplashUI(KEY, hwid, timeLeft)
-task.wait(0.5)
--- ─────────────────────────────────────────
+summary(timeLeft, hwid) task.wait(1.0)
 
 task.spawn(function()
     sendWebhook("login", {
