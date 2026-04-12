@@ -85,15 +85,23 @@ local function httpSend(opts)
     end
     local function hasBody(r) return r and (r.Body or r.body) and (r.Body ~= "" or r.body ~= "") end
 
-    -- [FIX] ลบ typeof() check ออกทั้งหมด — แค่ pcall ตรงๆ ทุก executor
+    -- [FIX v3] ดึง fn จาก getgenv/getfenv ด้วย — mobile executors inject ตรงนี้
+    local genv = (getgenv and getgenv()) or {}
+    local fenv = (getfenv and getfenv(0)) or {}
+
     local tryFns = {
         function() return syn and syn.request and syn.request(optsLower) end,
         function() return http and http.request and http.request(optsLower) end,
+        function() return fluxus and fluxus.request and fluxus.request(optsLower) end,
         function() return request(optsLower) end,
         function() return http_request(optsLower) end,
         function() return HttpRequest(optsLower) end,
         function() return httpRequest(optsLower) end,
-        function() return fluxus and fluxus.request and fluxus.request(optsLower) end,
+        function() return genv.request and genv.request(optsLower) end,
+        function() return genv.http_request and genv.http_request(optsLower) end,
+        function() return genv.HttpRequest and genv.HttpRequest(optsLower) end,
+        function() return fenv.request and fenv.request(optsLower) end,
+        function() return fenv.http_request and fenv.http_request(optsLower) end,
         function() return KRNL_LOADED and krnl and krnl.request and krnl.request(optsLower) end,
         function() return secure_call and secure_call(request, optsLower) end,
         function() return (NS or newSynapse) and (NS or newSynapse).request(optsLower) end,
@@ -104,7 +112,6 @@ local function httpSend(opts)
         if ok and hasBody(res) then return norm(res) end
     end
 
-    -- Fallback: game:HttpGet / HttpGetAsync สำหรับ GET request
     if (optsLower.method or "GET"):upper() == "GET" then
         ok, res = pcall(function()
             return { Body = game:HttpGet(optsLower.url, true), StatusCode = 200 }
@@ -117,7 +124,14 @@ local function httpSend(opts)
         if ok and res and res.Body and res.Body ~= "" then return res end
     end
 
+    -- Diagnostic: บอกว่าเจออะไรบ้างใน env
+    local found = {}
+    for _, name in ipairs({"request","http_request","HttpRequest","httpRequest","syn","http","fluxus"}) do
+        if rawget(genv, name) ~= nil then table.insert(found, name.."[genv]") end
+        if _G[name] ~= nil then table.insert(found, name.."[_G]") end
+    end
     warn("SpectreWare: no supported http function found")
+    warn("SpectreWare: detected = " .. (#found > 0 and table.concat(found, ", ") or "NONE — executor ไม่รองรับ HTTP"))
 end
 
 -- ─────────────────────────────────────────
