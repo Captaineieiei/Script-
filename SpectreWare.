@@ -83,55 +83,49 @@ local function httpSend(opts)
         if r.Body and not r.body then r.body = r.Body end
         return r
     end
-    local function hasBody(r) return r and (r.Body or r.body) and (r.Body ~= "" or r.body ~= "") end
 
-    -- [FIX v3] ดึง fn จาก getgenv/getfenv ด้วย — mobile executors inject ตรงนี้
+    -- [FIX v4 - Delta] ถ้า fn รันโดยไม่ error = function นั้นมีอยู่จริง
+    -- ให้ return ผลทันที ไม่ต้องเช็ค Body — ให้ caller จัดการ empty body เอง
     local genv = (getgenv and getgenv()) or {}
-    local fenv = (getfenv and getfenv(0)) or {}
 
     local tryFns = {
-        function() return syn and syn.request and syn.request(optsLower) end,
+        function() return request(optsLower) end,                                              -- Delta / Celery / Hydrogen
+        function() return http_request(optsLower) end,                                         -- Arceus X
+        function() return genv.request and genv.request(optsLower) end,                        -- Delta (inject via genv)
+        function() return genv.http_request and genv.http_request(optsLower) end,
+        function() return syn and syn.request and syn.request(optsLower) end,                  -- Synapse X
         function() return http and http.request and http.request(optsLower) end,
-        function() return fluxus and fluxus.request and fluxus.request(optsLower) end,
-        function() return request(optsLower) end,
-        function() return http_request(optsLower) end,
+        function() return fluxus and fluxus.request and fluxus.request(optsLower) end,         -- Fluxus
         function() return HttpRequest(optsLower) end,
         function() return httpRequest(optsLower) end,
-        function() return genv.request and genv.request(optsLower) end,
-        function() return genv.http_request and genv.http_request(optsLower) end,
         function() return genv.HttpRequest and genv.HttpRequest(optsLower) end,
-        function() return fenv.request and fenv.request(optsLower) end,
-        function() return fenv.http_request and fenv.http_request(optsLower) end,
         function() return KRNL_LOADED and krnl and krnl.request and krnl.request(optsLower) end,
-        function() return secure_call and secure_call(request, optsLower) end,
-        function() return (NS or newSynapse) and (NS or newSynapse).request(optsLower) end,
     }
 
     for _, fn in ipairs(tryFns) do
         ok, res = pcall(fn)
-        if ok and hasBody(res) then return norm(res) end
+        -- ถ้า fn สำเร็จและ return table = เจอ HTTP function แล้ว
+        if ok and type(res) == "table" then
+            return norm(res)
+        end
     end
 
+    -- Fallback: game:HttpGet / HttpGetAsync
     if (optsLower.method or "GET"):upper() == "GET" then
         ok, res = pcall(function()
-            return { Body = game:HttpGet(optsLower.url, true), StatusCode = 200 }
+            local b = game:HttpGet(optsLower.url, true)
+            return { Body = b, body = b, StatusCode = 200 }
         end)
-        if ok and res and res.Body and res.Body ~= "" then return res end
+        if ok and res then return res end
 
         ok, res = pcall(function()
-            return { Body = game:HttpGetAsync(optsLower.url), StatusCode = 200 }
+            local b = game:HttpGetAsync(optsLower.url)
+            return { Body = b, body = b, StatusCode = 200 }
         end)
-        if ok and res and res.Body and res.Body ~= "" then return res end
+        if ok and res then return res end
     end
 
-    -- Diagnostic: บอกว่าเจออะไรบ้างใน env
-    local found = {}
-    for _, name in ipairs({"request","http_request","HttpRequest","httpRequest","syn","http","fluxus"}) do
-        if rawget(genv, name) ~= nil then table.insert(found, name.."[genv]") end
-        if _G[name] ~= nil then table.insert(found, name.."[_G]") end
-    end
     warn("SpectreWare: no supported http function found")
-    warn("SpectreWare: detected = " .. (#found > 0 and table.concat(found, ", ") or "NONE — executor ไม่รองรับ HTTP"))
 end
 
 -- ─────────────────────────────────────────
