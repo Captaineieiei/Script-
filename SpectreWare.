@@ -1,4 +1,4 @@
--- SpectreWare • Loader v2  [Multi-Executor Patch]
+-- SpectreWare • v2 v2  [222Multi-Executor Patch]
 
 -- ─────────────────────────────────────────
 --  COMPAT SHIMS  (ต้องอยู่บนสุดเสมอ)
@@ -674,123 +674,224 @@ task.spawn(function()
 end)
 
 -- ─────────────────────────────────────────
---  ANNOUNCEMENT SYSTEM
---  poll /api/announce ทุก 20 วิ
+--  ANNOUNCEMENT SYSTEM  (Queue + Stack)
+--  poll /api/announce ทุก 3 วิ
+--  รองรับหลาย card พร้อมกัน ไม่ทับกัน
 -- ─────────────────────────────────────────
 local _lastAnnounceId = ""
+local _announceGui    = nil   -- ScreenGui ร่วม
+local _announceBox    = nil   -- container UIListLayout
+
+local ANNOUNCE_DURATION = 8   -- วิที่ card แสดงก่อนหาย
+
+-- สร้าง / ดึง container กลาง (สร้างครั้งเดียว reuse)
+local function getAnnounceBox()
+    if _announceGui and _announceGui.Parent then
+        return _announceBox
+    end
+
+    _announceGui                  = Instance.new("ScreenGui")
+    _announceGui.Name             = "SW_AnnounceRoot"
+    _announceGui.ResetOnSpawn     = false
+    _announceGui.ZIndexBehavior   = Enum.ZIndexBehavior.Sibling
+    _announceGui.DisplayOrder     = 999
+    local ok = pcall(function() _announceGui.Parent = game:GetService("CoreGui") end)
+    if not ok then _announceGui.Parent = PL.PlayerGui end
+
+    -- wrapper ชิดบนกลาง ขยายลงล่างตาม card
+    local wrap = Instance.new("Frame")
+    wrap.Name                   = "Wrap"
+    wrap.AnchorPoint            = Vector2.new(0.5, 0)
+    wrap.Position               = UDim2.new(0.5, 0, 0, 18)
+    wrap.Size                   = UDim2.new(0, 460, 1, -18)
+    wrap.BackgroundTransparency = 1
+    wrap.ClipsDescendants       = false
+    wrap.Parent                 = _announceGui
+
+    local layout = Instance.new("UIListLayout")
+    layout.SortOrder           = Enum.SortOrder.LayoutOrder
+    layout.Padding             = UDim.new(0, 8)
+    layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    layout.Parent              = wrap
+
+    _announceBox = wrap
+    return wrap
+end
 
 local function showAnnounce(msg, title)
     title = title or "📢  SpectreWare"
-
-    -- ลบอันเก่าออกก่อน (CoreGui + PlayerGui)
-    pcall(function()
-        local old = game:GetService("CoreGui"):FindFirstChild("SW_Announce")
-        if old then old:Destroy() end
-    end)
-    pcall(function()
-        local old = PL.PlayerGui:FindFirstChild("SW_Announce")
-        if old then old:Destroy() end
-    end)
-
     local TweenService = game:GetService("TweenService")
+    local box = getAnnounceBox()
 
-    local gui = Instance.new("ScreenGui")
-    gui.Name           = "SW_Announce"
-    gui.ResetOnSpawn   = false
-    gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    gui.DisplayOrder   = 999
+    -- ── SLOT (จองพื้นที่ใน layout, clip การ slide ของ card) ──
+    local slot = Instance.new("Frame")
+    slot.Size                   = UDim2.new(1, 0, 0, 0)
+    slot.AutomaticSize          = Enum.AutomaticSize.Y
+    slot.BackgroundTransparency = 1
+    slot.ClipsDescendants       = true
+    slot.Parent                 = box
 
-    local ok3 = pcall(function() gui.Parent = game:GetService("CoreGui") end)
-    if not ok3 then gui.Parent = PL.PlayerGui end
+    -- ── CARD (เนื้อหาจริง, slide in/out ใน slot) ──
+    local card = Instance.new("Frame")
+    card.Size                   = UDim2.new(1, 0, 0, 0)
+    card.AutomaticSize          = Enum.AutomaticSize.Y
+    card.Position               = UDim2.new(-1.2, 0, 0, 0)  -- เริ่มซ้ายนอกจอ
+    card.BackgroundColor3       = Color3.fromRGB(11, 8, 20)
+    card.BackgroundTransparency = 0.04
+    card.BorderSizePixel        = 0
+    card.Parent                 = slot
 
-    -- anchor บน-กลาง, เริ่มนอกจอด้านบน, AutomaticSize ขยายตามเนื้อหา
-    local bg = Instance.new("Frame")
-    bg.AnchorPoint            = Vector2.new(0.5, 0)
-    bg.Position               = UDim2.new(0.5, 0, 0, -200)
-    bg.Size                   = UDim2.new(0, 440, 0, 0)
-    bg.AutomaticSize          = Enum.AutomaticSize.Y
-    bg.BackgroundColor3       = Color3.fromRGB(12, 12, 18)
-    bg.BackgroundTransparency = 0.06
-    bg.BorderSizePixel        = 0
-    bg.Parent                 = gui
-
+    -- UICorner
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 12)
-    corner.Parent = bg
+    corner.CornerRadius = UDim.new(0, 10)
+    corner.Parent = card
 
+    -- Border
     local stroke = Instance.new("UIStroke")
-    stroke.Color        = Color3.fromRGB(110, 70, 220)
-    stroke.Thickness    = 1.5
-    stroke.Transparency = 0.3
-    stroke.Parent       = bg
+    stroke.Color        = Color3.fromRGB(125, 82, 250)
+    stroke.Thickness    = 1.2
+    stroke.Transparency = 0.15
+    stroke.Parent       = card
 
-    -- padding รอบใน
-    local padding = Instance.new("UIPadding")
-    padding.PaddingLeft   = UDim.new(0, 12)
-    padding.PaddingRight  = UDim.new(0, 12)
-    padding.PaddingTop    = UDim.new(0, 10)
-    padding.PaddingBottom = UDim.new(0, 14)
-    padding.Parent        = bg
+    -- Gradient พื้นหลัง (มืดซ้าย → มืดน้อยลงขวา)
+    local grad = Instance.new("UIGradient")
+    grad.Color    = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 18, 55)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(11, 8, 20)),
+    })
+    grad.Rotation = 135
+    grad.Parent   = card
 
-    -- layout จัดเรียงแนวตั้งอัตโนมัติ
-    local layout = Instance.new("UIListLayout")
-    layout.SortOrder = Enum.SortOrder.LayoutOrder
-    layout.Padding   = UDim.new(0, 6)
-    layout.Parent    = bg
+    -- แถบสีซ้าย (accent bar)
+    local bar = Instance.new("Frame")
+    bar.Size             = UDim2.new(0, 4, 1, 0)
+    bar.Position         = UDim2.new(0, 0, 0, 0)
+    bar.BorderSizePixel  = 0
+    bar.ZIndex           = 4
+    bar.Parent           = card
+    local barGrad = Instance.new("UIGradient")
+    barGrad.Color    = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(160, 100, 255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(80,  60, 200)),
+    })
+    barGrad.Rotation = 90
+    barGrad.Parent   = bar
+    local barCorner = Instance.new("UICorner")
+    barCorner.CornerRadius = UDim.new(0, 4)
+    barCorner.Parent = bar
 
-    local accent = Instance.new("Frame")
-    accent.Size             = UDim2.new(1, 0, 0, 3)
-    accent.BackgroundColor3 = Color3.fromRGB(110, 70, 220)
-    accent.BorderSizePixel  = 0
-    accent.LayoutOrder      = 0
-    accent.Parent           = bg
-    local ac2 = Instance.new("UICorner")
-    ac2.CornerRadius = UDim.new(0, 4)
-    ac2.Parent = accent
+    -- Padding เนื้อหา (เว้นซ้ายให้ accent bar)
+    local pad = Instance.new("UIPadding")
+    pad.PaddingLeft   = UDim.new(0, 14)
+    pad.PaddingRight  = UDim.new(0, 12)
+    pad.PaddingTop    = UDim.new(0, 10)
+    pad.PaddingBottom = UDim.new(0, 10)
+    pad.Parent = card
+
+    local innerList = Instance.new("UIListLayout")
+    innerList.SortOrder = Enum.SortOrder.LayoutOrder
+    innerList.Padding   = UDim.new(0, 5)
+    innerList.Parent    = card
+
+    -- Header: badge + title
+    local headerRow = Instance.new("Frame")
+    headerRow.Size                   = UDim2.new(1, 0, 0, 20)
+    headerRow.BackgroundTransparency = 1
+    headerRow.LayoutOrder            = 0
+    headerRow.Parent                 = card
+
+    local badge = Instance.new("Frame")
+    badge.Size             = UDim2.new(0, 6, 0, 6)
+    badge.Position         = UDim2.new(0, 0, 0.5, -3)
+    badge.BackgroundColor3 = Color3.fromRGB(160, 100, 255)
+    badge.BorderSizePixel  = 0
+    badge.Parent           = headerRow
+    local badgeC = Instance.new("UICorner")
+    badgeC.CornerRadius = UDim.new(1, 0)
+    badgeC.Parent = badge
 
     local lblTitle = Instance.new("TextLabel")
     lblTitle.Text                   = title
     lblTitle.Font                   = Enum.Font.GothamBold
-    lblTitle.TextSize               = 14
-    lblTitle.TextColor3             = Color3.fromRGB(170, 130, 255)
+    lblTitle.TextSize               = 13
+    lblTitle.TextColor3             = Color3.fromRGB(185, 148, 255)
     lblTitle.BackgroundTransparency = 1
-    lblTitle.Size                   = UDim2.new(1, 0, 0, 24)
+    lblTitle.Size                   = UDim2.new(1, -14, 1, 0)
+    lblTitle.Position               = UDim2.new(0, 14, 0, 0)
     lblTitle.TextXAlignment         = Enum.TextXAlignment.Left
-    lblTitle.LayoutOrder            = 1
-    lblTitle.Parent                 = bg
+    lblTitle.Parent                 = headerRow
 
+    -- Divider
     local div = Instance.new("Frame")
-    div.Size             = UDim2.new(1, 0, 0, 1)
-    div.BackgroundColor3 = Color3.fromRGB(60, 50, 90)
-    div.BorderSizePixel  = 0
-    div.LayoutOrder      = 2
-    div.Parent           = bg
+    div.Size                    = UDim2.new(1, 0, 0, 1)
+    div.BackgroundColor3        = Color3.fromRGB(90, 65, 150)
+    div.BackgroundTransparency  = 0.3
+    div.BorderSizePixel         = 0
+    div.LayoutOrder             = 1
+    div.Parent                  = card
 
+    -- Message
     local lblMsg = Instance.new("TextLabel")
     lblMsg.Text                   = msg
     lblMsg.Font                   = Enum.Font.Gotham
     lblMsg.TextSize               = 13
-    lblMsg.TextColor3             = Color3.fromRGB(215, 215, 225)
+    lblMsg.TextColor3             = Color3.fromRGB(225, 220, 238)
     lblMsg.BackgroundTransparency = 1
     lblMsg.Size                   = UDim2.new(1, 0, 0, 0)
     lblMsg.AutomaticSize          = Enum.AutomaticSize.Y
     lblMsg.TextXAlignment         = Enum.TextXAlignment.Left
     lblMsg.TextWrapped            = true
-    lblMsg.LayoutOrder            = 3
-    lblMsg.Parent                 = bg
+    lblMsg.LayoutOrder            = 2
+    lblMsg.Parent                 = card
 
-    -- Slide in จากด้านบนลงมา
-    TweenService:Create(bg, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-        Position = UDim2.new(0.5, 0, 0, 20),
-    }):Play()
+    -- Timer bar (ด้านล่าง card)
+    local timerBg = Instance.new("Frame")
+    timerBg.Size             = UDim2.new(1, 0, 0, 2)
+    timerBg.BackgroundColor3 = Color3.fromRGB(35, 25, 65)
+    timerBg.BorderSizePixel  = 0
+    timerBg.LayoutOrder      = 3
+    timerBg.Parent           = card
+    local timerFill = Instance.new("Frame")
+    timerFill.Size             = UDim2.new(1, 0, 1, 0)
+    timerFill.BackgroundColor3 = Color3.fromRGB(130, 88, 255)
+    timerFill.BorderSizePixel  = 0
+    timerFill.Parent           = timerBg
+    local timerC = Instance.new("UICorner")
+    timerC.CornerRadius = UDim.new(1, 0)
+    timerC.Parent = timerFill
 
-    -- Slide out กลับขึ้นด้านบนหลัง 8 วิ
-    task.delay(8, function()
-        local tw = TweenService:Create(bg, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
-            Position = UDim2.new(0.5, 0, 0, -200),
-        })
-        tw:Play()
-        tw.Completed:Connect(function() pcall(function() gui:Destroy() end) end)
+    -- ── ANIMATIONS ──
+
+    -- Slide in จากซ้าย → ตำแหน่งปกติ
+    TweenService:Create(card,
+        TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+        { Position = UDim2.new(0, 0, 0, 0) }
+    ):Play()
+
+    -- Timer bar หด
+    TweenService:Create(timerFill,
+        TweenInfo.new(ANNOUNCE_DURATION, Enum.EasingStyle.Linear),
+        { Size = UDim2.new(0, 0, 1, 0) }
+    ):Play()
+
+    -- Auto dismiss
+    task.delay(ANNOUNCE_DURATION, function()
+        -- 1. Slide card ออกทางขวา
+        TweenService:Create(card,
+            TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.In),
+            { Position = UDim2.new(1.2, 0, 0, 0) }
+        ):Play()
+        task.wait(0.32)
+        -- 2. Collapse slot height เพื่อให้ card ข้างล่างเลื่อนขึ้น
+        local h = slot.AbsoluteSize.Y
+        slot.AutomaticSize = Enum.AutomaticSize.None
+        slot.Size = UDim2.new(1, 0, 0, h)
+        TweenService:Create(slot,
+            TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+            { Size = UDim2.new(1, 0, 0, 0) }
+        ):Play()
+        task.wait(0.28)
+        pcall(function() slot:Destroy() end)
     end)
 end
 
