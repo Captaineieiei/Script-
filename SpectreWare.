@@ -1,4 +1,4 @@
--- SpectreWare • Loader v2  [Multi-Executor Patch]
+-- SpectreWare • Loader v222  [Multi-Executor Patch]
 
 -- ─────────────────────────────────────────
 --  COMPAT SHIMS  (ต้องอยู่บนสุดเสมอ)
@@ -777,7 +777,7 @@ local function showAnnounce(msg, title)
 end
 
 task.spawn(function()
-    while _sessionActive and task.wait(20) do
+    while _sessionActive and task.wait(3) do
         pcall(function()
             local aOk, aRaw = safeGet(API.."/api/announce")
             if not aOk or not aRaw or aRaw == "" then return end
