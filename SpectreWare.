@@ -1,4 +1,4 @@
--- SpectreWare • Loader v222  [Multi-Executor Patch]
+-- SpectreWare • Loader v2  [Multi-Executor Patch]
 
 -- ─────────────────────────────────────────
 --  COMPAT SHIMS  (ต้องอยู่บนสุดเสมอ)
@@ -682,8 +682,13 @@ local _lastAnnounceId = ""
 local function showAnnounce(msg, title)
     title = title or "📢  SpectreWare"
 
+    -- ลบอันเก่าออกก่อน (CoreGui + PlayerGui)
     pcall(function()
         local old = game:GetService("CoreGui"):FindFirstChild("SW_Announce")
+        if old then old:Destroy() end
+    end)
+    pcall(function()
+        local old = PL.PlayerGui:FindFirstChild("SW_Announce")
         if old then old:Destroy() end
     end)
 
@@ -698,12 +703,14 @@ local function showAnnounce(msg, title)
     local ok3 = pcall(function() gui.Parent = game:GetService("CoreGui") end)
     if not ok3 then gui.Parent = PL.PlayerGui end
 
+    -- anchor บน-กลาง, เริ่มนอกจอด้านบน, AutomaticSize ขยายตามเนื้อหา
     local bg = Instance.new("Frame")
-    bg.AnchorPoint            = Vector2.new(0.5, 0.5)
-    bg.Position               = UDim2.new(0.5, 0, 0.5, -20)
+    bg.AnchorPoint            = Vector2.new(0.5, 0)
+    bg.Position               = UDim2.new(0.5, 0, 0, -200)
     bg.Size                   = UDim2.new(0, 440, 0, 0)
+    bg.AutomaticSize          = Enum.AutomaticSize.Y
     bg.BackgroundColor3       = Color3.fromRGB(12, 12, 18)
-    bg.BackgroundTransparency = 1
+    bg.BackgroundTransparency = 0.06
     bg.BorderSizePixel        = 0
     bg.Parent                 = gui
 
@@ -717,59 +724,70 @@ local function showAnnounce(msg, title)
     stroke.Transparency = 0.3
     stroke.Parent       = bg
 
+    -- padding รอบใน
+    local padding = Instance.new("UIPadding")
+    padding.PaddingLeft   = UDim.new(0, 12)
+    padding.PaddingRight  = UDim.new(0, 12)
+    padding.PaddingTop    = UDim.new(0, 10)
+    padding.PaddingBottom = UDim.new(0, 14)
+    padding.Parent        = bg
+
+    -- layout จัดเรียงแนวตั้งอัตโนมัติ
+    local layout = Instance.new("UIListLayout")
+    layout.SortOrder = Enum.SortOrder.LayoutOrder
+    layout.Padding   = UDim.new(0, 6)
+    layout.Parent    = bg
+
     local accent = Instance.new("Frame")
     accent.Size             = UDim2.new(1, 0, 0, 3)
     accent.BackgroundColor3 = Color3.fromRGB(110, 70, 220)
     accent.BorderSizePixel  = 0
+    accent.LayoutOrder      = 0
     accent.Parent           = bg
     local ac2 = Instance.new("UICorner")
-    ac2.CornerRadius = UDim.new(0, 12)
+    ac2.CornerRadius = UDim.new(0, 4)
     ac2.Parent = accent
 
     local lblTitle = Instance.new("TextLabel")
-    lblTitle.Text                = title
-    lblTitle.Font                = Enum.Font.GothamBold
-    lblTitle.TextSize            = 14
-    lblTitle.TextColor3          = Color3.fromRGB(170, 130, 255)
+    lblTitle.Text                   = title
+    lblTitle.Font                   = Enum.Font.GothamBold
+    lblTitle.TextSize               = 14
+    lblTitle.TextColor3             = Color3.fromRGB(170, 130, 255)
     lblTitle.BackgroundTransparency = 1
-    lblTitle.Size                = UDim2.new(1, -20, 0, 28)
-    lblTitle.Position            = UDim2.new(0, 12, 0, 10)
-    lblTitle.TextXAlignment      = Enum.TextXAlignment.Left
-    lblTitle.Parent              = bg
+    lblTitle.Size                   = UDim2.new(1, 0, 0, 24)
+    lblTitle.TextXAlignment         = Enum.TextXAlignment.Left
+    lblTitle.LayoutOrder            = 1
+    lblTitle.Parent                 = bg
 
     local div = Instance.new("Frame")
-    div.Size             = UDim2.new(1, -24, 0, 1)
-    div.Position         = UDim2.new(0, 12, 0, 40)
+    div.Size             = UDim2.new(1, 0, 0, 1)
     div.BackgroundColor3 = Color3.fromRGB(60, 50, 90)
     div.BorderSizePixel  = 0
+    div.LayoutOrder      = 2
     div.Parent           = bg
 
     local lblMsg = Instance.new("TextLabel")
-    lblMsg.Text                 = msg
-    lblMsg.Font                 = Enum.Font.Gotham
-    lblMsg.TextSize             = 13
-    lblMsg.TextColor3           = Color3.fromRGB(215, 215, 225)
+    lblMsg.Text                   = msg
+    lblMsg.Font                   = Enum.Font.Gotham
+    lblMsg.TextSize               = 13
+    lblMsg.TextColor3             = Color3.fromRGB(215, 215, 225)
     lblMsg.BackgroundTransparency = 1
-    lblMsg.Size                 = UDim2.new(1, -24, 0, 0)
-    lblMsg.Position             = UDim2.new(0, 12, 0, 50)
-    lblMsg.TextXAlignment       = Enum.TextXAlignment.Left
-    lblMsg.TextWrapped          = true
-    lblMsg.AutomaticSize        = Enum.AutomaticSize.Y
-    lblMsg.Parent               = bg
+    lblMsg.Size                   = UDim2.new(1, 0, 0, 0)
+    lblMsg.AutomaticSize          = Enum.AutomaticSize.Y
+    lblMsg.TextXAlignment         = Enum.TextXAlignment.Left
+    lblMsg.TextWrapped            = true
+    lblMsg.LayoutOrder            = 3
+    lblMsg.Parent                 = bg
 
-    task.wait(0.05)
-    local totalH = 50 + lblMsg.AbsoluteSize.Y + 18
-
-    TweenService:Create(bg, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-        Size                   = UDim2.new(0, 440, 0, totalH),
-        BackgroundTransparency = 0.06,
-        Position               = UDim2.new(0.5, 0, 0.5, 0),
+    -- Slide in จากด้านบนลงมา
+    TweenService:Create(bg, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+        Position = UDim2.new(0.5, 0, 0, 20),
     }):Play()
 
-    task.delay(10, function()
+    -- Slide out กลับขึ้นด้านบนหลัง 8 วิ
+    task.delay(8, function()
         local tw = TweenService:Create(bg, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
-            BackgroundTransparency = 1,
-            Position               = UDim2.new(0.5, 0, 0.5, -40),
+            Position = UDim2.new(0.5, 0, 0, -200),
         })
         tw:Play()
         tw.Completed:Connect(function() pcall(function() gui:Destroy() end) end)
