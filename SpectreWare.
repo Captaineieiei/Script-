@@ -5,10 +5,14 @@
 -- ─────────────────────────────────────────
 local getgenv = (typeof(getgenv) == "function" and getgenv) or function() return _G end
 
-local task = task or {}
-task.wait  = task.wait  or function(t) return wait(t or 0) end
-task.spawn = task.spawn or function(f, ...) return spawn(function(...) f(...) end, ...) end
-task.delay = task.delay or function(t, f, ...) return delay(t, f, ...) end
+local task = (function()
+    local t = (typeof(task) == "table" and task) or {}
+    return {
+        wait  = t.wait  or function(n) return wait(n or 0) end,
+        spawn = t.spawn or function(f, ...) return spawn(function(...) f(...) end, ...) end,
+        delay = t.delay or function(n, f, ...) return delay(n, f, ...) end,
+    }
+end)()
 
 local loadstring = loadstring or (typeof(syn) == "table" and syn.loadstring)
 
@@ -762,7 +766,7 @@ local function showAnnounce(msg, title)
         Position               = UDim2.new(0.5, 0, 0.5, 0),
     }):Play()
 
-    task.delay(7, function()
+    task.delay(10, function()
         local tw = TweenService:Create(bg, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
             BackgroundTransparency = 1,
             Position               = UDim2.new(0.5, 0, 0.5, -40),
@@ -773,7 +777,7 @@ local function showAnnounce(msg, title)
 end
 
 task.spawn(function()
-    while _sessionActive and task.wait(2) do
+    while _sessionActive and task.wait(20) do
         pcall(function()
             local aOk, aRaw = safeGet(API.."/api/announce")
             if not aOk or not aRaw or aRaw == "" then return end
