@@ -236,6 +236,8 @@ RunService.RenderStepped:Connect(function(dt)
         end
         local liveHRP = resolveHRP(c2)
         if liveHRP and liveHRP ~= obj.hrp then obj.hrp = liveHRP end
+        local liveHum = c2:FindFirstChildOfClass("Humanoid")
+        if liveHum and liveHum ~= obj.hum then obj.hum = liveHum end
         local hrp2, hum2 = obj.hrp, obj.hum
         if not hrp2 or not hrp2.Parent or not hum2 or not hum2.Parent or hum2.Health <= 0 then
             if obj._vis then SetAllVisible(obj, false); obj._vis = false end; continue
@@ -291,11 +293,6 @@ RunService.RenderStepped:Connect(function(dt)
     end
     for _, c2 in ipairs(toRemove) do RemoveESP(c2) end
 end)
-
-local function handleChar(c2)
-    c2:WaitForChild("HumanoidRootPart", 10); c2:WaitForChild("Humanoid", 10)
-    if c2 and c2.Parent then CreateESP(c2) end
-end
 
 local function cleanPlayerESP(plr)
     for oldChar, obj in pairs(ESPObjects) do
@@ -378,7 +375,14 @@ task.spawn(function()
     LP.CharacterAdded:Connect(function()
         task.wait(1)
         for _, plr in pairs(Players:GetPlayers()) do
-            if plr ~= LP and plr.Character then CreateESP(plr.Character, plr) end
+            if plr ~= LP and plr.Character and not ESPObjects[plr.Character] then
+                task.spawn(function()
+                    local c2 = plr.Character
+                    c2:WaitForChild("HumanoidRootPart", 10)
+                    c2:WaitForChild("Humanoid", 10)
+                    if c2 and c2.Parent then CreateESP(c2, plr) end
+                end)
+            end
         end
         ScanWorkspace()
     end)
@@ -997,8 +1001,27 @@ Window:Divider()
 -- TAB: SETTINGS
 local SettingsTab = Window:Tab({ Title = "Settings", Icon = "settings", Locked = false })
 local AntiAFKEnabled = true
+
+-- Reactive (backup): ดักจับเมื่อ Roblox detect idle
 LP.Idled:Connect(function()
-    if AntiAFKEnabled then VirtualUser:CaptureController(); VirtualUser:ClickButton2(Vector2.new()) end
+    if not AntiAFKEnabled then return end
+    pcall(function()
+        VirtualUser:CaptureController()
+        VirtualUser:ClickButton2(Vector2.new())
+    end)
+end)
+
+-- Proactive: simulate input ทุก 45 วิ ไม่ให้ถึง idle เลย
+task.spawn(function()
+    while true do
+        task.wait(45)
+        if AntiAFKEnabled then
+            pcall(function()
+                VirtualUser:CaptureController()
+                VirtualUser:ClickButton2(Vector2.new())
+            end)
+        end
+    end
 end)
 
 local GameplaySettings = SettingsTab:Section({ Title = "Gameplay", Opened = true })
