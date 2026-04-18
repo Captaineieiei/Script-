@@ -1,230 +1,571 @@
--- SpectreWare Loader
--- ── Run-Once Guard ────────────────────────────────────────────────────────────
-if getgenv().SW_LOADED then
-    warn("[SpectreWare] ⚠️ สคริปต์รันไปแล้ว — ไม่สามารถรันซ้ำได้")
+-- SpectreWare • Loader v2
+
+local function banner()
+    print([[
+
+
+░▄█▄█▄░█▀▀░█▀█░█▀▀░█▀▀░▀█▀░█▀▄░█▀▀░█░█░█▀█░█▀▄░█▀▀
+░▄█▄█▄░▀▀█░█▀▀░█▀▀░█░░░░█░░█▀▄░█▀▀░█▄█░█▀█░█▀▄░█▀▀
+░░▀░▀░░▀▀▀░▀░░░▀▀▀░▀▀▀░░▀░░▀░▀░▀▀▀░▀░▀░▀░▀░▀░▀░▀▀▀
+
+        ✦  Key Authentication System  ·  Loader v2  ✦
+
+
+]])
+end
+banner()
+
+local KEY     = getgenv().KEY or ""
+local API     = "http://fi10.bot-hosting.net:20745"
+local WEBHOOK = "https://discord.com/api/webhooks/1482748907242127522/CAjcHoInWyuy2RVY38z5hlk_dYnr1bgiSh4q9zlaGIMvzrz_eD_RinoGCgNSJgkp0klf"
+
+local scripts = {
+    ["17766863403"]     = "https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/Beady",
+    ["139434492338574"] = "https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/Never",
+}
+local SCRIPT = scripts[tostring(game.PlaceId)]
+
+local HS  = game:GetService("HttpService")
+local PL  = game:GetService("Players").LocalPlayer
+local MPS = game:GetService("MarketplaceService")
+local UIS = game:GetService("UserInputService")
+local STS = game:GetService("Stats")
+
+-- ─────────────────────────────────────────
+--  GUARD FLAG
+-- ─────────────────────────────────────────
+if getgenv()._SpectreRunning then
+    warn("SpectreWare: already running — aborted")
     return
 end
-getgenv().SW_LOADED = true
+getgenv()._SpectreRunning = true
 
-local API_BASE = "http://fi10.bot-hosting.net:20745/api"
-local SCRIPTS  = {
-    [17766863403]     = "https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/Beady",
-    [139434492338574] = "https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/Never",
-}
+-- ─────────────────────────────────────────
+--  LOGGER
+-- ─────────────────────────────────────────
+local ICONS = { info="🔹", success="✅", error="❌", loading="🔄", warn="⚠️" }
+local TAG   = { info="INFO", success=" OK ", error="FAIL", loading="WAIT", warn="WARN" }
 
-local MAX_RETRIES = 3
-local RETRY_DELAY = 2
-local HS          = game:GetService("HttpService")
-local Players     = game:GetService("Players")
+local function log(msg, t)
+    t = t or "info"
+    local icon = ICONS[t] or "▪"
+    local tag  = TAG[t]   or "INFO"
+    print("  " .. icon .. "  [ " .. tag .. " ]  " .. msg)
+end
 
--- ── Universal HTTP helper ──────────────────────────────────────────────────────
--- รองรับทุก executor: Delta, Synapse X, KRNL, Fluxus, Electron,
--- Celery, Hydrogen, Codex, Arceus X, Wave, Script-Ware, RC7 ฯลฯ
--- server ใช้ HTTP เปล่า (ไม่มี SSL) → executor request เท่านั้นที่ข้าม Roblox filter ได้
-local function httpGet(url)
-    -- normalize response format ของแต่ละ executor
-    local function parseRes(ok, res)
-        if not ok then return false, tostring(res) end
-        if type(res) == "string" then return true, res end      -- body ตรง (executor เก่าบางตัว)
-        if type(res) ~= "table"  then return false, "bad response type: " .. type(res) end
+local function summary(timeLeft, hwid)
+    print("")
+    print("  ✅  KEY VERIFIED  ·  SpectreWare v2")
+    print("")
+    print("      👤  " .. PL.Name)
+    print("      🔑  " .. tostring(hwid):sub(1, 26) .. "...")
+    print("      ⏳  " .. timeLeft)
+    print("      🎮  " .. tostring(game.PlaceId))
+    print("")
+end
 
-        -- รองรับทั้ง camelCase (StatusCode/Body) และ snake_case (status_code/body)
-        local code = res.StatusCode  or res.status_code  or res.statusCode  or res.status or 200
-        local body = res.Body        or res.body         or res.content      or ""
-
-        if type(code) == "number" and code >= 400 then
-            return false, "HTTP " .. tostring(code)
-        end
-        return true, tostring(body)
-    end
-
-    -- รายการ request functions ของ executor ต่างๆ (ลองตามลำดับ)
-    local candidates = {
-        syn         and syn.request,        -- Synapse X, Delta, Wave, Arceus X
-        request,                            -- KRNL, Fluxus, Electron, Celery, Hydrogen, Codex, Script-Ware
-        http_request,                       -- KRNL เก่า, RC7
-        http        and http.request,       -- executor ที่ expose ใน table http
-        fluxus      and fluxus.request,     -- Fluxus บาง version
+-- ─────────────────────────────────────────
+--  HTTP WRAPPER
+-- ─────────────────────────────────────────
+local function httpSend(opts)
+    local ok, res
+    local optsLower = {
+        url     = opts.Url    or opts.url,
+        method  = opts.Method or opts.method or "GET",
+        headers = opts.Headers or opts.headers or {},
+        body    = opts.Body   or opts.body,
     }
 
-    for _, fn in ipairs(candidates) do
-        if type(fn) == "function" then
-            local ok, res = pcall(fn, { Url = url, Method = "GET", Headers = {} })
-            local s, b = parseRes(ok, res)
-            if s then return true, b end
-            -- pcall สำเร็จแต่ status error = server ตอบแล้ว → ไม่ต้องลอง fn อื่น
-            if ok then return false, b end
-            -- pcall fail = fn นี้ไม่รองรับ → ลอง fn ถัดไป
-        end
+    ok, res = pcall(function() if typeof(syn)=="table" and syn.request then return syn.request(opts) end end)
+    if ok and res and res.Body then return res end
+
+    ok, res = pcall(function() if typeof(http)=="table" and http.request then return http.request(opts) end end)
+    if ok and res and res.Body then return res end
+
+    ok, res = pcall(function() if request then return request(opts) end end)
+    if ok and res and res.Body then return res end
+
+    ok, res = pcall(function() if request then return request(optsLower) end end)
+    if ok and res and (res.Body or res.body) then
+        if res.body and not res.Body then res.Body = res.body end
+        return res
     end
 
-    -- Last resort: game:HttpGetAsync
-    -- executor บางตัว (Hydrogen, Script-Ware) patch ตัวนี้ให้รับ HTTP ได้
-    local ok, res = pcall(game.HttpGetAsync, game, url)
-    if ok and res then return true, res end
-    return false, res and tostring(res) or "ไม่มี HTTP function ที่ใช้งานได้บน executor นี้"
-end
+    ok, res = pcall(function() if http_request then return http_request(opts) end end)
+    if ok and res and res.Body then return res end
 
--- ── HWID detection (Universal) ────────────────────────────────────────────────
-local KEY  = getgenv().KEY or error("[SpectreWare] ใส่ key ก่อน: getgenv().KEY = 'YOUR-KEY'")
-local HWID = getgenv().SW_HWID
+    ok, res = pcall(function() if HttpRequest then return HttpRequest(opts) end end)
+    if ok and res and res.Body then return res end
 
-if not HWID then
-    -- ลอง fetch IP จาก ipify ผ่าน executor request
-    local ok, body = httpGet("https://api64.ipify.org")
-    if ok and body and #body > 3 then
-        HWID = body:match("^%s*(.-)%s*$")  -- trim whitespace/newline
+    ok, res = pcall(function() if httpRequest then return httpRequest(opts) end end)
+    if ok and res and res.Body then return res end
+
+    ok, res = pcall(function() if typeof(fluxus)=="table" and fluxus.request then return fluxus.request(opts) end end)
+    if ok and res and res.Body then return res end
+
+    if (opts.Method or opts.method or "GET"):upper() == "GET" then
+        ok, res = pcall(function()
+            return { Body = game:HttpGet(opts.Url or opts.url), StatusCode = 200 }
+        end)
+        if ok and res and res.Body then return res end
     end
+
+    warn("SpectreWare: no supported http function found")
 end
-if not HWID or HWID == "" then
-    -- fallback: RbxAnalyticsService ClientId (ไม่ต้องใช้ network)
-    local ok, id = pcall(function()
-        return game:GetService("RbxAnalyticsService"):GetClientId()
+
+-- ─────────────────────────────────────────
+--  HELPERS
+-- ─────────────────────────────────────────
+local function getHWID()
+    local id = "UNKNOWN"
+    pcall(function() id = game:GetService("RbxAnalyticsService"):GetClientId() end)
+    if id == "UNKNOWN" then
+        pcall(function() id = tostring(PL.UserId).."_"..tostring(game.JobId):sub(1,8) end)
+    end
+    return id
+end
+
+local function getPlatform()
+    local v = "Unknown"
+    pcall(function()
+        v = tostring(UIS:GetPlatform()):gsub("Enum.Platform.","")
     end)
-    if ok and id and id ~= "" then HWID = id end
-end
-if not HWID or HWID == "" then
-    -- last resort: ใช้ UserId (unique ต่อ Roblox account)
-    HWID = tostring(Players.LocalPlayer.UserId)
+    return v
 end
 
--- ── Verify with retry ─────────────────────────────────────────────────────────
-local verified   = false
-local apiOffline = false
-local lastError  = ""
+local function getPing()
+    local v = "?"
+    pcall(function()
+        v = tostring(math.floor(STS.Network.ServerStatsItem["Data Ping"]:GetValue())).." ms"
+    end)
+    return v
+end
 
-for attempt = 1, MAX_RETRIES do
-    local ok, res = httpGet(API_BASE .. "/check?key=" .. KEY .. "&hwid=" .. HWID)
+local function getAccountAge()
+    local v = "?"
+    pcall(function()
+        local d = PL.AccountAge
+        if d >= 365 then v = math.floor(d/365).."y "..math.floor((d%365)/30).."m"
+        elseif d >= 30 then v = math.floor(d/30).."mo "..math.floor(d%30).."d"
+        else v = d.."d" end
+    end)
+    return v
+end
 
+local function getMembership()
+    local v = "None"
+    pcall(function()
+        if PL.MembershipType == Enum.MembershipType.Premium then v = "Premium ⭐" end
+    end)
+    return v
+end
+
+local function getFriendCount()
+    local v = "?"
+    pcall(function()
+        local res = httpSend({ Url="https://friends.roblox.com/v1/users/"..tostring(PL.UserId).."/friends/count", Method="GET" })
+        if res and res.Body then
+            local d = HS:JSONDecode(res.Body)
+            if d and d.count ~= nil then v = tostring(d.count) end
+        end
+    end)
+    return v
+end
+
+local function getExecutor()
+    local v = "Unknown"
+    pcall(function()
+        if typeof(syn)=="table" then v = "Synapse X"
+        elseif typeof(fluxus)=="table" then v = "Fluxus"
+        elseif identifyexecutor then v = identifyexecutor()
+        elseif KRNL_LOADED then v = "Krnl"
+        elseif is_sirhurt_closure then v = "SirHurt" end
+    end)
+    return v
+end
+
+local function getGameInfo()
+    local name, creator, maxP, ver = "Unknown", "?", "?", "?"
+    pcall(function()
+        local info = MPS:GetProductInfo(game.PlaceId, Enum.InfoType.Asset)
+        if info then
+            name    = info.Name or name
+            creator = info.Creator and (info.Creator.Name or "?") or "?"
+        end
+    end)
+    pcall(function() maxP = tostring(game:GetService("Players").MaxPlayers) end)
+    pcall(function() ver  = tostring(game.PlaceVersion) end)
+    return name, creator, maxP, ver
+end
+
+local function getServerUptime()
+    local v = "?"
+    pcall(function()
+        local t = math.floor(workspace.DistributedGameTime)
+        if t >= 3600 then v = math.floor(t/3600).."h "..math.floor((t%3600)/60).."m"
+        else v = math.floor(t/60).."m "..math.floor(t%60).."s" end
+    end)
+    return v
+end
+
+local function getPlayerCount()
+    local v = "?"
+    pcall(function() v = tostring(#game:GetService("Players"):GetPlayers()) end)
+    return v
+end
+
+local function getAvatar(userId)
+    local headshot = "https://www.roblox.com/headshot-thumbnail/image?userId="
+        ..tostring(userId).."&width=150&height=150&format=png"
+    local full = headshot
+    pcall(function()
+        local res = httpSend({
+            Url    = "https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds="
+                   ..tostring(userId).."&size=420x420&format=Png&isCircular=false",
+            Method = "GET",
+        })
+        if res and res.Body then
+            local d = HS:JSONDecode(res.Body)
+            if d and d.data and d.data[1] then full = d.data[1].imageUrl or headshot end
+        end
+    end)
+    return full, headshot
+end
+
+-- ─────────────────────────────────────────
+--  PARSE API RESPONSE
+-- ─────────────────────────────────────────
+local function parseApiError(message)
+    local m = tostring(message or ""):lower()
+    if m:find("expired")       then return "Key has expired — please redeem a new key" end
+    if m:find("hwid mismatch") then return "HWID mismatch — key is bound to another device" end
+    if m:find("blacklist")     then return "Key has been blacklisted" end
+    if m:find("not found")     then return "Key not found in the system" end
+    if m:find("not activated") then return "Key is not activated yet" end
+    if m:find("already")       then return "Key has already been redeemed" end
+    return "Invalid key: "..tostring(message or "unknown")
+end
+
+-- ─────────────────────────────────────────
+--  SAFE HTTP
+-- ─────────────────────────────────────────
+local function safeGet(url)
+    local ok, res = pcall(httpSend, { Url=url, Method="GET" })
     if ok and res then
-        local data
-        local parsed = pcall(function() data = HS:JSONDecode(res) end)
-        if not parsed then
-            lastError = "JSON parse error: " .. tostring(res):sub(1, 80)
-            break
-        end
-        if data and data.success then
-            verified = true
-            break
-        else
-            getgenv().SW_LOADED = nil
-            error("[SpectreWare] " .. (data and data.message or "Unauthorized"))
-        end
-    else
-        lastError = tostring(res)
-        warn(string.format("[SpectreWare] API ไม่ตอบสนอง (attempt %d/%d) — %s", attempt, MAX_RETRIES, lastError))
-        if attempt < MAX_RETRIES then task.wait(RETRY_DELAY) else apiOffline = true end
+        local body = res.Body or res.body or ""
+        if body ~= "" then return true, body end
     end
+    local errStr = tostring(res or "")
+    local j = errStr:find("{")
+    if j then return true, errStr:sub(j) end
+    return false, errStr
 end
 
--- ── Offline = Kick ────────────────────────────────────────────────────────────
-if not verified then
-    if apiOffline then
-        local detail = lastError ~= "" and ("\n(" .. lastError:sub(1, 80) .. ")") or ""
-        warn("[SpectreWare] ⚠️ API offline — กำลัง kick... error: " .. lastError)
-        task.wait(1)
-        Players.LocalPlayer:Kick("\n[SpectreWare]\nระบบ API ขัดข้อง กรุณาลองใหม่ภายหลัง" .. detail)
-    else
-        getgenv().SW_LOADED = nil
-        error("[SpectreWare] ยืนยัน key ไม่ผ่าน")
+-- ─────────────────────────────────────────
+--  WEBHOOK
+--  eventType: "login" | "mismatch" | "expired" | "session_end"
+-- ─────────────────────────────────────────
+local function sendWebhook(eventType, info)
+    info = info or {}
+    info.key      = info.key      or "?"
+    info.hwid     = info.hwid     or "?"
+    info.timeLeft = info.timeLeft or "?"
+
+    -- ── Event style ───────────────────────
+    local styles = {
+        login       = { color=0x00C8FF, emoji="🚀", label="New Session"    },
+        mismatch    = { color=0xFF3C3C, emoji="🚫", label="HWID Mismatch"  },
+        expired     = { color=0xFF8C00, emoji="⏰", label="Key Expired"    },
+        session_end = { color=0x778899, emoji="🔌", label="Session Ended"  },
+    }
+    local s = styles[eventType] or styles.login
+
+    -- ── Collect info ──────────────────────
+    local avatar, headshot = getAvatar(PL.UserId)
+    local gameName, gameCreator, maxPlayers, placeVer = getGameInfo()
+
+    local platform    = getPlatform()
+    local ping        = getPing()
+    local accAge      = getAccountAge()
+    local membership  = getMembership()
+    local friends     = getFriendCount()
+    local executor    = getExecutor()
+    local serverUp    = getServerUptime()
+    local playerCount = getPlayerCount()
+
+    local displayName = tostring(PL.DisplayName or PL.Name)
+    local jobId       = tostring(game.JobId)
+    local fullKey     = tostring(info.key)
+    local keyDisplay  = fullKey:sub(1,8).."———"..fullKey:sub(-4)
+    local hwidFull    = tostring(info.hwid)
+
+    -- expiry date string
+    local expiryStr = "♾️ Permanent"
+    if info.expiresAt and info.expiresAt ~= -1 then
+        pcall(function()
+            expiryStr = "📅 "..os.date("!%d %b %Y  %H:%M UTC", math.floor(info.expiresAt / 1000))
+        end)
     end
+
+    -- ── Build embed ───────────────────────
+    local ok, payload = pcall(function()
+        return HS:JSONEncode({
+            username   = "SpectreWare Logger",
+            avatar_url = "https://i.imgur.com/q9YIPKI.png",
+            embeds = {{
+                author = {
+                    name     = s.emoji.."  SpectreWare  ·  "..s.label,
+                    icon_url = "https://i.imgur.com/q9YIPKI.png",
+                },
+                color       = s.color,
+                thumbnail   = { url = avatar },
+                description = "```\n───────────────────────\n```",
+                fields      = {
+                    -- ① Player
+                    {
+                        name   = "👤  __Player__",
+                        value  = "> **"..PL.Name.."** (`"..displayName.."`)\n"
+                               .."> 🆔 `"..tostring(PL.UserId).."`\n"
+                               .."> 🎂 Age: `"..accAge.."` · 👥 Friends: `"..friends.."`\n"
+                               .."> 💎 `"..membership.."`",
+                        inline = false,
+                    },
+                    -- ② Device
+                    {
+                        name   = "📱  __Device__",
+                        value  = "> 📟 Platform: `"..platform.."`\n"
+                               .."> 📡 Ping: `"..ping.."`\n"
+                               .."> ⚙️ Executor: `"..executor.."`",
+                        inline = true,
+                    },
+                    -- ③ Key
+                    {
+                        name   = "🔑  __Key__",
+                        value  = "> `"..keyDisplay.."`\n"
+                               .."> ⏳ `"..info.timeLeft.."`\n"
+                               .."> "..expiryStr,
+                        inline = true,
+                    },
+                    -- spacer
+                    { name="\u{200B}", value="\u{200B}", inline=false },
+                    -- ④ HWID
+                    {
+                        name   = "🖥️  __HWID__",
+                        value  = "```\n"..hwidFull.."\n```",
+                        inline = false,
+                    },
+                    -- ⑤ Game
+                    {
+                        name   = "🎮  __Game__",
+                        value  = "> 🗺️ ["..gameName.."](https://www.roblox.com/games/"..tostring(game.PlaceId)..")\n"
+                               .."> 👷 `"..gameCreator.."`\n"
+                               .."> 🆔 `"..tostring(game.PlaceId).."` · v`"..placeVer.."`",
+                        inline = true,
+                    },
+                    -- ⑥ Server
+                    {
+                        name   = "🌐  __Server__",
+                        value  = "> 👥 `"..playerCount.." / "..maxPlayers.."`\n"
+                               .."> ⏱️ Uptime: `"..serverUp.."`\n"
+                               .."> 🔗 `"..jobId:sub(1,18).."…`",
+                        inline = true,
+                    },
+                },
+                footer    = {
+                    text     = "SpectreWare v2  •  "..os.date("!%d %b %Y  %H:%M UTC"),
+                    icon_url = headshot,
+                },
+                timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ"),
+            }},
+        })
+    end)
+
+    if not ok then
+        warn("SpectreWare: JSONEncode failed — "..tostring(payload))
+        return
+    end
+
+    local sok, serr = pcall(function()
+        httpSend({
+            Url     = WEBHOOK,
+            Method  = "POST",
+            Headers = { ["Content-Type"] = "application/json" },
+            Body    = payload,
+        })
+    end)
+    if not sok then warn("SpectreWare: Webhook failed — "..tostring(serr)) end
+end
+
+-- ─────────────────────────────────────────
+--  MAIN
+-- ─────────────────────────────────────────
+task.wait(0.8)
+
+if KEY == "" then
+    log("No key found — set getgenv().KEY before running", "error")
+    getgenv()._SpectreRunning = nil
     return
 end
 
--- ── Announce UI ───────────────────────────────────────────────────────────────
-local function showAnnounce(title, message)
-    local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
-    local old = playerGui:FindFirstChild("SW_Announce")
-    if old then old:Destroy() end
+log("Reading key...", "loading") task.wait(1.0)
+local hwid = getHWID()
+log("HWID: "..tostring(hwid):sub(1,28).."...", "info") task.wait(0.8)
 
-    local sg = Instance.new("ScreenGui")
-    sg.Name           = "SW_Announce"
-    sg.ResetOnSpawn   = false
-    sg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    sg.Parent         = playerGui
-
-    local backdrop = Instance.new("Frame")
-    backdrop.Size                    = UDim2.new(1, 0, 1, 0)
-    backdrop.BackgroundColor3        = Color3.fromRGB(0, 0, 0)
-    backdrop.BackgroundTransparency  = 0.5
-    backdrop.BorderSizePixel         = 0
-    backdrop.Parent                  = sg
-
-    local card = Instance.new("Frame")
-    card.Size             = UDim2.new(0, 480, 0, 160)
-    card.Position         = UDim2.new(0.5, -240, 0.5, -80)
-    card.BackgroundColor3 = Color3.fromRGB(10, 10, 20)
-    card.BorderSizePixel  = 0
-    card.Parent           = sg
-    Instance.new("UICorner", card).CornerRadius = UDim.new(0, 12)
-
-    local stroke = Instance.new("UIStroke")
-    stroke.Color     = Color3.fromRGB(0, 210, 255)
-    stroke.Thickness = 1.5
-    stroke.Parent    = card
-
-    local lbTitle = Instance.new("TextLabel")
-    lbTitle.Size                   = UDim2.new(1, -24, 0, 36)
-    lbTitle.Position               = UDim2.new(0, 12, 0, 10)
-    lbTitle.BackgroundTransparency = 1
-    lbTitle.Text                   = "📢  " .. (title ~= "" and title or "SpectreWare")
-    lbTitle.TextColor3             = Color3.fromRGB(0, 210, 255)
-    lbTitle.Font                   = Enum.Font.GothamBold
-    lbTitle.TextSize               = 16
-    lbTitle.TextXAlignment         = Enum.TextXAlignment.Left
-    lbTitle.Parent                 = card
-
-    local div = Instance.new("Frame")
-    div.Size                    = UDim2.new(1, -24, 0, 1)
-    div.Position                = UDim2.new(0, 12, 0, 50)
-    div.BackgroundColor3        = Color3.fromRGB(0, 210, 255)
-    div.BackgroundTransparency  = 0.7
-    div.BorderSizePixel         = 0
-    div.Parent                  = card
-
-    local lbMsg = Instance.new("TextLabel")
-    lbMsg.Size                   = UDim2.new(1, -24, 0, 80)
-    lbMsg.Position               = UDim2.new(0, 12, 0, 60)
-    lbMsg.BackgroundTransparency = 1
-    lbMsg.Text                   = message or ""
-    lbMsg.TextColor3             = Color3.fromRGB(220, 220, 220)
-    lbMsg.Font                   = Enum.Font.Gotham
-    lbMsg.TextSize               = 14
-    lbMsg.TextXAlignment         = Enum.TextXAlignment.Left
-    lbMsg.TextYAlignment         = Enum.TextYAlignment.Top
-    lbMsg.TextWrapped            = true
-    lbMsg.Parent                 = card
-
-    for i = 1, 10 do card.BackgroundTransparency = 1 - (i / 10) * 0.05; task.wait(0.02) end
-    task.delay(8, function()
-        for i = 1, 20 do card.BackgroundTransparency = i / 20; task.wait(0.03) end
-        sg:Destroy()
-    end)
+-- ── Retry loop ──
+local callOk, raw
+for i = 1, 3 do
+    log(string.format("Connecting to API... (%d/3)", i), "loading")
+    callOk, raw = safeGet(API.."/api/lookup?key="..KEY.."&hwid="..hwid)
+    if callOk and raw and raw ~= "" then break end
+    if i < 3 then task.wait(1.5) end
 end
 
--- ── Long-poll announce loop ───────────────────────────────────────────────────
-local announceSeq = 0
+if not callOk or not raw or raw == "" then
+    log("Cannot reach API — enable HTTP Requests or server is down", "error")
+    getgenv()._SpectreRunning = nil
+    return
+end
+
+log("API response received ✓", "info") task.wait(0.6)
+
+local ok2, result = pcall(HS.JSONDecode, HS, raw)
+if not ok2 or type(result) ~= "table" then
+    log("API returned an invalid response (parse error)", "error")
+    getgenv()._SpectreRunning = nil
+    return
+end
+
+log("Verifying key...", "loading") task.wait(1.2)
+
+if result.success ~= true and result.success ~= "true" then
+    local reason = parseApiError(result.message)
+    log(reason, "error")
+    if tostring(result.message or ""):lower():find("expired") then
+        task.spawn(function()
+            sendWebhook("expired", { key=KEY, hwid=hwid, timeLeft="EXPIRED" })
+        end)
+        task.wait(2)
+        PL:Kick("[ SpectreWare ]  Your key has expired.\nPlease redeem a new key in Discord.")
+    end
+    getgenv()._SpectreRunning = nil
+    return
+end
+
+if type(result.data) ~= "table" then
+    log("Incomplete data received from API", "error")
+    getgenv()._SpectreRunning = nil
+    return
+end
+
+local data = result.data
+log("Verifying HWID...", "loading") task.wait(1.0)
+
+if type(data.hwid) == "string" and data.hwid ~= "" then
+    if data.hwid ~= hwid then
+        log("HWID mismatch — key is bound to another device", "error")
+        task.spawn(function()
+            sendWebhook("mismatch", { key=KEY, hwid=hwid, timeLeft="BLOCKED" })
+        end)
+        getgenv()._SpectreRunning = nil
+        task.wait(2)
+        PL:Kick("[ SpectreWare ]  HWID Mismatch.\nKey นี้ผูกกับอุปกรณ์อื่น — ติดต่อ Discord.")
+        return
+    end
+end
+log("HWID verified ✓", "success") task.wait(0.8)
+
+local timeLeft  = "Permanent"
+local expiresAt = data.expiresAt
+
+if expiresAt ~= nil and expiresAt ~= -1 then
+    local diff = math.floor((expiresAt - os.time()*1000)/1000)
+    if diff <= 0 then
+        log("Key has already expired", "error")
+        getgenv()._SpectreRunning = nil
+        return
+    end
+    timeLeft = math.floor(diff/86400).."d "
+             ..math.floor((diff%86400)/3600).."h "
+             ..math.floor((diff%3600)/60).."m"
+end
+
+log("Expiry verified ✓", "success") task.wait(0.6)
+summary(timeLeft, hwid) task.wait(1.0)
+
 task.spawn(function()
-    while task.wait(30) do
-        local ok, res = httpGet(API_BASE .. "/announce?key=" .. KEY .. "&seq=" .. announceSeq)
-        if ok and res then
-            local data
-            pcall(function() data = HS:JSONDecode(res) end)
-            if data and data.id and data.id ~= "" and data.seq ~= announceSeq then
-                announceSeq = data.seq
-                showAnnounce(data.title or "", data.message or "")
-            elseif data and data.seq then
-                announceSeq = data.seq
-            end
-        end
+    sendWebhook("login", {
+        key       = KEY,
+        hwid      = hwid,
+        timeLeft  = timeLeft,
+        expiresAt = expiresAt,
+    })
+end)
+
+if not SCRIPT then
+    log("Map ID: "..tostring(game.PlaceId).." is not supported", "error")
+    getgenv()._SpectreRunning = nil
+    return
+end
+
+log("Loading script for Map: "..tostring(game.PlaceId), "loading") task.wait(1.2)
+loadstring(game:HttpGet(SCRIPT, true))()
+task.wait(0.4)
+log("Script loaded successfully 🚀", "success")
+
+-- ─────────────────────────────────────────
+--  SESSION GUARD — checks every 10s
+-- ─────────────────────────────────────────
+local CHECK_INTERVAL = 10
+local _sessionActive = true
+local _conn
+
+_conn = game:GetService("Players").PlayerRemoving:Connect(function(p)
+    if p == PL then
+        _sessionActive = false
+        getgenv()._SpectreRunning = nil
+        if _conn then _conn:Disconnect() end
     end
 end)
 
--- ── โหลดสคริปตามแมพ ──────────────────────────────────────────────────────────
-local url = SCRIPTS[game.PlaceId]
-if url then
-    print("[SpectreWare] ✓ Key OK | โหลด: " .. url)
-    loadstring(game:HttpGet(url, true))()
-else
-    warn("[SpectreWare] ไม่มีสคริปสำหรับแมพนี้ | PlaceId: " .. tostring(game.PlaceId))
-end
+task.spawn(function()
+    while _sessionActive and task.wait(CHECK_INTERVAL) do
+        if not PL or not PL.Parent then
+            _sessionActive = false
+            break
+        end
+
+        local cOk, cRaw = safeGet(API.."/api/lookup?key="..KEY.."&hwid="..getHWID())
+        if cOk and cRaw and cRaw ~= "" then
+            local cok2, cresult = pcall(HS.JSONDecode, HS, cRaw)
+            if cok2 and type(cresult) == "table" then
+                local expired = (cresult.success ~= true and cresult.success ~= "true")
+                if not expired and type(cresult.data) == "table" then
+                    local ea = cresult.data.expiresAt
+                    if ea ~= nil and ea ~= -1 then
+                        if math.floor(ea) - os.time()*1000 <= 0 then expired = true end
+                    end
+                end
+                if expired then
+                    _sessionActive = false
+                    log("Key expired — kicking from session...", "error")
+                    task.wait(2)
+                    pcall(function()
+                        sendWebhook("expired", {
+                            key      = KEY,
+                            hwid     = getHWID(),
+                            timeLeft = "EXPIRED — SESSION ENDED",
+                        })
+                    end)
+                    task.wait(1)
+                    PL:Kick("[ SpectreWare ]  Your key has expired.\nPlease redeem a new key in Discord.")
+                    getgenv()._SpectreRunning = nil
+                    if _conn then _conn:Disconnect() end
+                    return
+                end
+            end
+        end
+    end
+
+    getgenv()._SpectreRunning = nil
+    if _conn then _conn:Disconnect() end
+end)
