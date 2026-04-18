@@ -6,7 +6,7 @@ local SCRIPTS  = {
 }
 
 -- ── Key / HWID ────────────────────────────────────────────────────────────────
-local KEY  = getgenv().SW_KEY or error("[SpectreWare] ใส่ key ก่อน: getgenv().SW_KEY = 'YOUR-KEY'")
+local KEY = getgenv().KEY or error("[SpectreWare] ใส่ key ก่อน: getgenv().KEY = 'YOUR-KEY'")
 local HWID = getgenv().SW_HWID
     or (syn and syn.request and tostring(syn.request({Url="https://api64.ipify.org",Method="GET"}).Body))
     or game:GetService("RbxAnalyticsService"):GetClientId()
