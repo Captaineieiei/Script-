@@ -6,7 +6,8 @@ if getgenv().SW_LOADED then
 end
 getgenv().SW_LOADED = true
 
-local API_BASE = "http://fi10.bot-hosting.net:20745/api"
+-- [FIX] เปลี่ยนจาก http → https (Roblox/executor บล็อก HTTP plain)
+local API_BASE = "https://fi10.bot-hosting.net:20745/api"
 local SCRIPTS  = {
     [17766863403]     = "https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/Beady",
     [139434492338574] = "https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/Never",
@@ -23,17 +24,66 @@ local RETRY_DELAY = 2
 local HS          = game:GetService("HttpService")
 local Players     = game:GetService("Players")
 
+-- ── [FIX] HTTP helper — ลอง executor request ก่อน, fallback HttpGetAsync ──────
+-- executor function (syn.request / request / http.request) เชื่อมถามได้ดีกว่า
+-- game:HttpGetAsync เพราะไม่ถูก Roblox filter block
+local function httpGet(url)
+    -- Priority 1: syn.request (Synapse / Delta / Wave)
+    if syn and syn.request then
+        local ok, res = pcall(syn.request, { Url = url, Method = "GET" })
+        if ok and res and res.StatusCode and res.StatusCode < 400 then
+            return true, res.Body
+        elseif ok and res then
+            return false, ("HTTP " .. tostring(res.StatusCode or "?"))
+        else
+            return false, tostring(res)
+        end
+    end
+
+    -- Priority 2: request (Fluxus / Electron / Celery)
+    if request then
+        local ok, res = pcall(request, { Url = url, Method = "GET" })
+        if ok and res and res.StatusCode and res.StatusCode < 400 then
+            return true, res.Body
+        elseif ok and res then
+            return false, ("HTTP " .. tostring(res.StatusCode or "?"))
+        else
+            return false, tostring(res)
+        end
+    end
+
+    -- Priority 3: http.request (บาง executor)
+    if http and http.request then
+        local ok, res = pcall(http.request, { Url = url, Method = "GET" })
+        if ok and res and res.StatusCode and res.StatusCode < 400 then
+            return true, res.Body
+        elseif ok and res then
+            return false, ("HTTP " .. tostring(res.StatusCode or "?"))
+        else
+            return false, tostring(res)
+        end
+    end
+
+    -- Fallback: game:HttpGetAsync
+    local ok, res = pcall(game.HttpGetAsync, game, url)
+    return ok and res ~= nil, ok and res or tostring(res)
+end
+
 -- ── Verify with retry ─────────────────────────────────────────────────────────
 local verified   = false
 local apiOffline = false
+local lastError  = ""
 
 for attempt = 1, MAX_RETRIES do
-    local ok, res = pcall(game.HttpGetAsync, game, API_BASE .. "/check?key=" .. KEY .. "&hwid=" .. HWID)
+    local ok, res = httpGet(API_BASE .. "/check?key=" .. KEY .. "&hwid=" .. HWID)
 
     if ok and res then
         local data
         local parsed = pcall(function() data = HS:JSONDecode(res) end)
-        if not parsed then break end
+        if not parsed then
+            lastError = "JSON parse failed: " .. tostring(res):sub(1, 80)
+            break
+        end
         if data and data.success then
             verified = true
             break
@@ -43,7 +93,9 @@ for attempt = 1, MAX_RETRIES do
             error("[SpectreWare] " .. (data and data.message or "Unauthorized"))
         end
     else
-        warn(string.format("[SpectreWare] API ไม่ตอบสนอง (attempt %d/%d)", attempt, MAX_RETRIES))
+        -- [FIX] แสดง error จริงๆ ใน output เพื่อ debug ง่าย
+        lastError = tostring(res)
+        warn(string.format("[SpectreWare] API ไม่ตอบสนอง (attempt %d/%d) — %s", attempt, MAX_RETRIES, lastError))
         if attempt < MAX_RETRIES then task.wait(RETRY_DELAY) else apiOffline = true end
     end
 end
@@ -51,11 +103,13 @@ end
 -- ── Offline = Kick ────────────────────────────────────────────────────────────
 if not verified then
     if apiOffline then
-        warn("[SpectreWare] ⚠️ API offline — กำลัง kick...")
+        -- [FIX] แสดง error detail ใน kick message ด้วย
+        local detail = lastError ~= "" and ("\n(" .. lastError:sub(1, 60) .. ")") or ""
+        warn("[SpectreWare] ⚠️ API offline — กำลัง kick... error: " .. lastError)
         task.wait(1)
-        Players.LocalPlayer:Kick("\n[SpectreWare]\nระบบ API ขัดข้อง กรุณาลองใหม่ภายหลัง")
+        Players.LocalPlayer:Kick("\n[SpectreWare]\nระบบ API ขัดข้อง กรุณาลองใหม่ภายหลัง" .. detail)
     else
-        getgenv().SW_LOADED = nil  -- reset ให้ลองใหม่ได้ถ้า verify fail
+        getgenv().SW_LOADED = nil
         error("[SpectreWare] ยืนยัน key ไม่ผ่าน")
     end
     return
@@ -137,9 +191,8 @@ end
 local announceSeq = 0
 
 task.spawn(function()
-    while task.wait(1) do
-        local ok, res = pcall(game.HttpGetAsync, game,
-            API_BASE .. "/announce?key=" .. KEY .. "&seq=" .. announceSeq)
+    while task.wait(30) do  -- [FIX] 1s → 30s ลด spam request
+        local ok, res = httpGet(API_BASE .. "/announce?key=" .. KEY .. "&seq=" .. announceSeq)
         if ok and res then
             local data
             pcall(function() data = HS:JSONDecode(res) end)
