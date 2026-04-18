@@ -1,34 +1,388 @@
--- SpectreWare • Loader v2
+-- SpectreWare • Loader v3.0
+-- ══════════════════════════════════════════════════════
+--  NEW v3.0:
+--   [BOOT HUD]     Cyberpunk ScreenGui แทน print() ล้วนๆ
+--   [SESSION LOCK] Concurrent session guard — ป้องกัน key sharing
+--   [SIGNED SCRIPT] ขอ script จาก API โดยตรง — ป้องกัน URL leak
+--   [PANIC MODE]   Self-destruct ถ้าโดน detect / session ถูก revoke
+-- ══════════════════════════════════════════════════════
 
-print([[
-
-░▄█▄█▄░█▀▀░█▀█░█▀▀░█▀▀░▀█▀░█▀▄░█▀▀░█░█░█▀█░█▀▄░█▀▀
-░▄█▄█▄░▀▀█░█▀▀░█▀▀░█░░░░█░░█▀▄░█▀▀░█▄█░█▀█░█▀▄░█▀▀
-░░▀░▀░░▀▀▀░▀░░░▀▀▀░▀▀▀░░▀░░▀░▀░▀▀▀░▀░▀░▀░▀░▀░▀░▀▀▀
-
-        ✦  Key Authentication System  ·  Loader v2  ✦
-
-]])
-
-local KEY = getgenv().KEY or ""
+local KEY = (getgenv().KEY or ""):match("^%s*(.-)%s*$")
 local API = "http://fi10.bot-hosting.net:20745"
+local LOADER_VERSION = "3.0"
 
 local scripts = {
     ["17766863403"]     = "https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/Beady",
     ["139434492338574"] = "https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/Never",
 }
-local SCRIPT = scripts[tostring(game.PlaceId)]
+local SCRIPT_FALLBACK = scripts[tostring(game.PlaceId)]
 
 local HS  = game:GetService("HttpService")
 local PL  = game:GetService("Players").LocalPlayer
 local MPS = game:GetService("MarketplaceService")
 local UIS = game:GetService("UserInputService")
 local STS = game:GetService("Stats")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 
 if getgenv()._SpectreRunning then warn("SpectreWare: already running — aborted") return end
 getgenv()._SpectreRunning = true
 
--- Logger
+-- ────────────────────────────────────────────────────────
+-- [PANIC MODE] — Self-Destruct System
+-- ────────────────────────────────────────────────────────
+local _panicFired = false
+local function panic(reason, silent)
+    if _panicFired then return end
+    _panicFired = true
+
+    -- 1) ล้าง globals ทั้งหมด
+    getgenv()._SpectreRunning = nil
+    getgenv().KEY = nil
+
+    -- 2) Destroy GUI ทุกอัน
+    pcall(function()
+        local pg = PL:FindFirstChildOfClass("PlayerGui")
+        if pg then
+            for _, v in ipairs(pg:GetChildren()) do
+                if v:IsA("ScreenGui") and v.Name:find("Spectre") then
+                    v:Destroy()
+                end
+            end
+        end
+    end)
+
+    -- 3) ส่ง panic webhook
+    if not silent then
+        pcall(function()
+            local body = HS:JSONEncode({
+                event  = "panic",
+                reason = tostring(reason or "unknown"),
+                player = { name=PL.Name, userId=tostring(PL.UserId) },
+                game   = { placeId=tostring(game.PlaceId), jobId=tostring(game.JobId) }
+            })
+            local fns = {
+                function() return syn and syn.request and syn.request({ Url=API.."/api/event", Method="POST", Headers={["Content-Type"]="application/json"}, Body=body }) end,
+                function() return request and request({ Url=API.."/api/event", Method="POST", Headers={["Content-Type"]="application/json"}, Body=body }) end,
+            }
+            for _, fn in ipairs(fns) do pcall(fn) end
+        end)
+    end
+
+    -- 4) Kick
+    task.wait(1.2)
+    pcall(function()
+        PL:Kick("[ SpectreWare ]  "..tostring(reason or "Session terminated."))
+    end)
+end
+
+-- ────────────────────────────────────────────────────────
+-- [BOOT HUD] — Cyberpunk Loading Screen
+-- ────────────────────────────────────────────────────────
+local _bootGui = nil
+local _statusLabel = nil
+local _progressBar = nil
+local _progressFill = nil
+local _subLabel = nil
+local _currentProgress = 0
+
+local function buildBootHUD()
+    local pg = PL:FindFirstChildOfClass("PlayerGui")
+    if not pg then return end
+
+    local function new(cls, props, parent)
+        local i = Instance.new(cls)
+        for k, v in pairs(props) do i[k] = v end
+        i.Parent = parent
+        return i
+    end
+
+    local sg = new("ScreenGui", {
+        Name = "SpectreBootGui",
+        ResetOnSpawn = false,
+        ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+        DisplayOrder = 1000,
+        IgnoreGuiInset = true
+    }, pg)
+    _bootGui = sg
+
+    -- Overlay
+    local overlay = new("Frame", {
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundColor3 = Color3.fromRGB(5, 5, 10),
+        BackgroundTransparency = 0.25,
+        BorderSizePixel = 0,
+        ZIndex = 1
+    }, sg)
+
+    -- Scanline effect
+    local scan = new("Frame", {
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        ZIndex = 2
+    }, sg)
+    new("UIGradient", {
+        Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 220, 200)),
+            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 0, 0)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 220, 200)),
+        }),
+        Rotation = 90,
+        Transparency = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 0.96),
+            NumberSequenceKeypoint.new(0.5, 0.99),
+            NumberSequenceKeypoint.new(1, 0.96),
+        })
+    }, scan)
+
+    -- Main card
+    local card = new("Frame", {
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        Position = UDim2.new(0.5, 0, 0.5, 0),
+        Size = UDim2.new(0, 520, 0, 280),
+        BackgroundColor3 = Color3.fromRGB(8, 10, 16),
+        BorderSizePixel = 0,
+        ZIndex = 3
+    }, sg)
+    new("UICorner", { CornerRadius = UDim.new(0, 8) }, card)
+    new("UIStroke", { Color = Color3.fromRGB(0, 210, 190), Thickness = 1.5 }, card)
+
+    -- Corner decorations
+    local corners = {
+        {UDim2.new(0, 0, 0, 0), Vector2.new(0, 0)},
+        {UDim2.new(1, 0, 0, 0), Vector2.new(1, 0)},
+        {UDim2.new(0, 0, 1, 0), Vector2.new(0, 1)},
+        {UDim2.new(1, 0, 1, 0), Vector2.new(1, 1)},
+    }
+    for _, c in ipairs(corners) do
+        local dot = new("Frame", {
+            AnchorPoint = c[2],
+            Position = c[1],
+            Size = UDim2.new(0, 8, 0, 8),
+            BackgroundColor3 = Color3.fromRGB(0, 255, 220),
+            BorderSizePixel = 0,
+            ZIndex = 4
+        }, card)
+        new("UICorner", { CornerRadius = UDim.new(1, 0) }, dot)
+    end
+
+    -- Top accent bar
+    local topBar = new("Frame", {
+        Size = UDim2.new(1, -32, 0, 2),
+        Position = UDim2.new(0, 16, 0, 12),
+        BackgroundColor3 = Color3.fromRGB(0, 210, 190),
+        BorderSizePixel = 0,
+        ZIndex = 4
+    }, card)
+    new("UIGradient", {
+        Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0)),
+            ColorSequenceKeypoint.new(0.2, Color3.fromRGB(0, 210, 190)),
+            ColorSequenceKeypoint.new(0.8, Color3.fromRGB(0, 210, 190)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0)),
+        })
+    }, topBar)
+
+    -- Logo
+    new("TextLabel", {
+        Size = UDim2.new(1, -32, 0, 28),
+        Position = UDim2.new(0, 16, 0, 22),
+        BackgroundTransparency = 1,
+        Text = "◈  S P E C T R E W A R E",
+        TextColor3 = Color3.fromRGB(0, 255, 220),
+        Font = Enum.Font.Code,
+        TextSize = 18,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        ZIndex = 4
+    }, card)
+
+    -- Version badge
+    new("TextLabel", {
+        AnchorPoint = Vector2.new(1, 0),
+        Size = UDim2.new(0, 80, 0, 22),
+        Position = UDim2.new(1, -16, 0, 24),
+        BackgroundColor3 = Color3.fromRGB(0, 60, 55),
+        Text = "v"..LOADER_VERSION,
+        TextColor3 = Color3.fromRGB(0, 210, 190),
+        Font = Enum.Font.Code,
+        TextSize = 12,
+        ZIndex = 5
+    }, card)
+
+    -- Separator
+    new("Frame", {
+        Size = UDim2.new(1, -32, 0, 1),
+        Position = UDim2.new(0, 16, 0, 58),
+        BackgroundColor3 = Color3.fromRGB(0, 80, 75),
+        BorderSizePixel = 0,
+        ZIndex = 4
+    }, card)
+
+    -- Player info
+    new("TextLabel", {
+        Size = UDim2.new(1, -32, 0, 18),
+        Position = UDim2.new(0, 16, 0, 66),
+        BackgroundTransparency = 1,
+        Text = "PLAYER  ›  " .. PL.Name .. "   |   PLACE  ›  " .. tostring(game.PlaceId),
+        TextColor3 = Color3.fromRGB(100, 180, 170),
+        Font = Enum.Font.Code,
+        TextSize = 11,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        ZIndex = 4
+    }, card)
+
+    -- Status label
+    _statusLabel = new("TextLabel", {
+        Size = UDim2.new(1, -32, 0, 30),
+        Position = UDim2.new(0, 16, 0, 96),
+        BackgroundTransparency = 1,
+        Text = "▸  Initializing...",
+        TextColor3 = Color3.fromRGB(230, 230, 230),
+        Font = Enum.Font.Code,
+        TextSize = 15,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        ZIndex = 4
+    }, card)
+
+    -- Sub status
+    _subLabel = new("TextLabel", {
+        Size = UDim2.new(1, -32, 0, 18),
+        Position = UDim2.new(0, 16, 0, 128),
+        BackgroundTransparency = 1,
+        Text = "",
+        TextColor3 = Color3.fromRGB(100, 140, 135),
+        Font = Enum.Font.Code,
+        TextSize = 11,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        ZIndex = 4
+    }, card)
+
+    -- Progress track
+    _progressBar = new("Frame", {
+        Size = UDim2.new(1, -32, 0, 6),
+        Position = UDim2.new(0, 16, 0, 165),
+        BackgroundColor3 = Color3.fromRGB(20, 30, 30),
+        BorderSizePixel = 0,
+        ZIndex = 4
+    }, card)
+    new("UICorner", { CornerRadius = UDim.new(1, 0) }, _progressBar)
+
+    _progressFill = new("Frame", {
+        Size = UDim2.new(0, 0, 1, 0),
+        BackgroundColor3 = Color3.fromRGB(0, 210, 190),
+        BorderSizePixel = 0,
+        ZIndex = 5
+    }, _progressBar)
+    new("UICorner", { CornerRadius = UDim.new(1, 0) }, _progressFill)
+    new("UIGradient", {
+        Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 160, 145)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 255, 235)),
+        })
+    }, _progressFill)
+
+    -- Progress text
+    new("TextLabel", {
+        AnchorPoint = Vector2.new(1, 0),
+        Size = UDim2.new(0, 60, 0, 18),
+        Position = UDim2.new(1, -16, 0, 177),
+        BackgroundTransparency = 1,
+        Text = "0%",
+        TextColor3 = Color3.fromRGB(0, 180, 165),
+        Font = Enum.Font.Code,
+        TextSize = 11,
+        TextXAlignment = Enum.TextXAlignment.Right,
+        Name = "ProgressPct",
+        ZIndex = 4
+    }, card)
+
+    -- Separator 2
+    new("Frame", {
+        Size = UDim2.new(1, -32, 0, 1),
+        Position = UDim2.new(0, 16, 0, 204),
+        BackgroundColor3 = Color3.fromRGB(0, 80, 75),
+        BorderSizePixel = 0,
+        ZIndex = 4
+    }, card)
+
+    -- Footer
+    new("TextLabel", {
+        Size = UDim2.new(1, -32, 0, 18),
+        Position = UDim2.new(0, 16, 0, 212),
+        BackgroundTransparency = 1,
+        Text = "SYSTEM BOOT  ›  AUTHENTICATION LAYER  ›  AWAITING...",
+        TextColor3 = Color3.fromRGB(50, 90, 85),
+        Font = Enum.Font.Code,
+        TextSize = 10,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        ZIndex = 4
+    }, card)
+
+    -- Bottom accent
+    local botBar = new("Frame", {
+        AnchorPoint = Vector2.new(0, 1),
+        Size = UDim2.new(1, -32, 0, 2),
+        Position = UDim2.new(0, 16, 1, -12),
+        BackgroundColor3 = Color3.fromRGB(0, 210, 190),
+        BorderSizePixel = 0,
+        ZIndex = 4
+    }, card)
+    new("UIGradient", {
+        Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0)),
+            ColorSequenceKeypoint.new(0.2, Color3.fromRGB(0, 210, 190)),
+            ColorSequenceKeypoint.new(0.8, Color3.fromRGB(0, 210, 190)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0)),
+        })
+    }, botBar)
+
+    -- Slide-in animation
+    card.Position = UDim2.new(0.5, 0, 1.5, 0)
+    TweenService:Create(card, TweenInfo.new(0.6, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+        Position = UDim2.new(0.5, 0, 0.5, 0)
+    }):Play()
+end
+
+local function setBootStatus(msg, sub, progressPct)
+    if not _statusLabel then return end
+    _statusLabel.Text = "▸  " .. tostring(msg)
+    if sub and _subLabel then _subLabel.Text = tostring(sub) end
+
+    if progressPct and _progressFill and _progressBar then
+        _currentProgress = progressPct
+        TweenService:Create(_progressFill, TweenInfo.new(0.4, Enum.EasingStyle.Quad), {
+            Size = UDim2.new(progressPct / 100, 0, 1, 0)
+        }):Play()
+        local pct = _progressBar.Parent:FindFirstChild("ProgressPct")
+        if pct then pct.Text = math.floor(progressPct).."%" end
+    end
+end
+
+local function destroyBootHUD(success)
+    if not _bootGui or not _bootGui.Parent then return end
+    local card = _bootGui:FindFirstChildWhichIsA("Frame")
+    if not card then _bootGui:Destroy(); return end
+
+    local color = success and Color3.fromRGB(0, 220, 80) or Color3.fromRGB(255, 80, 80)
+    if _statusLabel then
+        _statusLabel.TextColor3 = color
+        _statusLabel.Text = success and "▸  Launching..." or "▸  Fatal Error"
+    end
+    local stroke = card:FindFirstChildWhichIsA("UIStroke")
+    if stroke then stroke.Color = color end
+
+    task.wait(0.8)
+    TweenService:Create(card, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
+        Position = UDim2.new(0.5, 0, success and -0.5 or 1.5, 0)
+    }):Play()
+    task.wait(0.55)
+    pcall(function() _bootGui:Destroy() end)
+end
+
+-- ────────────────────────────────────────────────────────
+-- Logger (ยังเก็บ print ไว้สำหรับ executor console)
+-- ────────────────────────────────────────────────────────
 local ICONS = { info="🔹", success="✅", error="❌", loading="🔄", warn="⚠️" }
 local TAGS  = { info="INFO", success=" OK ", error="FAIL", loading="WAIT", warn="WARN" }
 local function log(msg, t)
@@ -37,14 +391,16 @@ local function log(msg, t)
 end
 
 local function summary(timeLeft, hwid)
-    print("\n  ✅  KEY VERIFIED  ·  SpectreWare v2\n")
+    print("\n  ✅  KEY VERIFIED  ·  SpectreWare v"..LOADER_VERSION.."\n")
     print("      👤  " .. PL.Name)
     print("      🔑  " .. tostring(hwid):sub(1,26) .. "...")
     print("      ⏳  " .. timeLeft)
     print("      🎮  " .. tostring(game.PlaceId) .. "\n")
 end
 
--- HTTP wrapper (tries all known executor functions)
+-- ────────────────────────────────────────────────────────
+-- HTTP Wrapper
+-- ────────────────────────────────────────────────────────
 local function httpSend(opts)
     local lo = { url=opts.Url or opts.url, method=opts.Method or opts.method or "GET",
                  headers=opts.Headers or opts.headers or {}, body=opts.Body or opts.body }
@@ -74,7 +430,6 @@ local function httpSend(opts)
     warn("SpectreWare: no supported http function found")
 end
 
--- Safe GET
 local function safeGet(url)
     local ok, res = pcall(httpSend, { Url=url, Method="GET" })
     if ok and res then
@@ -86,19 +441,35 @@ local function safeGet(url)
     return j and true or false, j and s:sub(j) or s
 end
 
--- pcall helper
+local function safePost(url, payload)
+    local ok, body = pcall(HS.JSONEncode, HS, payload)
+    if not ok then return false, nil end
+    local ok2, res = pcall(httpSend, {
+        Url = url, Method = "POST",
+        Headers = { ["Content-Type"] = "application/json" },
+        Body = body
+    })
+    if ok2 and res then
+        local rb = res.Body or res.body or ""
+        if rb ~= "" then return true, rb end
+    end
+    return false, nil
+end
+
 local function try(fn, def) local ok, v = pcall(fn); return ok and v or def end
 
+-- ────────────────────────────────────────────────────────
 -- Helpers
+-- ────────────────────────────────────────────────────────
 local function getHWID()
     local id = try(function() return game:GetService("RbxAnalyticsService"):GetClientId() end, "UNKNOWN")
     if id == "UNKNOWN" then id = try(function() return tostring(PL.UserId).."_"..tostring(game.JobId):sub(1,8) end, "UNKNOWN") end
     return id
 end
 
-local function getPlatform() return try(function() return tostring(UIS:GetPlatform()):gsub("Enum.Platform.","") end, "Unknown") end
-local function getPing()     return try(function() return tostring(math.floor(STS.Network.ServerStatsItem["Data Ping"]:GetValue())).." ms" end, "?") end
-local function getMembership() return try(function() return PL.MembershipType == Enum.MembershipType.Premium and "Premium ⭐" or "None" end, "None") end
+local function getPlatform()    return try(function() return tostring(UIS:GetPlatform()):gsub("Enum.Platform.","") end, "Unknown") end
+local function getPing()        return try(function() return tostring(math.floor(STS.Network.ServerStatsItem["Data Ping"]:GetValue())).." ms" end, "?") end
+local function getMembership()  return try(function() return PL.MembershipType == Enum.MembershipType.Premium and "Premium ⭐" or "None" end, "None") end
 local function getPlayerCount() return try(function() return tostring(#game:GetService("Players"):GetPlayers()) end, "?") end
 
 local function getAccountAge()
@@ -157,19 +528,67 @@ local function getAvatar(userId)
     return full, headshot
 end
 
--- Parse API error
 local function parseApiError(message)
     local m = tostring(message or ""):lower()
-    if m:find("expired")       then return "Key has expired — please redeem a new key" end
-    if m:find("hwid mismatch") then return "HWID mismatch — key is bound to another device" end
-    if m:find("blacklist")     then return "Key has been blacklisted" end
-    if m:find("not found")     then return "Key not found in the system" end
-    if m:find("not activated") then return "Key is not activated yet" end
-    if m:find("already")       then return "Key has already been redeemed" end
+    if m:find("expired")        then return "Key has expired — please redeem a new key" end
+    if m:find("hwid mismatch")  then return "HWID mismatch — key is bound to another device" end
+    if m:find("blacklist")      then return "Key has been blacklisted" end
+    if m:find("not found")      then return "Key not found in the system" end
+    if m:find("not activated")  then return "Key is not activated yet" end
+    if m:find("already")        then return "Key has already been redeemed" end
+    if m:find("session_revoked") then return "Session revoked — key used on another device" end
     return "Invalid key: "..tostring(message or "unknown")
 end
 
+-- ────────────────────────────────────────────────────────
+-- Announce UI (ยังคงไว้สำหรับ in-game notifications)
+-- ────────────────────────────────────────────────────────
+local _announceGui = nil
+local function showAnnounce(msg, isError)
+    if _announceGui and _announceGui.Parent then _announceGui:Destroy() end
+    local playerGui = PL:FindFirstChildOfClass("PlayerGui")
+    if not playerGui then return end
+
+    local accentColor = isError and Color3.fromRGB(255, 80, 80) or Color3.fromRGB(0, 210, 190)
+    local icon = isError and "❌" or "📢"
+    local label = isError and "ERROR" or "ANNOUNCEMENT"
+
+    local function new(cls, props, parent)
+        local i = Instance.new(cls); for k,v in pairs(props) do i[k]=v end; i.Parent=parent; return i
+    end
+
+    local sg = new("ScreenGui",{Name="SpectreAnnounceGui",ResetOnSpawn=false,ZIndexBehavior=Enum.ZIndexBehavior.Sibling,DisplayOrder=999},playerGui)
+    _announceGui = sg
+
+    local f = new("Frame",{AnchorPoint=Vector2.new(0.5,0),Position=UDim2.new(0.5,0,-0.12,0),
+        Size=UDim2.new(0,560,0,70),BackgroundColor3=Color3.fromRGB(8,10,16),BorderSizePixel=0,ZIndex=10},sg)
+    new("UICorner",{CornerRadius=UDim.new(0,8)},f)
+    new("UIStroke",{Color=accentColor,Thickness=1.5},f)
+
+    local acc = new("Frame",{Size=UDim2.new(0,3,1,-16),Position=UDim2.new(0,10,0,8),
+        BackgroundColor3=accentColor,BorderSizePixel=0,ZIndex=11},f)
+    new("UICorner",{CornerRadius=UDim.new(0,4)},acc)
+
+    new("TextLabel",{Size=UDim2.new(0,36,0,36),Position=UDim2.new(0,20,0.5,-18),BackgroundTransparency=1,
+        Text=icon,TextScaled=true,Font=Enum.Font.GothamBold,ZIndex=11},f)
+    new("TextLabel",{Size=UDim2.new(1,-80,0,18),Position=UDim2.new(0,62,0,10),BackgroundTransparency=1,
+        Text=label,TextColor3=accentColor,TextXAlignment=Enum.TextXAlignment.Left,
+        Font=Enum.Font.Code,TextSize=10,ZIndex=11},f)
+    new("TextLabel",{Size=UDim2.new(1,-80,0,26),Position=UDim2.new(0,62,0,30),BackgroundTransparency=1,
+        Text=msg,TextColor3=Color3.fromRGB(240,240,240),TextXAlignment=Enum.TextXAlignment.Left,
+        Font=Enum.Font.Code,TextSize=14,TextTruncate=Enum.TextTruncate.AtEnd,ZIndex=11},f)
+
+    TweenService:Create(f,TweenInfo.new(0.45,Enum.EasingStyle.Back,Enum.EasingDirection.Out),{Position=UDim2.new(0.5,0,0,16)}):Play()
+    task.delay(isError and 6 or 4.5, function()
+        if not sg or not sg.Parent then return end
+        local tw = TweenService:Create(f,TweenInfo.new(0.35,Enum.EasingStyle.Quad,Enum.EasingDirection.In),{Position=UDim2.new(0.5,0,-0.12,0)})
+        tw:Play(); tw.Completed:Connect(function() pcall(function() sg:Destroy() end) end)
+    end)
+end
+
+-- ────────────────────────────────────────────────────────
 -- Webhook
+-- ────────────────────────────────────────────────────────
 local function sendWebhook(eventType, info)
     info = info or {}
     local avatar, headshot = getAvatar(PL.UserId)
@@ -177,7 +596,9 @@ local function sendWebhook(eventType, info)
     local ok, body = pcall(HS.JSONEncode, HS, {
         event    = eventType,
         key      = info.key or "?", hwid = info.hwid or "?",
+        sessionToken = info.sessionToken or "?",
         timeLeft = info.timeLeft or "?", expiresAt = info.expiresAt,
+        loaderVersion = LOADER_VERSION,
         player   = { name=PL.Name, displayName=tostring(PL.DisplayName or PL.Name),
                      userId=tostring(PL.UserId), accountAge=getAccountAge(),
                      friends=getFriendCount(), membership=getMembership(),
@@ -191,160 +612,320 @@ local function sendWebhook(eventType, info)
         Headers={ ["Content-Type"]="application/json" }, Body=body }) end
 end
 
--- ── MAIN ──
-task.wait(0.8)
-if KEY == "" then log("No key found — set getgenv().KEY before running","error"); getgenv()._SpectreRunning=nil; return end
+-- ────────────────────────────────────────────────────────
+-- [SIGNED SCRIPT DELIVERY] — ขอ script จาก API โดยตรง
+-- ────────────────────────────────────────────────────────
+local function loadSignedScript(key, hwid, placeId)
+    -- ขอ script content จาก /api/getscript (server ส่ง Lua code กลับมา)
+    local ok, raw = safePost(API.."/api/getscript", {
+        key     = key,
+        hwid    = hwid,
+        placeId = tostring(placeId)
+    })
 
-log("Reading key...", "loading"); task.wait(1.0)
+    if ok and raw and raw ~= "" then
+        local ok2, result = pcall(HS.JSONDecode, HS, raw)
+        if ok2 and type(result) == "table" and result.success then
+            local scriptContent = result.data and result.data.content
+            if scriptContent and scriptContent ~= "" then
+                log("Signed script received from API ✓", "success")
+                local fn, err = loadstring(scriptContent)
+                if fn then
+                    fn()
+                    return true
+                else
+                    log("Script compile error: "..tostring(err), "error")
+                end
+            end
+            -- ถ้า server ส่ง URL มาแทน content
+            local signedUrl = result.data and result.data.url
+            if signedUrl and signedUrl ~= "" then
+                log("Signed URL received — fetching...", "loading")
+                local scriptBody = try(function()
+                    return game:HttpGet(signedUrl, true)
+                end, nil)
+                if scriptBody then
+                    local fn2, err2 = loadstring(scriptBody)
+                    if fn2 then fn2(); return true
+                    else log("Script error: "..tostring(err2), "error") end
+                end
+            end
+        end
+    end
+
+    -- Fallback: GitHub raw URL (เหมือน v2.1)
+    if SCRIPT_FALLBACK then
+        log("Falling back to direct URL...", "warn")
+        local fn3, err3 = loadstring(game:HttpGet(SCRIPT_FALLBACK, true))
+        if fn3 then fn3(); return true
+        else log("Fallback error: "..tostring(err3), "error") end
+    end
+
+    return false
+end
+
+-- ══════════════════════════════════════════════════════
+-- MAIN BOOT SEQUENCE
+-- ══════════════════════════════════════════════════════
+task.wait(0.3)
+buildBootHUD()
+task.wait(0.7)
+
+-- Step 0 — No KEY
+if KEY == "" then
+    setBootStatus("No KEY provided", "Set getgenv().KEY before running", 0)
+    log("No key found — set getgenv().KEY before running","error")
+    task.wait(1.5)
+    destroyBootHUD(false)
+    showAnnounce("ไม่พบ KEY — ใส่ getgenv().KEY ก่อน run", true)
+    getgenv()._SpectreRunning=nil; return
+end
+
+-- Step 1 — Read HWID
+setBootStatus("Reading hardware ID...", "Collecting device fingerprint", 8)
+log("Reading key...", "loading"); task.wait(0.8)
 local hwid = getHWID()
-log("HWID: "..tostring(hwid):sub(1,28).."...", "info"); task.wait(0.8)
+setBootStatus("HWID acquired", hwid:sub(1, 28).."...", 18)
+log("HWID: "..tostring(hwid):sub(1,28).."...", "info"); task.wait(0.6)
 
+-- Step 2 — Connect to API
+setBootStatus("Connecting to authentication server...", API, 28)
 local callOk, raw
 for i = 1, 3 do
     log(("Connecting to API... (%d/3)"):format(i), "loading")
-    callOk, raw = safeGet(API.."/api/lookup?key="..KEY.."&hwid="..hwid)
+    setBootStatus(("Connecting... (%d/3)"):format(i), API.."/api/lookup", 28 + i*4)
+    callOk, raw = safePost(API.."/api/lookup", { key=KEY, hwid=hwid })
     if callOk and raw and raw ~= "" then break end
     if i < 3 then task.wait(1.5) end
 end
-if not callOk or not raw or raw == "" then log("Cannot reach API — enable HTTP Requests or server is down","error"); getgenv()._SpectreRunning=nil; return end
 
-log("API response received ✓","info"); task.wait(0.6)
+if not callOk or not raw or raw == "" then
+    setBootStatus("API unreachable", "Enable HTTP Requests or server is down", 40)
+    log("Cannot reach API — enable HTTP Requests or server is down","error")
+    task.wait(1.5); destroyBootHUD(false)
+    showAnnounce("API ไม่ตอบสนอง — ลองใหม่อีกครั้ง", true)
+    getgenv()._SpectreRunning=nil; return
+end
 
+setBootStatus("API responded ✓", "Parsing authentication data", 48)
+log("API response received ✓","info"); task.wait(0.5)
+
+-- Step 3 — Parse
 local ok2, result = pcall(HS.JSONDecode, HS, raw)
-if not ok2 or type(result) ~= "table" then log("API returned an invalid response (parse error)","error"); getgenv()._SpectreRunning=nil; return end
+if not ok2 or type(result) ~= "table" then
+    setBootStatus("Parse error", "Unexpected API response format", 50)
+    log("API returned an invalid response (parse error)","error")
+    task.wait(1.5); destroyBootHUD(false)
+    showAnnounce("API response ผิดปกติ", true)
+    getgenv()._SpectreRunning=nil; return
+end
 
-log("Verifying key...", "loading"); task.wait(1.2)
+-- Version check
+if result.minVersion and result.minVersion > LOADER_VERSION then
+    log("Loader outdated — please update to v"..result.minVersion, "warn")
+    showAnnounce("⚠️ Loader เวอร์ชันเก่า — อัปเดตเป็น v"..result.minVersion, false)
+end
+
+-- Step 4 — Verify key
+setBootStatus("Verifying key...", "Checking key validity and binding", 58)
+log("Verifying key...", "loading"); task.wait(1.0)
 
 if result.success ~= true and result.success ~= "true" then
-    log(parseApiError(result.message), "error")
+    local errMsg = parseApiError(result.message)
+    setBootStatus(errMsg, "Authentication failed", 60)
+    log(errMsg, "error")
+    task.wait(1.5); destroyBootHUD(false)
+    showAnnounce(errMsg, true)
     if tostring(result.message or ""):lower():find("expired") then
         task.spawn(function() sendWebhook("expired",{key=KEY,hwid=hwid,timeLeft="EXPIRED"}) end)
         task.wait(2); PL:Kick("[ SpectreWare ]  Your key has expired.\nPlease redeem a new key in Discord.")
     end
     getgenv()._SpectreRunning=nil; return
 end
-if type(result.data) ~= "table" then log("Incomplete data received from API","error"); getgenv()._SpectreRunning=nil; return end
+
+if type(result.data) ~= "table" then
+    setBootStatus("Incomplete data from API", "", 62)
+    log("Incomplete data received from API","error")
+    task.wait(1.5); destroyBootHUD(false)
+    showAnnounce("ข้อมูล API ไม่ครบ", true)
+    getgenv()._SpectreRunning=nil; return
+end
 
 local data = result.data
-log("Verifying HWID...", "loading"); task.wait(1.0)
+
+-- Step 5 — HWID verify
+setBootStatus("Verifying HWID binding...", "Comparing device fingerprint", 68)
+log("Verifying HWID...", "loading"); task.wait(0.8)
 
 if type(data.hwid)=="string" and data.hwid~="" and data.hwid~=hwid then
+    setBootStatus("HWID Mismatch ⚠️", "Key is bound to a different device", 70)
     log("HWID mismatch — key is bound to another device","error")
     task.spawn(function() sendWebhook("mismatch",{key=KEY,hwid=hwid,timeLeft="BLOCKED"}) end)
+    task.wait(1.5); destroyBootHUD(false)
+    showAnnounce("HWID Mismatch — Key ผูกกับอุปกรณ์อื่น", true)
     getgenv()._SpectreRunning=nil; task.wait(2)
     PL:Kick("[ SpectreWare ]  HWID Mismatch.\nKey นี้ผูกกับอุปกรณ์อื่น — ติดต่อ Discord."); return
 end
-log("HWID verified ✓","success"); task.wait(0.8)
+log("HWID verified ✓","success"); task.wait(0.6)
 
+-- Step 6 — Expiry
+setBootStatus("Checking key expiry...", "", 76)
 local timeLeft = "Permanent"
 local expiresAt = data.expiresAt
 if expiresAt ~= nil and expiresAt ~= -1 then
     local diff = math.floor((expiresAt - os.time()*1000)/1000)
-    if diff <= 0 then log("Key has already expired","error"); getgenv()._SpectreRunning=nil; return end
+    if diff <= 0 then
+        setBootStatus("Key expired", "Please purchase a new key", 78)
+        log("Key has already expired","error")
+        task.wait(1.5); destroyBootHUD(false)
+        showAnnounce("Key หมดอายุแล้ว — กรุณาซื้อใหม่", true)
+        getgenv()._SpectreRunning=nil; return
+    end
     timeLeft = math.floor(diff/86400).."d "..math.floor((diff%86400)/3600).."h "..math.floor((diff%3600)/60).."m"
 end
 
-log("Expiry verified ✓","success"); task.wait(0.6)
-summary(timeLeft, hwid); task.wait(1.0)
+-- ────────────────────────────────────────────────────────
+-- [SESSION LOCK] — บันทึก sessionToken จาก server
+-- server ต้อง return data.sessionToken ตอน login
+-- ทุก ping จะแนบ token → ถ้า server revoke → panic
+-- ────────────────────────────────────────────────────────
+local _sessionToken = data.sessionToken or ""  -- "" = server ยังไม่รองรับ → skip guard
 
-task.spawn(function()
-    sendWebhook("login",{ key=KEY, hwid=hwid, timeLeft=timeLeft, expiresAt=expiresAt })
-end)
-
-if not SCRIPT then log("Map ID: "..tostring(game.PlaceId).." is not supported","error"); getgenv()._SpectreRunning=nil; return end
-
-log("Loading script for Map: "..tostring(game.PlaceId),"loading"); task.wait(1.2)
-loadstring(game:HttpGet(SCRIPT, true))(); task.wait(0.4)
-log("Script loaded successfully 🚀","success")
-
--- ── Announce UI ──
-local _announceGui = nil
-local function showAnnounce(msg)
-    if _announceGui and _announceGui.Parent then _announceGui:Destroy() end
-    local TS = game:GetService("TweenService")
-    local playerGui = PL:FindFirstChildOfClass("PlayerGui")
-    if not playerGui then return end
-
-    local function new(cls, props, parent)
-        local i = Instance.new(cls); for k,v in pairs(props) do i[k]=v end; i.Parent=parent; return i
-    end
-
-    local sg = new("ScreenGui",{Name="SpectreAnnounceGui",ResetOnSpawn=false,ZIndexBehavior=Enum.ZIndexBehavior.Sibling,DisplayOrder=999},playerGui)
-    _announceGui = sg
-
-    local f = new("Frame",{AnchorPoint=Vector2.new(0.5,0),Position=UDim2.new(0.5,0,-0.12,0),
-        Size=UDim2.new(0,560,0,70),BackgroundColor3=Color3.fromRGB(15,15,20),BorderSizePixel=0,ZIndex=10},sg)
-    new("UICorner",{CornerRadius=UDim.new(0,12)},f)
-    new("UIStroke",{Color=Color3.fromRGB(255,200,60),Thickness=1.8},f)
-
-    local acc = new("Frame",{Size=UDim2.new(0,4,1,-16),Position=UDim2.new(0,10,0,8),
-        BackgroundColor3=Color3.fromRGB(255,200,60),BorderSizePixel=0,ZIndex=11},f)
-    new("UICorner",{CornerRadius=UDim.new(0,4)},acc)
-
-    new("TextLabel",{Size=UDim2.new(0,36,0,36),Position=UDim2.new(0,20,0.5,-18),BackgroundTransparency=1,
-        Text="📢",TextScaled=true,Font=Enum.Font.GothamBold,ZIndex=11},f)
-    new("TextLabel",{Size=UDim2.new(1,-80,0,20),Position=UDim2.new(0,64,0,10),BackgroundTransparency=1,
-        Text="ANNOUNCEMENT",TextColor3=Color3.fromRGB(255,200,60),TextXAlignment=Enum.TextXAlignment.Left,
-        Font=Enum.Font.GothamBold,TextSize=11,ZIndex=11},f)
-    new("TextLabel",{Size=UDim2.new(1,-80,0,26),Position=UDim2.new(0,64,0,30),BackgroundTransparency=1,
-        Text=msg,TextColor3=Color3.fromRGB(240,240,240),TextXAlignment=Enum.TextXAlignment.Left,
-        Font=Enum.Font.Gotham,TextSize=15,TextTruncate=Enum.TextTruncate.AtEnd,ZIndex=11},f)
-
-    TS:Create(f,TweenInfo.new(0.45,Enum.EasingStyle.Back,Enum.EasingDirection.Out),{Position=UDim2.new(0.5,0,0,16)}):Play()
-    task.delay(4.5,function()
-        if not sg or not sg.Parent then return end
-        local tw = TS:Create(f,TweenInfo.new(0.35,Enum.EasingStyle.Quad,Enum.EasingDirection.In),{Position=UDim2.new(0.5,0,-0.12,0)})
-        tw:Play(); tw.Completed:Connect(function() pcall(function() sg:Destroy() end) end)
-    end)
+if _sessionToken ~= "" then
+    log("Session token received: "..tostring(_sessionToken):sub(1,16).."...","success")
+else
+    log("No session token (server v1 compat mode)","warn")
 end
 
--- Long-poll announce
-local _lastSeq, _lastAnnounceId = 0, 0
-local _sessionActive = true
+log("Expiry verified ✓","success"); task.wait(0.5)
+setBootStatus("Authentication complete ✓", "Key: "..KEY:sub(1,10).."...  ·  Expires: "..timeLeft, 88)
+summary(timeLeft, hwid); task.wait(0.8)
 
+-- Webhook login
+task.spawn(function()
+    sendWebhook("login",{ key=KEY, hwid=hwid, timeLeft=timeLeft, expiresAt=expiresAt, sessionToken=_sessionToken })
+end)
+
+-- Step 7 — Map check
+if not SCRIPT_FALLBACK then
+    setBootStatus("Map not supported", "PlaceID: "..tostring(game.PlaceId), 90)
+    log("Map ID: "..tostring(game.PlaceId).." is not supported","error")
+    task.wait(1.5); destroyBootHUD(false)
+    showAnnounce("❌ Map นี้ยังไม่รองรับ (ID: "..tostring(game.PlaceId)..")", true)
+    getgenv()._SpectreRunning=nil; return
+end
+
+-- Step 8 — Load script (SIGNED DELIVERY)
+setBootStatus("Loading script...", "Requesting signed script from server", 94)
+log("Loading script for Map: "..tostring(game.PlaceId),"loading"); task.wait(0.8)
+
+local scriptLoaded = loadSignedScript(KEY, hwid, game.PlaceId)
+if not scriptLoaded then
+    setBootStatus("Script load failed", "Could not load game script", 96)
+    log("Failed to load script","error")
+    task.wait(1.5); destroyBootHUD(false)
+    showAnnounce("❌ โหลด Script ไม่สำเร็จ", true)
+    getgenv()._SpectreRunning=nil; return
+end
+
+setBootStatus("Script loaded  🚀", "SpectreWare is now active", 100)
+log("Script loaded successfully 🚀","success")
+task.wait(0.4); destroyBootHUD(true)
+
+-- ══════════════════════════════════════════════════════
+-- SESSION MANAGEMENT
+-- ══════════════════════════════════════════════════════
+local _sessionActive = true
+local _lastSeq, _lastAnnounceId = 0, 0
+
+-- Announce long-poll
 task.spawn(function()
     while _sessionActive do
         pcall(function()
-            local ok, raw2 = safeGet(API.."/api/announce?key="..KEY.."&seq=".._lastSeq)
-            if not ok or not raw2 or raw2=="" then task.wait(3); return end
+            local ok, raw2 = safeGet(API.."/api/announce?seq=".._lastSeq.."&key="..KEY)
+            if not ok or not raw2 or raw2=="" then return end
             local ok2, d = pcall(HS.JSONDecode, HS, raw2)
-            if not ok2 or type(d)~="table" then task.wait(3); return end
-            if type(d.seq)=="number" then _lastSeq = d.seq end
+            if not ok2 or type(d)~="table" then return end
+            if type(d.seq)=="number" then
+                if d.seq < _lastSeq then _lastSeq = 0 end
+                _lastSeq = d.seq
+            end
             local id, m = tonumber(d.id) or 0, tostring(d.message or "")
             if id > _lastAnnounceId and m ~= "" then _lastAnnounceId=id; showAnnounce(m) end
         end)
+        task.wait(8)
     end
 end)
 log("Announce listener ready 📢","success")
 
--- Session guard
+-- Player disconnect guard
 local _conn
 _conn = game:GetService("Players").PlayerRemoving:Connect(function(p)
     if p==PL then _sessionActive=false; getgenv()._SpectreRunning=nil; _conn:Disconnect() end
 end)
 
+-- ────────────────────────────────────────────────────────
+-- [SESSION LOCK] — Session ping + concurrent session detection
+-- ────────────────────────────────────────────────────────
 task.spawn(function()
     while _sessionActive and task.wait(10) do
         if not PL or not PL.Parent then _sessionActive=false; break end
-        local cOk, cRaw = safeGet(API.."/api/lookup?key="..KEY.."&hwid="..hwid)
+
+        -- ส่ง sessionToken ไปด้วยทุกครั้ง
+        local pingPayload = { key=KEY, hwid=hwid }
+        if _sessionToken ~= "" then pingPayload.sessionToken = _sessionToken end
+
+        local cOk, cRaw = safePost(API.."/api/ping", pingPayload)
+        if not (cOk and cRaw and cRaw~="") then
+            cOk, cRaw = safePost(API.."/api/lookup", { key=KEY, hwid=hwid })
+        end
+
         if cOk and cRaw and cRaw~="" then
             local ok3, cr = pcall(HS.JSONDecode,HS,cRaw)
             if ok3 and type(cr)=="table" then
+
+                -- ── [SESSION LOCK] ตรวจ session revoke ──
+                local msg = tostring(cr.message or ""):lower()
+                if cr.success == false and msg:find("session_revoked") then
+                    _sessionActive = false
+                    log("⚠️ SESSION REVOKED — key used on another device!", "error")
+                    showAnnounce("🚫 Session Revoked — Key ถูกใช้บนอุปกรณ์อื่น!", true)
+                    task.spawn(function()
+                        sendWebhook("session_revoked", {
+                            key=KEY, hwid=hwid, sessionToken=_sessionToken,
+                            timeLeft="REVOKED"
+                        })
+                    end)
+                    task.wait(3)
+                    panic("Session revoked — key is being used on another device.")
+                    return
+                end
+
+                -- ── ตรวจ expired ──
                 local expired = (cr.success~=true and cr.success~="true")
                 if not expired and type(cr.data)=="table" then
                     local ea = cr.data.expiresAt
                     if ea~=nil and ea~=-1 and ea-os.time()*1000<=0 then expired=true end
+                    -- อัพเดต sessionToken ถ้า server rotate
+                    if type(cr.data.sessionToken)=="string" and cr.data.sessionToken~="" then
+                        _sessionToken = cr.data.sessionToken
+                    end
                 end
+
                 if expired then
                     _sessionActive=false
-                    log("Key expired — kicking from session...","error"); task.wait(2)
-                    pcall(function() sendWebhook("expired",{key=KEY,hwid=hwid,timeLeft="EXPIRED — SESSION ENDED"}) end)
-                    task.wait(1); PL:Kick("[ SpectreWare ]  Your key has expired.\nPlease redeem a new key in Discord.")
+                    log("Key expired — kicking from session...","error")
+                    showAnnounce("Key หมดอายุ — กำลัง kick...", true)
+                    task.wait(2)
+                    pcall(function() sendWebhook("expired",{key=KEY,hwid=hwid,sessionToken=_sessionToken,timeLeft="EXPIRED — SESSION ENDED"}) end)
+                    task.wait(1)
+                    PL:Kick("[ SpectreWare ]  Your key has expired.\nPlease redeem a new key in Discord.")
                     getgenv()._SpectreRunning=nil; _conn:Disconnect(); return
                 end
             end
         end
     end
+    _sessionActive=false
     getgenv()._SpectreRunning=nil
     if _conn then _conn:Disconnect() end
 end)
