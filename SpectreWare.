@@ -443,6 +443,153 @@ task.wait(0.4)
 log("Script loaded successfully 🚀", "success")
 
 -- ─────────────────────────────────────────
+--  ANNOUNCE UI — !announce <message>
+-- ─────────────────────────────────────────
+local _announceGui = nil
+
+local function showAnnounce(msg)
+    -- ลบอันเก่าออกก่อน (ถ้ามี)
+    if _announceGui and _announceGui.Parent then
+        _announceGui:Destroy()
+    end
+
+    local TweenService = game:GetService("TweenService")
+    local playerGui    = PL:FindFirstChildOfClass("PlayerGui")
+    if not playerGui then return end
+
+    -- ScreenGui
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name            = "SpectreAnnounceGui"
+    screenGui.ResetOnSpawn    = false
+    screenGui.ZIndexBehavior  = Enum.ZIndexBehavior.Sibling
+    screenGui.DisplayOrder    = 999
+    screenGui.Parent          = playerGui
+    _announceGui = screenGui
+
+    -- Container (กลางบน)
+    local frame = Instance.new("Frame")
+    frame.Name              = "AnnounceFrame"
+    frame.AnchorPoint       = Vector2.new(0.5, 0)
+    frame.Position          = UDim2.new(0.5, 0, -0.12, 0)   -- เริ่มนอกจอ
+    frame.Size              = UDim2.new(0, 560, 0, 70)
+    frame.BackgroundColor3  = Color3.fromRGB(15, 15, 20)
+    frame.BorderSizePixel   = 0
+    frame.ZIndex            = 10
+    frame.Parent            = screenGui
+
+    -- มุมโค้ง
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 12)
+    corner.Parent       = frame
+
+    -- เส้นขอบสีทอง
+    local stroke = Instance.new("UIStroke")
+    stroke.Color     = Color3.fromRGB(255, 200, 60)
+    stroke.Thickness = 1.8
+    stroke.Parent    = frame
+
+    -- แถบสีด้านซ้าย (accent bar)
+    local accent = Instance.new("Frame")
+    accent.Name             = "Accent"
+    accent.Size             = UDim2.new(0, 4, 1, -16)
+    accent.Position         = UDim2.new(0, 10, 0, 8)
+    accent.BackgroundColor3 = Color3.fromRGB(255, 200, 60)
+    accent.BorderSizePixel  = 0
+    accent.ZIndex           = 11
+    accent.Parent           = frame
+    local accentCorner = Instance.new("UICorner")
+    accentCorner.CornerRadius = UDim.new(0, 4)
+    accentCorner.Parent       = accent
+
+    -- ไอคอน 📢
+    local icon = Instance.new("TextLabel")
+    icon.Name                = "Icon"
+    icon.Size                = UDim2.new(0, 36, 0, 36)
+    icon.Position            = UDim2.new(0, 20, 0.5, -18)
+    icon.BackgroundTransparency = 1
+    icon.Text                = "📢"
+    icon.TextScaled          = true
+    icon.Font                = Enum.Font.GothamBold
+    icon.ZIndex              = 11
+    icon.Parent              = frame
+
+    -- ข้อความหัว "ANNOUNCEMENT"
+    local title = Instance.new("TextLabel")
+    title.Name               = "Title"
+    title.Size               = UDim2.new(1, -80, 0, 20)
+    title.Position           = UDim2.new(0, 64, 0, 10)
+    title.BackgroundTransparency = 1
+    title.Text               = "ANNOUNCEMENT"
+    title.TextColor3         = Color3.fromRGB(255, 200, 60)
+    title.TextXAlignment     = Enum.TextXAlignment.Left
+    title.Font               = Enum.Font.GothamBold
+    title.TextSize           = 11
+    title.ZIndex             = 11
+    title.Parent             = frame
+
+    -- ข้อความประกาศ
+    local body = Instance.new("TextLabel")
+    body.Name               = "Body"
+    body.Size               = UDim2.new(1, -80, 0, 26)
+    body.Position           = UDim2.new(0, 64, 0, 30)
+    body.BackgroundTransparency = 1
+    body.Text               = msg
+    body.TextColor3         = Color3.fromRGB(240, 240, 240)
+    body.TextXAlignment     = Enum.TextXAlignment.Left
+    body.Font               = Enum.Font.Gotham
+    body.TextSize           = 15
+    body.TextTruncate       = Enum.TextTruncate.AtEnd
+    body.ZIndex             = 11
+    body.Parent             = frame
+
+    -- ── Tween: เลื่อนลงมา ──
+    local tweenIn = TweenService:Create(frame,
+        TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+        { Position = UDim2.new(0.5, 0, 0, 16) }
+    )
+    tweenIn:Play()
+
+    -- ── รอ 4 วิ แล้วเลื่อนออก ──
+    task.delay(4.5, function()
+        if not screenGui or not screenGui.Parent then return end
+        local tweenOut = TweenService:Create(frame,
+            TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+            { Position = UDim2.new(0.5, 0, -0.12, 0) }
+        )
+        tweenOut:Play()
+        tweenOut.Completed:Connect(function()
+            pcall(function() screenGui:Destroy() end)
+        end)
+    end)
+end
+
+-- ── Poll API ทุก 5 วิ เพื่อเช็กประกาศใหม่จาก Discord ──
+-- API ต้องคืน JSON: { "id": <number>, "message": "<string>" }
+-- Lua ใช้ id เพื่อเช็กว่าเป็นประกาศใหม่หรือเปล่า (ไม่แสดงซ้ำ)
+local _lastAnnounceId = 0
+local ANNOUNCE_INTERVAL = 5   -- วินาที
+
+task.spawn(function()
+    while _sessionActive do
+        task.wait(ANNOUNCE_INTERVAL)
+        pcall(function()
+            local ok, raw = safeGet(API.."/api/announce")
+            if not ok or not raw or raw == "" then return end
+            local ok2, data = pcall(HS.JSONDecode, HS, raw)
+            if not ok2 or type(data) ~= "table" then return end
+            local id  = tonumber(data.id) or 0
+            local msg = tostring(data.message or "")
+            if id > _lastAnnounceId and msg ~= "" then
+                _lastAnnounceId = id
+                showAnnounce(msg)
+            end
+        end)
+    end
+end)
+
+log("Announce poller ready 📢  (polling every "..ANNOUNCE_INTERVAL.."s)", "success")
+
+-- ─────────────────────────────────────────
 --  SESSION GUARD — checks every 10s
 -- ─────────────────────────────────────────
 local CHECK_INTERVAL = 10
