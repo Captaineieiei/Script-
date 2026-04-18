@@ -15,9 +15,8 @@ local function banner()
 end
 banner()
 
-local KEY     = getgenv().KEY or ""
-local API     = "http://fi10.bot-hosting.net:20745"
-local WEBHOOK = "https://discord.com/api/webhooks/1482748907242127522/CAjcHoInWyuy2RVY38z5hlk_dYnr1bgiSh4q9zlaGIMvzrz_eD_RinoGCgNSJgkp0klf"
+local KEY = getgenv().KEY or ""
+local API = "http://fi10.bot-hosting.net:20745"
 
 local scripts = {
     ["17766863403"]     = "https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/Beady",
@@ -175,11 +174,11 @@ end
 local function getExecutor()
     local v = "Unknown"
     pcall(function()
-        if typeof(syn)=="table" then v = "Synapse X"
+        if typeof(syn)=="table"      then v = "Synapse X"
         elseif typeof(fluxus)=="table" then v = "Fluxus"
-        elseif identifyexecutor then v = identifyexecutor()
-        elseif KRNL_LOADED then v = "Krnl"
-        elseif is_sirhurt_closure then v = "SirHurt" end
+        elseif identifyexecutor        then v = identifyexecutor()
+        elseif KRNL_LOADED             then v = "Krnl"
+        elseif is_sirhurt_closure      then v = "SirHurt" end
     end)
     return v
 end
@@ -247,7 +246,7 @@ local function parseApiError(message)
 end
 
 -- ─────────────────────────────────────────
---  SAFE HTTP
+--  SAFE HTTP GET
 -- ─────────────────────────────────────────
 local function safeGet(url)
     local ok, res = pcall(httpSend, { Url=url, Method="GET" })
@@ -262,138 +261,60 @@ local function safeGet(url)
 end
 
 -- ─────────────────────────────────────────
---  WEBHOOK
+--  WEBHOOK → /api/event (ไม่เปิด URL ใน client)
 --  eventType: "login" | "mismatch" | "expired" | "session_end"
 -- ─────────────────────────────────────────
 local function sendWebhook(eventType, info)
     info = info or {}
-    info.key      = info.key      or "?"
-    info.hwid     = info.hwid     or "?"
-    info.timeLeft = info.timeLeft or "?"
 
-    -- ── Event style ───────────────────────
-    local styles = {
-        login       = { color=0x00C8FF, emoji="🚀", label="New Session"    },
-        mismatch    = { color=0xFF3C3C, emoji="🚫", label="HWID Mismatch"  },
-        expired     = { color=0xFF8C00, emoji="⏰", label="Key Expired"    },
-        session_end = { color=0x778899, emoji="🔌", label="Session Ended"  },
-    }
-    local s = styles[eventType] or styles.login
-
-    -- ── Collect info ──────────────────────
+    -- รวบรวมข้อมูลแล้วส่งไปให้ server จัดการต่อ
     local avatar, headshot = getAvatar(PL.UserId)
     local gameName, gameCreator, maxPlayers, placeVer = getGameInfo()
 
-    local platform    = getPlatform()
-    local ping        = getPing()
-    local accAge      = getAccountAge()
-    local membership  = getMembership()
-    local friends     = getFriendCount()
-    local executor    = getExecutor()
-    local serverUp    = getServerUptime()
-    local playerCount = getPlayerCount()
+    local payload = {
+        event    = eventType,
+        key      = info.key      or "?",
+        hwid     = info.hwid     or "?",
+        timeLeft = info.timeLeft or "?",
+        expiresAt = info.expiresAt,
+        player = {
+            name        = PL.Name,
+            displayName = tostring(PL.DisplayName or PL.Name),
+            userId      = tostring(PL.UserId),
+            accountAge  = getAccountAge(),
+            friends     = getFriendCount(),
+            membership  = getMembership(),
+            avatar      = avatar,
+            headshot    = headshot,
+        },
+        device = {
+            platform = getPlatform(),
+            ping     = getPing(),
+            executor = getExecutor(),
+        },
+        game = {
+            name        = gameName,
+            creator     = gameCreator,
+            placeId     = tostring(game.PlaceId),
+            version     = placeVer,
+            maxPlayers  = maxPlayers,
+            playerCount = getPlayerCount(),
+            uptime      = getServerUptime(),
+            jobId       = tostring(game.JobId),
+        },
+    }
 
-    local displayName = tostring(PL.DisplayName or PL.Name)
-    local jobId       = tostring(game.JobId)
-    local fullKey     = tostring(info.key)
-    local keyDisplay  = fullKey:sub(1,8).."———"..fullKey:sub(-4)
-    local hwidFull    = tostring(info.hwid)
+    local ok, body = pcall(function() return HS:JSONEncode(payload) end)
+    if not ok then return end
 
-    -- expiry date string
-    local expiryStr = "♾️ Permanent"
-    if info.expiresAt and info.expiresAt ~= -1 then
-        pcall(function()
-            expiryStr = "📅 "..os.date("!%d %b %Y  %H:%M UTC", math.floor(info.expiresAt / 1000))
-        end)
-    end
-
-    -- ── Build embed ───────────────────────
-    local ok, payload = pcall(function()
-        return HS:JSONEncode({
-            username   = "SpectreWare Logger",
-            avatar_url = "https://i.imgur.com/q9YIPKI.png",
-            embeds = {{
-                author = {
-                    name     = s.emoji.."  SpectreWare  ·  "..s.label,
-                    icon_url = "https://i.imgur.com/q9YIPKI.png",
-                },
-                color       = s.color,
-                thumbnail   = { url = avatar },
-                description = "```\n───────────────────────\n```",
-                fields      = {
-                    -- ① Player
-                    {
-                        name   = "👤  __Player__",
-                        value  = "> **"..PL.Name.."** (`"..displayName.."`)\n"
-                               .."> 🆔 `"..tostring(PL.UserId).."`\n"
-                               .."> 🎂 Age: `"..accAge.."` · 👥 Friends: `"..friends.."`\n"
-                               .."> 💎 `"..membership.."`",
-                        inline = false,
-                    },
-                    -- ② Device
-                    {
-                        name   = "📱  __Device__",
-                        value  = "> 📟 Platform: `"..platform.."`\n"
-                               .."> 📡 Ping: `"..ping.."`\n"
-                               .."> ⚙️ Executor: `"..executor.."`",
-                        inline = true,
-                    },
-                    -- ③ Key
-                    {
-                        name   = "🔑  __Key__",
-                        value  = "> `"..keyDisplay.."`\n"
-                               .."> ⏳ `"..info.timeLeft.."`\n"
-                               .."> "..expiryStr,
-                        inline = true,
-                    },
-                    -- spacer
-                    { name="\u{200B}", value="\u{200B}", inline=false },
-                    -- ④ HWID
-                    {
-                        name   = "🖥️  __HWID__",
-                        value  = "```\n"..hwidFull.."\n```",
-                        inline = false,
-                    },
-                    -- ⑤ Game
-                    {
-                        name   = "🎮  __Game__",
-                        value  = "> 🗺️ ["..gameName.."](https://www.roblox.com/games/"..tostring(game.PlaceId)..")\n"
-                               .."> 👷 `"..gameCreator.."`\n"
-                               .."> 🆔 `"..tostring(game.PlaceId).."` · v`"..placeVer.."`",
-                        inline = true,
-                    },
-                    -- ⑥ Server
-                    {
-                        name   = "🌐  __Server__",
-                        value  = "> 👥 `"..playerCount.." / "..maxPlayers.."`\n"
-                               .."> ⏱️ Uptime: `"..serverUp.."`\n"
-                               .."> 🔗 `"..jobId:sub(1,18).."…`",
-                        inline = true,
-                    },
-                },
-                footer    = {
-                    text     = "SpectreWare v2  •  "..os.date("!%d %b %Y  %H:%M UTC"),
-                    icon_url = headshot,
-                },
-                timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ"),
-            }},
-        })
-    end)
-
-    if not ok then
-        warn("SpectreWare: JSONEncode failed — "..tostring(payload))
-        return
-    end
-
-    local sok, serr = pcall(function()
+    pcall(function()
         httpSend({
-            Url     = WEBHOOK,
+            Url     = API.."/api/event",
             Method  = "POST",
             Headers = { ["Content-Type"] = "application/json" },
-            Body    = payload,
+            Body    = body,
         })
     end)
-    if not sok then warn("SpectreWare: Webhook failed — "..tostring(serr)) end
 end
 
 -- ─────────────────────────────────────────
@@ -407,9 +328,11 @@ if KEY == "" then
     return
 end
 
-log("Reading key...", "loading") task.wait(1.0)
+log("Reading key...", "loading")
+task.wait(1.0)
 local hwid = getHWID()
-log("HWID: "..tostring(hwid):sub(1,28).."...", "info") task.wait(0.8)
+log("HWID: "..tostring(hwid):sub(1,28).."...", "info")
+task.wait(0.8)
 
 -- ── Retry loop ──
 local callOk, raw
@@ -426,7 +349,8 @@ if not callOk or not raw or raw == "" then
     return
 end
 
-log("API response received ✓", "info") task.wait(0.6)
+log("API response received ✓", "info")
+task.wait(0.6)
 
 local ok2, result = pcall(HS.JSONDecode, HS, raw)
 if not ok2 or type(result) ~= "table" then
@@ -435,7 +359,8 @@ if not ok2 or type(result) ~= "table" then
     return
 end
 
-log("Verifying key...", "loading") task.wait(1.2)
+log("Verifying key...", "loading")
+task.wait(1.2)
 
 if result.success ~= true and result.success ~= "true" then
     local reason = parseApiError(result.message)
@@ -458,7 +383,8 @@ if type(result.data) ~= "table" then
 end
 
 local data = result.data
-log("Verifying HWID...", "loading") task.wait(1.0)
+log("Verifying HWID...", "loading")
+task.wait(1.0)
 
 if type(data.hwid) == "string" and data.hwid ~= "" then
     if data.hwid ~= hwid then
@@ -472,7 +398,8 @@ if type(data.hwid) == "string" and data.hwid ~= "" then
         return
     end
 end
-log("HWID verified ✓", "success") task.wait(0.8)
+log("HWID verified ✓", "success")
+task.wait(0.8)
 
 local timeLeft  = "Permanent"
 local expiresAt = data.expiresAt
@@ -489,8 +416,10 @@ if expiresAt ~= nil and expiresAt ~= -1 then
              ..math.floor((diff%3600)/60).."m"
 end
 
-log("Expiry verified ✓", "success") task.wait(0.6)
-summary(timeLeft, hwid) task.wait(1.0)
+log("Expiry verified ✓", "success")
+task.wait(0.6)
+summary(timeLeft, hwid)
+task.wait(1.0)
 
 task.spawn(function()
     sendWebhook("login", {
@@ -507,7 +436,8 @@ if not SCRIPT then
     return
 end
 
-log("Loading script for Map: "..tostring(game.PlaceId), "loading") task.wait(1.2)
+log("Loading script for Map: "..tostring(game.PlaceId), "loading")
+task.wait(1.2)
 loadstring(game:HttpGet(SCRIPT, true))()
 task.wait(0.4)
 log("Script loaded successfully 🚀", "success")
@@ -534,7 +464,8 @@ task.spawn(function()
             break
         end
 
-        local cOk, cRaw = safeGet(API.."/api/lookup?key="..KEY.."&hwid="..getHWID())
+        -- [FIX] ใช้ hwid ที่ capture ไว้แล้ว แทนการเรียก getHWID() ซ้ำทุก tick
+        local cOk, cRaw = safeGet(API.."/api/lookup?key="..KEY.."&hwid="..hwid)
         if cOk and cRaw and cRaw ~= "" then
             local cok2, cresult = pcall(HS.JSONDecode, HS, cRaw)
             if cok2 and type(cresult) == "table" then
@@ -542,7 +473,7 @@ task.spawn(function()
                 if not expired and type(cresult.data) == "table" then
                     local ea = cresult.data.expiresAt
                     if ea ~= nil and ea ~= -1 then
-                        if math.floor(ea) - os.time()*1000 <= 0 then expired = true end
+                        if ea - os.time()*1000 <= 0 then expired = true end
                     end
                 end
                 if expired then
@@ -552,7 +483,7 @@ task.spawn(function()
                     pcall(function()
                         sendWebhook("expired", {
                             key      = KEY,
-                            hwid     = getHWID(),
+                            hwid     = hwid,
                             timeLeft = "EXPIRED — SESSION ENDED",
                         })
                     end)
