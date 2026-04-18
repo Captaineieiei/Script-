@@ -573,7 +573,8 @@ task.spawn(function()
     while _sessionActive do
         task.wait(ANNOUNCE_INTERVAL)
         pcall(function()
-            local ok, raw = safeGet(API.."/api/announce")
+            -- [FIX] ส่ง key ไปด้วยเพื่อให้ server track ว่า runner นี้ยัง online
+            local ok, raw = safeGet(API.."/api/announce?key="..KEY)
             if not ok or not raw or raw == "" then return end
             local ok2, data = pcall(HS.JSONDecode, HS, raw)
             if not ok2 or type(data) ~= "table" then return end
