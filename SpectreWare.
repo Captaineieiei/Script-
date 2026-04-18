@@ -563,32 +563,43 @@ local function showAnnounce(msg)
     end)
 end
 
--- ── Poll API ทุก 5 วิ เพื่อเช็กประกาศใหม่จาก Discord ──
--- API ต้องคืน JSON: { "id": <number>, "message": "<string>" }
--- Lua ใช้ id เพื่อเช็กว่าเป็นประกาศใหม่หรือเปล่า (ไม่แสดงซ้ำ)
+-- ── Long-poll Announce — รับ !announce ทันทีที่ admin ส่ง ──
+-- server จะ hold connection ไว้จนกว่าจะมี announce ใหม่ (สูงสุด ~28s)
+-- เมื่อ admin ใช้ !announce → server resolve ทุก connection ทันที → Lua รับได้เลย
 local _lastAnnounceId = 0
-local ANNOUNCE_INTERVAL = 5   -- วินาที
+local _lastSeq        = 0   -- ใช้ seq บอก server ว่ารู้ถึงตรงไหนแล้ว
 
 task.spawn(function()
     while _sessionActive do
-        task.wait(ANNOUNCE_INTERVAL)
         pcall(function()
-            -- [FIX] ส่ง key ไปด้วยเพื่อให้ server track ว่า runner นี้ยัง online
-            local ok, raw = safeGet(API.."/api/announce?key="..KEY)
-            if not ok or not raw or raw == "" then return end
+            -- ส่ง seq ปัจจุบัน → server hold จนมี announce ใหม่กว่า seq นี้
+            local url = API.."/api/announce?key="..KEY.."&seq=".._lastSeq
+            local ok, raw = safeGet(url)
+            if not ok or not raw or raw == "" then
+                task.wait(3) -- retry หลัง network error
+                return
+            end
             local ok2, data = pcall(HS.JSONDecode, HS, raw)
-            if not ok2 or type(data) ~= "table" then return end
+            if not ok2 or type(data) ~= "table" then
+                task.wait(3)
+                return
+            end
+            -- อัพเดท seq เสมอ (ทั้ง timeout และมี announce)
+            if type(data.seq) == "number" then
+                _lastSeq = data.seq
+            end
             local id  = tonumber(data.id) or 0
             local msg = tostring(data.message or "")
             if id > _lastAnnounceId and msg ~= "" then
                 _lastAnnounceId = id
                 showAnnounce(msg)
             end
+            -- ไม่มี task.wait() → วนลูป long-poll ต่อทันที
         end)
     end
 end)
 
-log("Announce poller ready 📢  (polling every "..ANNOUNCE_INTERVAL.."s)", "success")
+log("Announce listener ready 📢  (long-poll — รับทันทีเลย)", "success")
 
 -- ─────────────────────────────────────────
 --  SESSION GUARD — checks every 10s
