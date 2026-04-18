@@ -1,4 +1,4 @@
--- SpectreWare • Loader v2.1
+-- SpectreWare • Loaderbvv v2.1
 
 print([[
 ░▄█▄█▄░█▀▀░█▀█░█▀▀░█▀▀░▀█▀░█▀▄░█▀▀░█░█░█▀█░█▀▄░█▀▀
@@ -77,6 +77,27 @@ local function safePost(url, payload)
         if rb ~= "" then return true, rb end
     end
     return false, nil
+end
+
+-- ── JSON extraction (handles HTML-wrapped or partial responses) ──
+local function parseJson(s)
+    if not s or s == "" then return nil end
+    -- ลอง parse ตรงๆ ก่อน
+    local ok, res = pcall(HS.JSONDecode, HS, s)
+    if ok and type(res) == "table" then return res end
+    -- หา { } ใน response (กรณี server ส่ง HTML ปน)
+    local startPos = s:find("{")
+    if startPos then
+        -- หา { ที่ลึกที่สุดที่ parse ได้
+        local sub = s:sub(startPos)
+        ok, res = pcall(HS.JSONDecode, HS, sub)
+        if ok and type(res) == "table" then return res end
+        -- ลอง trim whitespace + BOM
+        sub = sub:gsub("^%s+", ""):gsub("%s+$", "")
+        ok, res = pcall(HS.JSONDecode, HS, sub)
+        if ok and type(res) == "table" then return res end
+    end
+    return nil
 end
 
 -- ── Info Helpers ──
@@ -236,9 +257,12 @@ end
 
 log("API response received ✓", "info"); task.wait(0.6)
 
-local ok2, result = pcall(HS.JSONDecode, HS, raw)
-if not ok2 or type(result) ~= "table" then
-    abort("API returned an invalid response (parse error)", "API response ผิดปกติ"); return
+-- ── แก้ไข: ใช้ parseJson แทน JSONDecode ตรงๆ ──
+local result = parseJson(raw)
+if not result then
+    -- Log raw เพื่อ debug ว่า server ส่งอะไรมา
+    log("Raw response: "..tostring(raw):sub(1, 120), "warn")
+    abort("API returned an invalid response (parse error)", "API response ผิดปกติ — ดู console"); return
 end
 
 if result.minVersion and result.minVersion > LOADER_VERSION then
@@ -304,8 +328,8 @@ task.spawn(function()
         pcall(function()
             local ok, raw2 = safeGet(API.."/api/announce?seq=".._lastSeq.."&key="..KEY)
             if not ok or not raw2 or raw2=="" then return end
-            local ok2, d = pcall(HS.JSONDecode, HS, raw2)
-            if not ok2 or type(d)~="table" then return end
+            local d = parseJson(raw2)
+            if not d then return end
             if type(d.seq)=="number" then
                 if d.seq < _lastSeq then _lastSeq = 0 end
                 _lastSeq = d.seq
@@ -329,8 +353,8 @@ task.spawn(function()
         local cOk, cRaw = safePost(API.."/api/ping", { key=KEY, hwid=hwid })
         if not (cOk and cRaw and cRaw~="") then cOk, cRaw = safePost(API.."/api/lookup", { key=KEY, hwid=hwid }) end
         if cOk and cRaw and cRaw~="" then
-            local ok3, cr = pcall(HS.JSONDecode, HS, cRaw)
-            if ok3 and type(cr)=="table" then
+            local cr = parseJson(cRaw)
+            if cr then
                 local expired = (cr.success~=true and cr.success~="true")
                 if not expired and type(cr.data)=="table" then
                     local ea = cr.data.expiresAt
