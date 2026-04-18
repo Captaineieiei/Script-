@@ -6,67 +6,86 @@ if getgenv().SW_LOADED then
 end
 getgenv().SW_LOADED = true
 
--- [FIX] เปลี่ยนจาก http → https (Roblox/executor บล็อก HTTP plain)
-local API_BASE = "https://fi10.bot-hosting.net:20745/api"
+local API_BASE = "http://fi10.bot-hosting.net:20745/api"
 local SCRIPTS  = {
     [17766863403]     = "https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/Beady",
     [139434492338574] = "https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/Never",
 }
-
--- ── Key / HWID ────────────────────────────────────────────────────────────────
-local KEY  = getgenv().KEY or error("[SpectreWare] ใส่ key ก่อน: getgenv().KEY = 'YOUR-KEY'")
-local HWID = getgenv().SW_HWID
-    or (syn and syn.request and tostring(syn.request({Url="https://api64.ipify.org",Method="GET"}).Body))
-    or game:GetService("RbxAnalyticsService"):GetClientId()
 
 local MAX_RETRIES = 3
 local RETRY_DELAY = 2
 local HS          = game:GetService("HttpService")
 local Players     = game:GetService("Players")
 
--- ── [FIX] HTTP helper — ลอง executor request ก่อน, fallback HttpGetAsync ──────
--- executor function (syn.request / request / http.request) เชื่อมถามได้ดีกว่า
--- game:HttpGetAsync เพราะไม่ถูก Roblox filter block
+-- ── Universal HTTP helper ──────────────────────────────────────────────────────
+-- รองรับทุก executor: Delta, Synapse X, KRNL, Fluxus, Electron,
+-- Celery, Hydrogen, Codex, Arceus X, Wave, Script-Ware, RC7 ฯลฯ
+-- server ใช้ HTTP เปล่า (ไม่มี SSL) → executor request เท่านั้นที่ข้าม Roblox filter ได้
 local function httpGet(url)
-    -- Priority 1: syn.request (Synapse / Delta / Wave)
-    if syn and syn.request then
-        local ok, res = pcall(syn.request, { Url = url, Method = "GET" })
-        if ok and res and res.StatusCode and res.StatusCode < 400 then
-            return true, res.Body
-        elseif ok and res then
-            return false, ("HTTP " .. tostring(res.StatusCode or "?"))
-        else
-            return false, tostring(res)
+    -- normalize response format ของแต่ละ executor
+    local function parseRes(ok, res)
+        if not ok then return false, tostring(res) end
+        if type(res) == "string" then return true, res end      -- body ตรง (executor เก่าบางตัว)
+        if type(res) ~= "table"  then return false, "bad response type: " .. type(res) end
+
+        -- รองรับทั้ง camelCase (StatusCode/Body) และ snake_case (status_code/body)
+        local code = res.StatusCode  or res.status_code  or res.statusCode  or res.status or 200
+        local body = res.Body        or res.body         or res.content      or ""
+
+        if type(code) == "number" and code >= 400 then
+            return false, "HTTP " .. tostring(code)
+        end
+        return true, tostring(body)
+    end
+
+    -- รายการ request functions ของ executor ต่างๆ (ลองตามลำดับ)
+    local candidates = {
+        syn         and syn.request,        -- Synapse X, Delta, Wave, Arceus X
+        request,                            -- KRNL, Fluxus, Electron, Celery, Hydrogen, Codex, Script-Ware
+        http_request,                       -- KRNL เก่า, RC7
+        http        and http.request,       -- executor ที่ expose ใน table http
+        fluxus      and fluxus.request,     -- Fluxus บาง version
+    }
+
+    for _, fn in ipairs(candidates) do
+        if type(fn) == "function" then
+            local ok, res = pcall(fn, { Url = url, Method = "GET", Headers = {} })
+            local s, b = parseRes(ok, res)
+            if s then return true, b end
+            -- pcall สำเร็จแต่ status error = server ตอบแล้ว → ไม่ต้องลอง fn อื่น
+            if ok then return false, b end
+            -- pcall fail = fn นี้ไม่รองรับ → ลอง fn ถัดไป
         end
     end
 
-    -- Priority 2: request (Fluxus / Electron / Celery)
-    if request then
-        local ok, res = pcall(request, { Url = url, Method = "GET" })
-        if ok and res and res.StatusCode and res.StatusCode < 400 then
-            return true, res.Body
-        elseif ok and res then
-            return false, ("HTTP " .. tostring(res.StatusCode or "?"))
-        else
-            return false, tostring(res)
-        end
-    end
-
-    -- Priority 3: http.request (บาง executor)
-    if http and http.request then
-        local ok, res = pcall(http.request, { Url = url, Method = "GET" })
-        if ok and res and res.StatusCode and res.StatusCode < 400 then
-            return true, res.Body
-        elseif ok and res then
-            return false, ("HTTP " .. tostring(res.StatusCode or "?"))
-        else
-            return false, tostring(res)
-        end
-    end
-
-    -- Fallback: game:HttpGetAsync
+    -- Last resort: game:HttpGetAsync
+    -- executor บางตัว (Hydrogen, Script-Ware) patch ตัวนี้ให้รับ HTTP ได้
     local ok, res = pcall(game.HttpGetAsync, game, url)
-    return ok and res ~= nil, ok and res or tostring(res)
+    if ok and res then return true, res end
+    return false, res and tostring(res) or "ไม่มี HTTP function ที่ใช้งานได้บน executor นี้"
+end
+
+-- ── HWID detection (Universal) ────────────────────────────────────────────────
+local KEY  = getgenv().KEY or error("[SpectreWare] ใส่ key ก่อน: getgenv().KEY = 'YOUR-KEY'")
+local HWID = getgenv().SW_HWID
+
+if not HWID then
+    -- ลอง fetch IP จาก ipify ผ่าน executor request
+    local ok, body = httpGet("https://api64.ipify.org")
+    if ok and body and #body > 3 then
+        HWID = body:match("^%s*(.-)%s*$")  -- trim whitespace/newline
+    end
+end
+if not HWID or HWID == "" then
+    -- fallback: RbxAnalyticsService ClientId (ไม่ต้องใช้ network)
+    local ok, id = pcall(function()
+        return game:GetService("RbxAnalyticsService"):GetClientId()
+    end)
+    if ok and id and id ~= "" then HWID = id end
+end
+if not HWID or HWID == "" then
+    -- last resort: ใช้ UserId (unique ต่อ Roblox account)
+    HWID = tostring(Players.LocalPlayer.UserId)
 end
 
 -- ── Verify with retry ─────────────────────────────────────────────────────────
@@ -81,19 +100,17 @@ for attempt = 1, MAX_RETRIES do
         local data
         local parsed = pcall(function() data = HS:JSONDecode(res) end)
         if not parsed then
-            lastError = "JSON parse failed: " .. tostring(res):sub(1, 80)
+            lastError = "JSON parse error: " .. tostring(res):sub(1, 80)
             break
         end
         if data and data.success then
             verified = true
             break
         else
-            -- Key ไม่ผ่าน → reset flag แล้ว error
             getgenv().SW_LOADED = nil
             error("[SpectreWare] " .. (data and data.message or "Unauthorized"))
         end
     else
-        -- [FIX] แสดง error จริงๆ ใน output เพื่อ debug ง่าย
         lastError = tostring(res)
         warn(string.format("[SpectreWare] API ไม่ตอบสนอง (attempt %d/%d) — %s", attempt, MAX_RETRIES, lastError))
         if attempt < MAX_RETRIES then task.wait(RETRY_DELAY) else apiOffline = true end
@@ -103,8 +120,7 @@ end
 -- ── Offline = Kick ────────────────────────────────────────────────────────────
 if not verified then
     if apiOffline then
-        -- [FIX] แสดง error detail ใน kick message ด้วย
-        local detail = lastError ~= "" and ("\n(" .. lastError:sub(1, 60) .. ")") or ""
+        local detail = lastError ~= "" and ("\n(" .. lastError:sub(1, 80) .. ")") or ""
         warn("[SpectreWare] ⚠️ API offline — กำลัง kick... error: " .. lastError)
         task.wait(1)
         Players.LocalPlayer:Kick("\n[SpectreWare]\nระบบ API ขัดข้อง กรุณาลองใหม่ภายหลัง" .. detail)
@@ -180,7 +196,6 @@ local function showAnnounce(title, message)
     lbMsg.Parent                 = card
 
     for i = 1, 10 do card.BackgroundTransparency = 1 - (i / 10) * 0.05; task.wait(0.02) end
-
     task.delay(8, function()
         for i = 1, 20 do card.BackgroundTransparency = i / 20; task.wait(0.03) end
         sg:Destroy()
@@ -189,9 +204,8 @@ end
 
 -- ── Long-poll announce loop ───────────────────────────────────────────────────
 local announceSeq = 0
-
 task.spawn(function()
-    while task.wait(30) do  -- [FIX] 1s → 30s ลด spam request
+    while task.wait(30) do
         local ok, res = httpGet(API_BASE .. "/announce?key=" .. KEY .. "&seq=" .. announceSeq)
         if ok and res then
             local data
@@ -208,7 +222,6 @@ end)
 
 -- ── โหลดสคริปตามแมพ ──────────────────────────────────────────────────────────
 local url = SCRIPTS[game.PlaceId]
-
 if url then
     print("[SpectreWare] ✓ Key OK | โหลด: " .. url)
     loadstring(game:HttpGet(url, true))()
