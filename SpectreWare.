@@ -1,4 +1,11 @@
 -- SpectreWare Loader
+-- ── Run-Once Guard ────────────────────────────────────────────────────────────
+if getgenv().SW_LOADED then
+    warn("[SpectreWare] ⚠️ สคริปต์รันไปแล้ว — ไม่สามารถรันซ้ำได้")
+    return
+end
+getgenv().SW_LOADED = true
+
 local API_BASE = "http://fi10.bot-hosting.net:20745/api"
 local SCRIPTS  = {
     [17766863403]     = "https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/Beady",
@@ -31,6 +38,8 @@ for attempt = 1, MAX_RETRIES do
             verified = true
             break
         else
+            -- Key ไม่ผ่าน → reset flag แล้ว error
+            getgenv().SW_LOADED = nil
             error("[SpectreWare] " .. (data and data.message or "Unauthorized"))
         end
     else
@@ -46,6 +55,7 @@ if not verified then
         task.wait(1)
         Players.LocalPlayer:Kick("\n[SpectreWare]\nระบบ API ขัดข้อง กรุณาลองใหม่ภายหลัง")
     else
+        getgenv().SW_LOADED = nil  -- reset ให้ลองใหม่ได้ถ้า verify fail
         error("[SpectreWare] ยืนยัน key ไม่ผ่าน")
     end
     return
