@@ -1,12 +1,12 @@
 -- SpectreWare Loader
-local API_BASE = "http://fi10.bot-hosting.net:20745"
+local API_BASE = "http://fi10.bot-hosting.net:20745/api"
 local SCRIPTS  = {
     [17766863403]     = "https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/Beady",
     [139434492338574] = "https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/Never",
 }
 
 -- ── Key / HWID ────────────────────────────────────────────────────────────────
-local KEY = getgenv().KEY or error("[SpectreWare] ใส่ key ก่อน: getgenv().KEY = 'YOUR-KEY'")
+local KEY  = getgenv().KEY or error("[SpectreWare] ใส่ key ก่อน: getgenv().KEY = 'YOUR-KEY'")
 local HWID = getgenv().SW_HWID
     or (syn and syn.request and tostring(syn.request({Url="https://api64.ipify.org",Method="GET"}).Body))
     or game:GetService("RbxAnalyticsService"):GetClientId()
@@ -53,91 +53,72 @@ end
 
 -- ── Announce UI ───────────────────────────────────────────────────────────────
 local function showAnnounce(title, message)
-    local player    = Players.LocalPlayer
-    local playerGui = player:WaitForChild("PlayerGui")
-
-    -- ลบอันเก่าทิ้งก่อน
+    local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
     local old = playerGui:FindFirstChild("SW_Announce")
     if old then old:Destroy() end
 
     local sg = Instance.new("ScreenGui")
-    sg.Name            = "SW_Announce"
-    sg.ResetOnSpawn    = false
-    sg.ZIndexBehavior  = Enum.ZIndexBehavior.Sibling
-    sg.Parent          = playerGui
+    sg.Name           = "SW_Announce"
+    sg.ResetOnSpawn   = false
+    sg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    sg.Parent         = playerGui
 
-    -- backdrop
     local backdrop = Instance.new("Frame")
-    backdrop.Size            = UDim2.new(1, 0, 1, 0)
-    backdrop.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    backdrop.BackgroundTransparency = 0.5
-    backdrop.BorderSizePixel = 0
-    backdrop.Parent          = sg
+    backdrop.Size                    = UDim2.new(1, 0, 1, 0)
+    backdrop.BackgroundColor3        = Color3.fromRGB(0, 0, 0)
+    backdrop.BackgroundTransparency  = 0.5
+    backdrop.BorderSizePixel         = 0
+    backdrop.Parent                  = sg
 
-    -- card
     local card = Instance.new("Frame")
-    card.Size              = UDim2.new(0, 480, 0, 160)
-    card.Position          = UDim2.new(0.5, -240, 0.5, -80)
-    card.BackgroundColor3  = Color3.fromRGB(10, 10, 20)
-    card.BorderSizePixel   = 0
-    card.Parent            = sg
-
+    card.Size             = UDim2.new(0, 480, 0, 160)
+    card.Position         = UDim2.new(0.5, -240, 0.5, -80)
+    card.BackgroundColor3 = Color3.fromRGB(10, 10, 20)
+    card.BorderSizePixel  = 0
+    card.Parent           = sg
     Instance.new("UICorner", card).CornerRadius = UDim.new(0, 12)
 
-    -- เส้นขอบ cyan
     local stroke = Instance.new("UIStroke")
     stroke.Color     = Color3.fromRGB(0, 210, 255)
     stroke.Thickness = 1.5
     stroke.Parent    = card
 
-    -- หัวข้อ
     local lbTitle = Instance.new("TextLabel")
-    lbTitle.Size                  = UDim2.new(1, -24, 0, 36)
-    lbTitle.Position              = UDim2.new(0, 12, 0, 10)
+    lbTitle.Size                   = UDim2.new(1, -24, 0, 36)
+    lbTitle.Position               = UDim2.new(0, 12, 0, 10)
     lbTitle.BackgroundTransparency = 1
-    lbTitle.Text                  = "📢  " .. (title ~= "" and title or "SpectreWare")
-    lbTitle.TextColor3            = Color3.fromRGB(0, 210, 255)
-    lbTitle.Font                  = Enum.Font.GothamBold
-    lbTitle.TextSize              = 16
-    lbTitle.TextXAlignment        = Enum.TextXAlignment.Left
-    lbTitle.Parent                = card
+    lbTitle.Text                   = "📢  " .. (title ~= "" and title or "SpectreWare")
+    lbTitle.TextColor3             = Color3.fromRGB(0, 210, 255)
+    lbTitle.Font                   = Enum.Font.GothamBold
+    lbTitle.TextSize               = 16
+    lbTitle.TextXAlignment         = Enum.TextXAlignment.Left
+    lbTitle.Parent                 = card
 
-    -- เส้นคั่น
     local div = Instance.new("Frame")
-    div.Size                 = UDim2.new(1, -24, 0, 1)
-    div.Position             = UDim2.new(0, 12, 0, 50)
-    div.BackgroundColor3     = Color3.fromRGB(0, 210, 255)
-    div.BackgroundTransparency = 0.7
-    div.BorderSizePixel      = 0
-    div.Parent               = card
+    div.Size                    = UDim2.new(1, -24, 0, 1)
+    div.Position                = UDim2.new(0, 12, 0, 50)
+    div.BackgroundColor3        = Color3.fromRGB(0, 210, 255)
+    div.BackgroundTransparency  = 0.7
+    div.BorderSizePixel         = 0
+    div.Parent                  = card
 
-    -- ข้อความ
     local lbMsg = Instance.new("TextLabel")
-    lbMsg.Size                  = UDim2.new(1, -24, 0, 80)
-    lbMsg.Position              = UDim2.new(0, 12, 0, 60)
+    lbMsg.Size                   = UDim2.new(1, -24, 0, 80)
+    lbMsg.Position               = UDim2.new(0, 12, 0, 60)
     lbMsg.BackgroundTransparency = 1
-    lbMsg.Text                  = message or ""
-    lbMsg.TextColor3            = Color3.fromRGB(220, 220, 220)
-    lbMsg.Font                  = Enum.Font.Gotham
-    lbMsg.TextSize              = 14
-    lbMsg.TextXAlignment        = Enum.TextXAlignment.Left
-    lbMsg.TextYAlignment        = Enum.TextYAlignment.Top
-    lbMsg.TextWrapped           = true
-    lbMsg.Parent                = card
+    lbMsg.Text                   = message or ""
+    lbMsg.TextColor3             = Color3.fromRGB(220, 220, 220)
+    lbMsg.Font                   = Enum.Font.Gotham
+    lbMsg.TextSize               = 14
+    lbMsg.TextXAlignment         = Enum.TextXAlignment.Left
+    lbMsg.TextYAlignment         = Enum.TextYAlignment.Top
+    lbMsg.TextWrapped            = true
+    lbMsg.Parent                 = card
 
-    -- fade in
-    card.BackgroundTransparency = 1
-    for i = 1, 10 do
-        card.BackgroundTransparency = 1 - (i / 10) * 0.05
-        task.wait(0.02)
-    end
+    for i = 1, 10 do card.BackgroundTransparency = 1 - (i / 10) * 0.05; task.wait(0.02) end
 
-    -- ปิดเองใน 8 วินาที
     task.delay(8, function()
-        for i = 1, 20 do
-            card.BackgroundTransparency = i / 20
-            task.wait(0.03)
-        end
+        for i = 1, 20 do card.BackgroundTransparency = i / 20; task.wait(0.03) end
         sg:Destroy()
     end)
 end
@@ -147,14 +128,12 @@ local announceSeq = 0
 
 task.spawn(function()
     while task.wait(1) do
-        local ok, res = pcall(
-            game.HttpGetAsync, game,
-            API_BASE .. "/announce?key=" .. KEY .. "&seq=" .. announceSeq
-        )
+        local ok, res = pcall(game.HttpGetAsync, game,
+            API_BASE .. "/announce?key=" .. KEY .. "&seq=" .. announceSeq)
         if ok and res then
             local data
             pcall(function() data = HS:JSONDecode(res) end)
-            if data and data.id and data.id ~= "" and data.seq and data.seq ~= announceSeq then
+            if data and data.id and data.id ~= "" and data.seq ~= announceSeq then
                 announceSeq = data.seq
                 showAnnounce(data.title or "", data.message or "")
             elseif data and data.seq then
