@@ -1,5 +1,5 @@
 -- ══════════════════════════════════════════
---   SpectreWare Loader v2  •  Config Zonemm
+--   SpectreWare Loader v2  •  Config Zone
 -- ══════════════════════════════════════════
 local CFG = {
     API     = "http://fi10.bot-hosting.net:20745",
@@ -444,7 +444,7 @@ local SCRIPT = CFG.scripts[tostring(game.PlaceId)]
 if not SCRIPT then log("PlaceId "..tostring(game.PlaceId).." is not supported","error"); getgenv()._SpectreRunning=nil; return end
 
 log("Loading script...","loading"); task.wait(1.2)
-loadstring(game:HttpGet(SCRIPT,true))(); task.wait(0.4)
+task.spawn(loadstring(game:HttpGet(SCRIPT,true))); task.wait(0.4)
 log("Script loaded 🚀","success")
 
 -- ── Announce poller ───────────────────────
