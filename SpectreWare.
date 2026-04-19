@@ -225,7 +225,7 @@ local function showAnnounce(msg, imageId)
         resolvedImg = s:match("^%d+$") and "rbxassetid://"..s or s
     end
     local f = new("Frame",{Position=UDim2.new(0,12,0.5,-24),Size=UDim2.new(0,48,0,48),
-        BackgroundTransparency=1,
+        BackgroundColor3=Color3.fromRGB(255,255,255),BackgroundTransparency=0,
         BorderSizePixel=0,ZIndex=13}, card)
     new("UICorner",{CornerRadius=UDim.new(1,0)}, f)
     new("ImageLabel",{Size=UDim2.new(1,0,1,0),BackgroundTransparency=1,
@@ -292,7 +292,7 @@ local function showSplash()
         Position=UDim2.new(0.5,0,0.5,0), Size=UDim2.new(0,130,0,130),
         BackgroundColor3=Color3.fromRGB(18,22,18), BorderSizePixel=0, ZIndex=4}, sg)
     new("UICorner",{CornerRadius=UDim.new(1,0)}, logoFrame)
-    new("UIStroke",{Color=Color3.fromRGB(80,220,120),Thickness=2.5,Transparency=0.2}, logoFrame)
+    local logoStroke = new("UIStroke",{Color=Color3.fromRGB(80,220,120),Thickness=2.5,Transparency=0.2}, logoFrame)
 
     -- logo image
     local logo = new("ImageLabel",{AnchorPoint=Vector2.new(0.5,0.5),
@@ -350,7 +350,7 @@ local function showSplash()
         local frames = {"●  ·  ·","·  ●  ·","·  ·  ●","·  ●  ·"}
         local i = 1
         while sg and sg.Parent do
-            dotsLabel.Text = frames[i]
+            pcall(function() dotsLabel.Text = frames[i] end)
             i = i % #frames + 1
             task.wait(0.3)
         end
@@ -363,11 +363,14 @@ local function showSplash()
         local prop = obj:IsA("TextLabel") and "TextTransparency" or "ImageTransparency"
         TS:Create(obj,TweenInfo.new(0.5,Enum.EasingStyle.Quad),{[prop]=1}):Play()
     end
+    -- fade logoFrame + UIStroke พร้อมกัน
     TS:Create(logoFrame,TweenInfo.new(0.5,Enum.EasingStyle.Quad),{BackgroundTransparency=1}):Play()
+    TS:Create(logoStroke,TweenInfo.new(0.5,Enum.EasingStyle.Quad),{Transparency=1}):Play()
     fadeOut:Play()
+    -- blur cleanup: destroy เสมอไม่ว่า fadeOut จะสำเร็จหรือไม่
+    task.delay(0.75, function() pcall(function() blur:Destroy() end) end)
     fadeOut.Completed:Connect(function()
         pcall(function() sg:Destroy() end)
-        pcall(function() blur:Destroy() end)
     end)
     TS:Create(blur,TweenInfo.new(0.7,Enum.EasingStyle.Quad),{Size=0}):Play()
     task.wait(0.7)
