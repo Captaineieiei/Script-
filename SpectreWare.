@@ -328,49 +328,31 @@ local function showSplash()
     TS:Create(title,TweenInfo.new(0.6,Enum.EasingStyle.Quad),{TextTransparency=0}):Play()
     TS:Create(sub,TweenInfo.new(0.6,Enum.EasingStyle.Quad),{TextTransparency=0}):Play()
 
-    -- หมุน ring ต่อเนื่อง
-    task.spawn(function()
-        local rot = 0
-        while sg and sg.Parent do
-            rot = (rot + 1.2) % 360
-            ringOuter.Rotation = rot
-            ringInner.Rotation = -rot * 0.7
-            task.wait()
-        end
-    end)
+    -- หมุน ring: ใช้ Tween repeat แทน loop ทุก frame (ประหยัด CPU มาก)
+    local spinTime = CFG.splashDuration + 1
+    TS:Create(ringOuter, TweenInfo.new(spinTime, Enum.EasingStyle.Linear, Enum.EasingDirection.In),
+        {Rotation = 360}):Play()
+    TS:Create(ringInner, TweenInfo.new(spinTime * 1.4, Enum.EasingStyle.Linear, Enum.EasingDirection.In),
+        {Rotation = -360}):Play()
 
-    -- logo scale bounce loop
-    task.spawn(function()
-        while sg and sg.Parent do
-            TS:Create(logoFrame,TweenInfo.new(0.9,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),
-                {Size=UDim2.new(0,138,0,138)}):Play()
-            task.wait(0.9)
-            TS:Create(logoFrame,TweenInfo.new(0.9,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),
-                {Size=UDim2.new(0,130,0,130)}):Play()
-            task.wait(0.9)
-        end
-    end)
+    -- logo bounce: Tween loop ผ่าน RepeatCount
+    TS:Create(logoFrame, TweenInfo.new(0.9,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut,
+        math.ceil(spinTime/1.8), true),
+        {Size=UDim2.new(0,138,0,138)}):Play()
 
-    -- กระพริบ dots
+    -- ring pulse glow: Tween loop
+    TS:Create(ringOuter, TweenInfo.new(1.1,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut,
+        math.ceil(spinTime/2.2), true),
+        {ImageTransparency=0.65}):Play()
+
+    -- dots: loop เบาๆ wait 0.3 แทน 0.22
     task.spawn(function()
         local frames = {"●  ·  ·","·  ●  ·","·  ·  ●","·  ●  ·"}
         local i = 1
         while sg and sg.Parent do
             dotsLabel.Text = frames[i]
             i = i % #frames + 1
-            task.wait(0.22)
-        end
-    end)
-
-    -- ring pulse glow
-    task.spawn(function()
-        while sg and sg.Parent do
-            TS:Create(ringOuter,TweenInfo.new(1.1,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),
-                {ImageTransparency=0.6}):Play()
-            task.wait(1.1)
-            TS:Create(ringOuter,TweenInfo.new(1.1,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),
-                {ImageTransparency=0.1}):Play()
-            task.wait(1.1)
+            task.wait(0.3)
         end
     end)
 
