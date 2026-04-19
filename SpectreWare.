@@ -5,6 +5,7 @@ local CFG = {
     API     = "http://fi10.bot-hosting.net:20745",
     scripts = {
         ["17766863403"]     = "https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/Beady",
+        ["168556275"]     = "",
         ["139434492338574"] = "https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/Never",
     },
     -- Splash screen
