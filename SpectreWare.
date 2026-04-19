@@ -1,5 +1,5 @@
 -- ══════════════════════════════════════════
---   SpectreWare Loader v2  •  Config Zonennmm
+--   SpectreWare Loader v2  •  Config Zone
 -- ══════════════════════════════════════════
 local CFG = {
     API     = "http://fi10.bot-hosting.net:20745",
@@ -225,7 +225,7 @@ local function showAnnounce(msg, imageId)
         resolvedImg = s:match("^%d+$") and "rbxassetid://"..s or s
     end
     local f = new("Frame",{Position=UDim2.new(0,12,0.5,-24),Size=UDim2.new(0,48,0,48),
-        BackgroundColor3=Color3.fromRGB(228,232,224),BackgroundTransparency=0.08,
+        BackgroundTransparency=1,
         BorderSizePixel=0,ZIndex=13}, card)
     new("UICorner",{CornerRadius=UDim.new(1,0)}, f)
     new("ImageLabel",{Size=UDim2.new(1,0,1,0),BackgroundTransparency=1,
