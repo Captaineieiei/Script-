@@ -283,28 +283,16 @@ local function showAnnounce(msg)
     local wrap = new("Frame", {
         AnchorPoint         = Vector2.new(0.5, 0),
         Position            = UDim2.new(0.5, 0, -0.22, 0),
-        Size                = UDim2.new(0, 430, 0, 112),
+        Size                = UDim2.new(0, 430, 0, 78),
         BackgroundTransparency = 1,
         BorderSizePixel     = 0,
         ZIndex              = 10,
     }, sg)
 
-    -- "SpectreWare" label (mirrors "Clover Hub User" in orange)
-    new("TextLabel", {
-        Size               = UDim2.new(1, 0, 0, 22),
-        Position           = UDim2.new(0, 0, 0, 0),
-        BackgroundTransparency = 1,
-        Text               = "SpectreWare",
-        TextColor3         = Color3.fromRGB(255, 185, 50),
-        Font               = Enum.Font.GothamBold,
-        TextSize           = 15,
-        ZIndex             = 11,
-    }, wrap)
-
     -- ── Pill card ──
     local card = new("Frame", {
         AnchorPoint         = Vector2.new(0, 0),
-        Position            = UDim2.new(0, 0, 0, 26),
+        Position            = UDim2.new(0, 0, 0, 0),
         Size                = UDim2.new(1, 0, 0, 78),
         BackgroundColor3    = Color3.fromRGB(228, 232, 224),
         BackgroundTransparency = 0.08,
@@ -390,8 +378,8 @@ local function showAnnounce(msg)
     }, card)
 
     -- ── Animate ──
-    local showPos = UDim2.new(0.5, 0, 0, 20)
-    local hidePos = UDim2.new(0.5, 0, -0.22, 0)
+    local showPos = UDim2.new(0.5, 0, 0, 12)
+    local hidePos = UDim2.new(0.5, 0, -0.18, 0)
 
     TS:Create(wrap,
         TweenInfo.new(0.52, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
