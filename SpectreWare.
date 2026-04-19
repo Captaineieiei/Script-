@@ -1,5 +1,5 @@
 -- ══════════════════════════════════════════
---   SpectreWare Loader v2  •  Config Zone
+--   Zone Loader v2  •  Config Zonehhh
 -- ══════════════════════════════════════════
 local CFG = {
     API     = "http://fi10.bot-hosting.net:20745",
@@ -276,9 +276,14 @@ local function showSplash()
     local sg = new("ScreenGui",{Name="SpectreSplash",ResetOnSpawn=false,
         ZIndexBehavior=Enum.ZIndexBehavior.Sibling,DisplayOrder=9999}, playerGui)
 
-    -- backdrop
-    local bg = new("Frame",{Size=UDim2.new(1,0,1,0),BackgroundColor3=Color3.fromRGB(8,8,12),
-        BackgroundTransparency=0,BorderSizePixel=0,ZIndex=1}, sg)
+    -- backdrop: blur game world + dark tint เบาๆ
+    local Lighting = game:GetService("Lighting")
+    local blur = Instance.new("BlurEffect")
+    blur.Size = 48
+    blur.Parent = Lighting
+    -- overlay โปร่งมาก ให้เห็นฉากเบลอข้างหลัง
+    local bg = new("Frame",{Size=UDim2.new(1,0,1,0),BackgroundColor3=Color3.fromRGB(0,0,0),
+        BackgroundTransparency=0.72,BorderSizePixel=0,ZIndex=1}, sg)
 
     -- glow ring (outer)
     local ringOuter = new("ImageLabel",{AnchorPoint=Vector2.new(0.5,0.5),
@@ -382,14 +387,17 @@ local function showSplash()
     -- รอแล้ว fade out ทั้งหน้าจอ
     task.wait(CFG.splashDuration)
     local fadeOut = TS:Create(bg,TweenInfo.new(0.7,Enum.EasingStyle.Quad),{BackgroundTransparency=1})
-    for _, obj in ipairs({ringOuter,ringInner,logoFrame,title,sub,dotsLabel}) do
-        TS:Create(obj,TweenInfo.new(0.5,Enum.EasingStyle.Quad),{
-            [obj:IsA("TextLabel") and "TextTransparency" or "ImageTransparency"] = 1
-        }):Play()
+    for _, obj in ipairs({ringOuter,ringInner,logo,title,sub,dotsLabel}) do
+        local prop = obj:IsA("TextLabel") and "TextTransparency" or "ImageTransparency"
+        TS:Create(obj,TweenInfo.new(0.5,Enum.EasingStyle.Quad),{[prop]=1}):Play()
     end
     TS:Create(logoFrame,TweenInfo.new(0.5,Enum.EasingStyle.Quad),{BackgroundTransparency=1}):Play()
     fadeOut:Play()
-    fadeOut.Completed:Connect(function() pcall(function() sg:Destroy() end) end)
+    fadeOut.Completed:Connect(function()
+        pcall(function() sg:Destroy() end)
+        pcall(function() blur:Destroy() end)
+    end)
+    TS:Create(blur,TweenInfo.new(0.7,Enum.EasingStyle.Quad),{Size=0}):Play()
     task.wait(0.7)
 end
 
