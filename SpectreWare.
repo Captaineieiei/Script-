@@ -1,5 +1,5 @@
 -- ══════════════════════════════════════════
---   SpectreWare Loader v2  •  Config Zone
+--   SpectreWare Loader v2  •  Config Zonezzz
 -- ══════════════════════════════════════════
 local CFG = {
     API     = "http://fi10.bot-hosting.net:20745",
@@ -545,61 +545,76 @@ local function showSplash()
         end)
     end
 
-    -- ── Glow backdrop (pill shape ใต้ตัวอักษร) ────────────────
+    -- ── Glow backdrop (pill) ─────────────────────────────────
+    -- ใช้ relative width 0.72 ของจอ → padding ซ้าย/ขวาเท่ากันเสมอ
     local titleBg = new("Frame",{
         AnchorPoint=Vector2.new(0.5,0.5),
         Position=UDim2.new(0.5,0,0.5,0),
-        Size=UDim2.new(0,600,0,126),
+        Size=UDim2.new(0.72,0,0,118),
         BackgroundColor3=Color3.fromRGB(8,4,18),
-        BackgroundTransparency=1,   -- จะ fade in ทีหลัง
+        BackgroundTransparency=1,
         BorderSizePixel=0,ZIndex=4
     }, sg)
     new("UICorner",{CornerRadius=UDim.new(1,0)}, titleBg)
-    new("UIStroke",{
+    local pillStroke = new("UIStroke",{
         Color=Color3.fromRGB(160,70,255),
-        Thickness=1.8,
-        Transparency=0.45
+        Thickness=2.2,
+        Transparency=0.3
     }, titleBg)
+    task.spawn(function()
+        while titleBg and titleBg.Parent do
+            TS:Create(pillStroke,TweenInfo.new(1.8,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),
+                {Transparency=0.75}):Play()
+            task.wait(1.8)
+            TS:Create(pillStroke,TweenInfo.new(1.8,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),
+                {Transparency=0.15}):Play()
+            task.wait(1.8)
+        end
+    end)
 
-    -- ── ตัวอักษรหลัก ── (เริ่มว่าง, typewriter จะ fill ทีหลัง)
+    -- ── ตัวอักษรหลัก — อยู่ใน titleBg เลย → ขอบเท่ากันทุกด้าน ──
     local leftFull  = CFG.splashTitle:sub(1, math.floor(#CFG.splashTitle/2))
     local rightFull = CFG.splashTitle:sub(math.floor(#CFG.splashTitle/2)+1)
 
+    -- ครึ่งซ้าย align ขวา
     local titleLeft = new("TextLabel",{
         AnchorPoint=Vector2.new(1,0.5),
-        Position=UDim2.new(0.5,-2,0.5,0),
-        Size=UDim2.new(0,480,0,110),
+        Position=UDim2.new(0.5,-1,0.5,0),
+        Size=UDim2.new(0.5,-8,1,-8),
         BackgroundTransparency=1,
         Text="",
         TextColor3=Color3.fromRGB(140,55,235),
         Font=Enum.Font.GothamBold,
-        TextSize=90,
+        TextSize=86,
         TextXAlignment=Enum.TextXAlignment.Right,
+        TextScaled=false,
         TextTransparency=0,ZIndex=5
-    }, sg)
+    }, titleBg)
 
+    -- ครึ่งขวา align ซ้าย
     local titleRight = new("TextLabel",{
         AnchorPoint=Vector2.new(0,0.5),
-        Position=UDim2.new(0.5,2,0.5,0),
-        Size=UDim2.new(0,480,0,110),
+        Position=UDim2.new(0.5,1,0.5,0),
+        Size=UDim2.new(0.5,-8,1,-8),
         BackgroundTransparency=1,
         Text="",
         TextColor3=Color3.fromRGB(210,85,255),
         Font=Enum.Font.GothamBold,
-        TextSize=90,
+        TextSize=86,
         TextXAlignment=Enum.TextXAlignment.Left,
+        TextScaled=false,
         TextTransparency=0,ZIndex=5
-    }, sg)
+    }, titleBg)
 
-    -- ── Cursor line ──
+    -- ── Cursor line (อยู่ใน titleBg ด้วย — กึ่งกลางพอดี) ──
     local cursor = new("Frame",{
         AnchorPoint=Vector2.new(0.5,0.5),
         Position=UDim2.new(0.5,0,0.5,0),
-        Size=UDim2.new(0,3,0,96),
+        Size=UDim2.new(0,3,0.85,0),
         BackgroundColor3=Color3.fromRGB(240,200,255),
         BackgroundTransparency=0.1,
         BorderSizePixel=0,ZIndex=6
-    }, sg)
+    }, titleBg)
 
     -- ── Typewriter: ตัวอักษรมาทีละตัวพร้อม flash ──
     local _floating = false
@@ -634,23 +649,15 @@ local function showSplash()
         _floating = true
     end)
 
-    -- ── Float ขึ้นลงหลัง typewriter เสร็จ ──
+    -- ── Float ขึ้นลงหลัง typewriter เสร็จ (ขยับ titleBg อย่างเดียว label ตามอัตโนมัติ) ──
     task.spawn(function()
         repeat task.wait(0.1) until _floating
-        while _floating and titleLeft and titleLeft.Parent do
-            TS:Create(titleLeft,  TweenInfo.new(1.8,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),
-                {Position=UDim2.new(0.5,-2,0.5,-10)}):Play()
-            TS:Create(titleRight, TweenInfo.new(1.8,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),
-                {Position=UDim2.new(0.5, 2,0.5,-10)}):Play()
-            TS:Create(titleBg,    TweenInfo.new(1.8,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),
+        while _floating and titleBg and titleBg.Parent do
+            TS:Create(titleBg, TweenInfo.new(1.8,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),
                 {Position=UDim2.new(0.5,0,0.5,-10)}):Play()
             task.wait(1.8)
             if not _floating then break end
-            TS:Create(titleLeft,  TweenInfo.new(1.8,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),
-                {Position=UDim2.new(0.5,-2,0.5,10)}):Play()
-            TS:Create(titleRight, TweenInfo.new(1.8,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),
-                {Position=UDim2.new(0.5, 2,0.5,10)}):Play()
-            TS:Create(titleBg,    TweenInfo.new(1.8,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),
+            TS:Create(titleBg, TweenInfo.new(1.8,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),
                 {Position=UDim2.new(0.5,0,0.5,10)}):Play()
             task.wait(1.8)
         end
