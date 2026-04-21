@@ -236,8 +236,18 @@ local function showAnnounce(msg, imageId)
     new("TextLabel",{Size=UDim2.new(1,-84,0,28),Position=UDim2.new(0,74,0,10),
         BackgroundTransparency=1,Text="ANNOUNCEMENT",TextColor3=Color3.fromRGB(18,18,18),
         TextXAlignment=Enum.TextXAlignment.Left,Font=Enum.Font.GothamBold,TextSize=15,ZIndex=12}, card)
-    new("Frame",{Position=UDim2.new(0,74,0,40),Size=UDim2.new(1,-90,0,1),
-        BackgroundColor3=Color3.fromRGB(155,160,150),BackgroundTransparency=0.45,BorderSizePixel=0,ZIndex=12}, card)
+    -- Timer bar (shrinks left→right over announceDisplayTime)
+    local timerBg = new("Frame",{Position=UDim2.new(0,74,0,40),Size=UDim2.new(1,-90,0,3),
+        BackgroundColor3=Color3.fromRGB(155,160,150),BackgroundTransparency=0.6,
+        BorderSizePixel=0,ZIndex=12,ClipsDescendants=true}, card)
+    new("UICorner",{CornerRadius=UDim.new(1,0)}, timerBg)
+    local timerBar = new("Frame",{Size=UDim2.new(1,0,1,0),
+        BackgroundColor3=Color3.fromRGB(155,160,150),BackgroundTransparency=0,
+        BorderSizePixel=0,ZIndex=13}, timerBg)
+    new("UICorner",{CornerRadius=UDim.new(1,0)}, timerBar)
+    TS:Create(timerBar,
+        TweenInfo.new(CFG.announceDisplayTime, Enum.EasingStyle.Linear, Enum.EasingDirection.Out),
+        {Size=UDim2.new(0,0,1,0)}):Play()
     new("TextLabel",{Size=UDim2.new(1,-90,0,26),Position=UDim2.new(0,74,0,44),
         BackgroundTransparency=1,Text=msg,TextColor3=Color3.fromRGB(55,58,52),
         TextXAlignment=Enum.TextXAlignment.Left,Font=Enum.Font.Gotham,TextSize=13,
