@@ -5301,6 +5301,11 @@ NovaHub_MODULES[NovaHub["3e"]] = {
 				end
 			end
 
+			-- Mobile-only: Hide button จะแสดงเฉพาะบน Mobile (Touch) เท่านั้น
+			-- ถ้ารันบนคอมพิวเตอร์ (Mouse) ปุ่มนี้จะถูกซ่อนอัตโนมัติ
+			local isMobile = UIS.TouchEnabled and not UIS.MouseEnabled
+			newWindow.TopFrame.Hide.Visible = isMobile
+
 			newWindow.TopFrame.Hide.MouseButton1Click:Connect(function()
 				if not timeout then
 					timeout = true
@@ -5367,11 +5372,44 @@ NovaHub_MODULES[NovaHub["3e"]] = {
 
 			Tween(newWindow, {Size = oldWindowSize}, TweenConfigs.Global)
 
-			-- Keybind to open newWindow
+			-- Keybind to toggle UI
+			-- PC: กด ToggleKey เพื่อซ่อน/แสดง UI ทั้งหมด (รวม floating icon ด้วย ไม่เหลืออะไรบนหน้าจอ)
+			-- Mobile: ไม่ทำงาน (ใช้ปุ่ม Hide บน TopFrame แทน)
+			local fullHidden = false
 			UIS.InputBegan:Connect(function(input, gpe)
 				if not timeout and not gpe and input.KeyCode == Window.ToggleKey then
 					timeout = true
-					ToggleWindow()
+					if not isMobile then
+						-- === PC: ซ่อน/แสดง UI ทั้งหมด ไม่มี floating icon ===
+						if not fullHidden then
+							-- ซ่อนทุกอย่าง
+							oldWindowSize = newWindow.Size
+							newWindow.Tabs.Visible = false
+							newWindow.TabButtons.Visible = false
+							newWindow.DropShadow.Visible = false
+							Tween(newWindow, {Size = UDim2.fromOffset(0, 0)}, TweenConfigs.Global)
+								.Completed:Wait()
+							newWindow.Visible = false
+							newFloatingIcon.Visible = false
+							fullHidden = true
+							windowstate = false
+						else
+							-- แสดง window กลับมา
+							newFloatingIcon.Visible = false
+							newWindow.Size = UDim2.fromOffset(0, 0)
+							newWindow.Visible = true
+							newWindow.DropShadow.Visible = true
+							Tween(newWindow, {Size = oldWindowSize}, TweenConfigs.Global)
+								.Completed:Wait()
+							newWindow.Tabs.Visible = true
+							newWindow.TabButtons.Visible = true
+							fullHidden = false
+							windowstate = true
+						end
+					else
+						-- === Mobile: ใช้ ToggleWindow ปกติ (แสดง floating icon) ===
+						ToggleWindow()
+					end
 					task.delay(TweenConfigs.Global.Duration, function()
 						timeout = false
 					end)
