@@ -10,2795 +10,2795 @@
     Github: https://github.com/Footagesus/WindUI
 
 	Developed by: .chill.z. (Chillz)
-	Owned ZzzŹZZZZ
+	Owned Zzz
 
 	This User Interface is open source and for public usage.
 ]]
 
 -- Instances: 271 | Scripts: 0 | Modules: 3 | Tags: 0
-local NatHub = {};
+local NovaHub = {};
 
--- NatHub
-NatHub["1"] = Instance.new("ScreenGui");
-NatHub["1"]["Name"] = [[NatHub]];
-NatHub["1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
-NatHub["1"]["ResetOnSpawn"] = false;
+-- NovaHub
+NovaHub["1"] = Instance.new("ScreenGui");
+NovaHub["1"]["Name"] = [[NovaHub]];
+NovaHub["1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
+NovaHub["1"]["ResetOnSpawn"] = false;
 
 local cloneref = cloneref or function(...) return ... end
 
 if protect_gui then
-	protect_gui(NatHub["1"])
+	protect_gui(NovaHub["1"])
 elseif gethui then
-	NatHub["1"].Parent = gethui()
+	NovaHub["1"].Parent = gethui()
 elseif pcall(function() game.CoreGui:GetChildren() end) then
-	NatHub["1"].Parent = cloneref(game:GetService("CoreGui"))
+	NovaHub["1"].Parent = cloneref(game:GetService("CoreGui"))
 else
-	NatHub["1"].Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+	NovaHub["1"].Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 end
 
--- NatHub.Window
-NatHub["2"] = Instance.new("Frame", NatHub["1"]);
-NatHub["2"]["ZIndex"] = 0;
-NatHub["2"]["BorderSizePixel"] = 2;
-NatHub["2"]["BackgroundColor3"] = Color3.fromRGB(37, 40, 47);
-NatHub["2"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
-NatHub["2"]["Size"] = UDim2.new(0, 528, 0, 334);
-NatHub["2"]["Position"] = UDim2.new(0.5278, 0, 0.5, 0);
-NatHub["2"]["BorderColor3"] = Color3.fromRGB(61, 61, 75);
-NatHub["2"]["Name"] = [[Window]];
+-- NovaHub.Window
+NovaHub["2"] = Instance.new("Frame", NovaHub["1"]);
+NovaHub["2"]["ZIndex"] = 0;
+NovaHub["2"]["BorderSizePixel"] = 2;
+NovaHub["2"]["BackgroundColor3"] = Color3.fromRGB(37, 40, 47);
+NovaHub["2"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
+NovaHub["2"]["Size"] = UDim2.new(0, 528, 0, 334);
+NovaHub["2"]["Position"] = UDim2.new(0.5278, 0, 0.5, 0);
+NovaHub["2"]["BorderColor3"] = Color3.fromRGB(61, 61, 75);
+NovaHub["2"]["Name"] = [[Window]];
 
 
--- NatHub.Window.UICorner
-NatHub["3"] = Instance.new("UICorner", NatHub["2"]);
-NatHub["3"]["CornerRadius"] = UDim.new(0, 10);
+-- NovaHub.Window.UICorner
+NovaHub["3"] = Instance.new("UICorner", NovaHub["2"]);
+NovaHub["3"]["CornerRadius"] = UDim.new(0, 10);
 
 
--- NatHub.Window.DropdownSelection
-NatHub["4"] = Instance.new("Frame", NatHub["2"]);
-NatHub["4"]["Visible"] = false;
-NatHub["4"]["ZIndex"] = 4;
-NatHub["4"]["BorderSizePixel"] = 0;
-NatHub["4"]["BackgroundColor3"] = Color3.fromRGB(32, 35, 41);
-NatHub["4"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
-NatHub["4"]["ClipsDescendants"] = true;
-NatHub["4"]["Size"] = UDim2.new(0.7281, 0, 0.68367, 0);
-NatHub["4"]["Position"] = UDim2.new(0.5, 0, 0.5, 0);
-NatHub["4"]["BorderColor3"] = Color3.fromRGB(61, 61, 75);
-NatHub["4"]["Name"] = [[DropdownSelection]];
+-- NovaHub.Window.DropdownSelection
+NovaHub["4"] = Instance.new("Frame", NovaHub["2"]);
+NovaHub["4"]["Visible"] = false;
+NovaHub["4"]["ZIndex"] = 4;
+NovaHub["4"]["BorderSizePixel"] = 0;
+NovaHub["4"]["BackgroundColor3"] = Color3.fromRGB(32, 35, 41);
+NovaHub["4"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
+NovaHub["4"]["ClipsDescendants"] = true;
+NovaHub["4"]["Size"] = UDim2.new(0.7281, 0, 0.68367, 0);
+NovaHub["4"]["Position"] = UDim2.new(0.5, 0, 0.5, 0);
+NovaHub["4"]["BorderColor3"] = Color3.fromRGB(61, 61, 75);
+NovaHub["4"]["Name"] = [[DropdownSelection]];
 
 
--- NatHub.Window.DropdownSelection.UICorner
-NatHub["5"] = Instance.new("UICorner", NatHub["4"]);
-NatHub["5"]["CornerRadius"] = UDim.new(0, 6);
+-- NovaHub.Window.DropdownSelection.UICorner
+NovaHub["5"] = Instance.new("UICorner", NovaHub["4"]);
+NovaHub["5"]["CornerRadius"] = UDim.new(0, 6);
 
 
--- NatHub.Window.DropdownSelection.UIStroke
-NatHub["6"] = Instance.new("UIStroke", NatHub["4"]);
-NatHub["6"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
-NatHub["6"]["Thickness"] = 1.5;
-NatHub["6"]["Color"] = Color3.fromRGB(61, 61, 75);
+-- NovaHub.Window.DropdownSelection.UIStroke
+NovaHub["6"] = Instance.new("UIStroke", NovaHub["4"]);
+NovaHub["6"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+NovaHub["6"]["Thickness"] = 1.5;
+NovaHub["6"]["Color"] = Color3.fromRGB(61, 61, 75);
 
 
--- NatHub.Window.DropdownSelection.TopBar
-NatHub["7"] = Instance.new("Frame", NatHub["4"]);
-NatHub["7"]["BorderSizePixel"] = 0;
-NatHub["7"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["7"]["Size"] = UDim2.new(1, 0, 0, 50);
-NatHub["7"]["Position"] = UDim2.new(0, 0, 0, 0);
-NatHub["7"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["7"]["Name"] = [[TopBar]];
-NatHub["7"]["BackgroundTransparency"] = 1;
+-- NovaHub.Window.DropdownSelection.TopBar
+NovaHub["7"] = Instance.new("Frame", NovaHub["4"]);
+NovaHub["7"]["BorderSizePixel"] = 0;
+NovaHub["7"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["7"]["Size"] = UDim2.new(1, 0, 0, 50);
+NovaHub["7"]["Position"] = UDim2.new(0, 0, 0, 0);
+NovaHub["7"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["7"]["Name"] = [[TopBar]];
+NovaHub["7"]["BackgroundTransparency"] = 1;
 
 
--- NatHub.Window.DropdownSelection.TopBar.BoxFrame
-NatHub["8"] = Instance.new("Frame", NatHub["7"]);
-NatHub["8"]["BorderSizePixel"] = 0;
-NatHub["8"]["AnchorPoint"] = Vector2.new(1, 0.5);
-NatHub["8"]["Size"] = UDim2.new(0, 120, 0, 25);
-NatHub["8"]["Position"] = UDim2.new(1, -50, 0.5, 0);
-NatHub["8"]["Name"] = [[BoxFrame]];
-NatHub["8"]["BackgroundTransparency"] = 1;
+-- NovaHub.Window.DropdownSelection.TopBar.BoxFrame
+NovaHub["8"] = Instance.new("Frame", NovaHub["7"]);
+NovaHub["8"]["BorderSizePixel"] = 0;
+NovaHub["8"]["AnchorPoint"] = Vector2.new(1, 0.5);
+NovaHub["8"]["Size"] = UDim2.new(0, 120, 0, 25);
+NovaHub["8"]["Position"] = UDim2.new(1, -50, 0.5, 0);
+NovaHub["8"]["Name"] = [[BoxFrame]];
+NovaHub["8"]["BackgroundTransparency"] = 1;
 
 
--- NatHub.Window.DropdownSelection.TopBar.BoxFrame.DropShadow
-NatHub["9"] = Instance.new("ImageLabel", NatHub["8"]);
-NatHub["9"]["ZIndex"] = 0;
-NatHub["9"]["BorderSizePixel"] = 0;
-NatHub["9"]["SliceCenter"] = Rect.new(49, 49, 450, 450);
-NatHub["9"]["ScaleType"] = Enum.ScaleType.Slice;
-NatHub["9"]["ImageTransparency"] = 0.75;
+-- NovaHub.Window.DropdownSelection.TopBar.BoxFrame.DropShadow
+NovaHub["9"] = Instance.new("ImageLabel", NovaHub["8"]);
+NovaHub["9"]["ZIndex"] = 0;
+NovaHub["9"]["BorderSizePixel"] = 0;
+NovaHub["9"]["SliceCenter"] = Rect.new(49, 49, 450, 450);
+NovaHub["9"]["ScaleType"] = Enum.ScaleType.Slice;
+NovaHub["9"]["ImageTransparency"] = 0.75;
 -- [ERROR] cannot convert ImageContent, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
-NatHub["9"]["ImageColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["9"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
-NatHub["9"]["Image"] = [[rbxassetid://6014261993]];
-NatHub["9"]["Size"] = UDim2.new(1, 30, 1, 30);
-NatHub["9"]["BackgroundTransparency"] = 1;
-NatHub["9"]["Name"] = [[DropShadow]];
-NatHub["9"]["Position"] = UDim2.new(0.5, 0, 0.5, 0);
+NovaHub["9"]["ImageColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["9"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
+NovaHub["9"]["Image"] = [[rbxassetid://6014261993]];
+NovaHub["9"]["Size"] = UDim2.new(1, 30, 1, 30);
+NovaHub["9"]["BackgroundTransparency"] = 1;
+NovaHub["9"]["Name"] = [[DropShadow]];
+NovaHub["9"]["Position"] = UDim2.new(0.5, 0, 0.5, 0);
 
 
--- NatHub.Window.DropdownSelection.TopBar.BoxFrame.Frame
-NatHub["a"] = Instance.new("Frame", NatHub["8"]);
-NatHub["a"]["BorderSizePixel"] = 0;
-NatHub["a"]["BackgroundColor3"] = Color3.fromRGB(43, 46, 53);
-NatHub["a"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["a"]["Size"] = UDim2.new(1, 0, 1, 0);
-NatHub["a"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+-- NovaHub.Window.DropdownSelection.TopBar.BoxFrame.Frame
+NovaHub["a"] = Instance.new("Frame", NovaHub["8"]);
+NovaHub["a"]["BorderSizePixel"] = 0;
+NovaHub["a"]["BackgroundColor3"] = Color3.fromRGB(43, 46, 53);
+NovaHub["a"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["a"]["Size"] = UDim2.new(1, 0, 1, 0);
+NovaHub["a"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
 
 
--- NatHub.Window.DropdownSelection.TopBar.BoxFrame.Frame.UICorner
-NatHub["b"] = Instance.new("UICorner", NatHub["a"]);
-NatHub["b"]["CornerRadius"] = UDim.new(0, 5);
+-- NovaHub.Window.DropdownSelection.TopBar.BoxFrame.Frame.UICorner
+NovaHub["b"] = Instance.new("UICorner", NovaHub["a"]);
+NovaHub["b"]["CornerRadius"] = UDim.new(0, 5);
 
 
--- NatHub.Window.DropdownSelection.TopBar.BoxFrame.Frame.UIStroke
-NatHub["c"] = Instance.new("UIStroke", NatHub["a"]);
-NatHub["c"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
-NatHub["c"]["Thickness"] = 1.5;
-NatHub["c"]["Color"] = Color3.fromRGB(61, 61, 75);
+-- NovaHub.Window.DropdownSelection.TopBar.BoxFrame.Frame.UIStroke
+NovaHub["c"] = Instance.new("UIStroke", NovaHub["a"]);
+NovaHub["c"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+NovaHub["c"]["Thickness"] = 1.5;
+NovaHub["c"]["Color"] = Color3.fromRGB(61, 61, 75);
 
 
--- NatHub.Window.DropdownSelection.TopBar.BoxFrame.Frame.TextBox
-NatHub["d"] = Instance.new("TextBox", NatHub["a"]);
-NatHub["d"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-NatHub["d"]["BorderSizePixel"] = 0;
-NatHub["d"]["TextWrapped"] = true;
-NatHub["d"]["TextTruncate"] = Enum.TextTruncate.AtEnd;
-NatHub["d"]["TextSize"] = 14;
-NatHub["d"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["d"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["d"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Medium, Enum.FontStyle.Normal);
-NatHub["d"]["ClipsDescendants"] = true;
-NatHub["d"]["PlaceholderText"] = [[Input here...]];
-NatHub["d"]["Size"] = UDim2.new(1, -25, 1, 0);
-NatHub["d"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["d"]["Text"] = [[]];
-NatHub["d"]["BackgroundTransparency"] = 1;
+-- NovaHub.Window.DropdownSelection.TopBar.BoxFrame.Frame.TextBox
+NovaHub["d"] = Instance.new("TextBox", NovaHub["a"]);
+NovaHub["d"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+NovaHub["d"]["BorderSizePixel"] = 0;
+NovaHub["d"]["TextWrapped"] = true;
+NovaHub["d"]["TextTruncate"] = Enum.TextTruncate.AtEnd;
+NovaHub["d"]["TextSize"] = 14;
+NovaHub["d"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["d"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["d"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Medium, Enum.FontStyle.Normal);
+NovaHub["d"]["ClipsDescendants"] = true;
+NovaHub["d"]["PlaceholderText"] = [[Input here...]];
+NovaHub["d"]["Size"] = UDim2.new(1, -25, 1, 0);
+NovaHub["d"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["d"]["Text"] = [[]];
+NovaHub["d"]["BackgroundTransparency"] = 1;
 
 
--- NatHub.Window.DropdownSelection.TopBar.BoxFrame.Frame.TextBox.UIPadding
-NatHub["e"] = Instance.new("UIPadding", NatHub["d"]);
-NatHub["e"]["PaddingTop"] = UDim.new(0, 10);
-NatHub["e"]["PaddingRight"] = UDim.new(0, 10);
-NatHub["e"]["PaddingLeft"] = UDim.new(0, 10);
-NatHub["e"]["PaddingBottom"] = UDim.new(0, 10);
+-- NovaHub.Window.DropdownSelection.TopBar.BoxFrame.Frame.TextBox.UIPadding
+NovaHub["e"] = Instance.new("UIPadding", NovaHub["d"]);
+NovaHub["e"]["PaddingTop"] = UDim.new(0, 10);
+NovaHub["e"]["PaddingRight"] = UDim.new(0, 10);
+NovaHub["e"]["PaddingLeft"] = UDim.new(0, 10);
+NovaHub["e"]["PaddingBottom"] = UDim.new(0, 10);
 
 
--- NatHub.Window.DropdownSelection.TopBar.BoxFrame.Frame.ImageButton
-NatHub["f"] = Instance.new("ImageButton", NatHub["a"]);
-NatHub["f"]["BorderSizePixel"] = 0;
-NatHub["f"]["BackgroundTransparency"] = 1;
+-- NovaHub.Window.DropdownSelection.TopBar.BoxFrame.Frame.ImageButton
+NovaHub["f"] = Instance.new("ImageButton", NovaHub["a"]);
+NovaHub["f"]["BorderSizePixel"] = 0;
+NovaHub["f"]["BackgroundTransparency"] = 1;
 -- [ERROR] cannot convert ImageContent, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
-NatHub["f"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["f"]["ImageColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["f"]["AnchorPoint"] = Vector2.new(1, 0.5);
-NatHub["f"]["Image"] = [[rbxassetid://86928976705683]];
-NatHub["f"]["Size"] = UDim2.new(0, 15, 0, 15);
-NatHub["f"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["f"]["Position"] = UDim2.new(1, -5, 0.5, 0);
+NovaHub["f"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["f"]["ImageColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["f"]["AnchorPoint"] = Vector2.new(1, 0.5);
+NovaHub["f"]["Image"] = [[rbxassetid://86928976705683]];
+NovaHub["f"]["Size"] = UDim2.new(0, 15, 0, 15);
+NovaHub["f"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["f"]["Position"] = UDim2.new(1, -5, 0.5, 0);
 
 
--- NatHub.Window.DropdownSelection.TopBar.Close
-NatHub["10"] = Instance.new("ImageButton", NatHub["7"]);
-NatHub["10"]["BorderSizePixel"] = 0;
-NatHub["10"]["BackgroundTransparency"] = 1;
+-- NovaHub.Window.DropdownSelection.TopBar.Close
+NovaHub["10"] = Instance.new("ImageButton", NovaHub["7"]);
+NovaHub["10"]["BorderSizePixel"] = 0;
+NovaHub["10"]["BackgroundTransparency"] = 1;
 -- [ERROR] cannot convert ImageContent, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
-NatHub["10"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["10"]["ImageColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["10"]["ZIndex"] = 0;
-NatHub["10"]["AnchorPoint"] = Vector2.new(1, 0.5);
-NatHub["10"]["Image"] = [[rbxassetid://132453323679056]];
-NatHub["10"]["Size"] = UDim2.new(0, 25, 0, 25);
-NatHub["10"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["10"]["Name"] = [[Close]];
-NatHub["10"]["Position"] = UDim2.new(1, -12, 0.5, 0);
+NovaHub["10"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["10"]["ImageColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["10"]["ZIndex"] = 0;
+NovaHub["10"]["AnchorPoint"] = Vector2.new(1, 0.5);
+NovaHub["10"]["Image"] = [[rbxassetid://132453323679056]];
+NovaHub["10"]["Size"] = UDim2.new(0, 25, 0, 25);
+NovaHub["10"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["10"]["Name"] = [[Close]];
+NovaHub["10"]["Position"] = UDim2.new(1, -12, 0.5, 0);
 
 
--- NatHub.Window.DropdownSelection.TopBar.Title
-NatHub["11"] = Instance.new("TextLabel", NatHub["7"]);
-NatHub["11"]["TextWrapped"] = true;
-NatHub["11"]["Interactable"] = false;
-NatHub["11"]["ZIndex"] = 0;
-NatHub["11"]["BorderSizePixel"] = 0;
-NatHub["11"]["TextSize"] = 18;
-NatHub["11"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-NatHub["11"]["TextScaled"] = true;
-NatHub["11"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["11"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-NatHub["11"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["11"]["BackgroundTransparency"] = 1;
-NatHub["11"]["AnchorPoint"] = Vector2.new(0, 0.5);
-NatHub["11"]["Size"] = UDim2.new(0.5, 0, 0, 18);
-NatHub["11"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["11"]["Text"] = [[Dropdown]];
-NatHub["11"]["Name"] = [[Title]];
-NatHub["11"]["Position"] = UDim2.new(0, 12, 0.5, 0);
+-- NovaHub.Window.DropdownSelection.TopBar.Title
+NovaHub["11"] = Instance.new("TextLabel", NovaHub["7"]);
+NovaHub["11"]["TextWrapped"] = true;
+NovaHub["11"]["Interactable"] = false;
+NovaHub["11"]["ZIndex"] = 0;
+NovaHub["11"]["BorderSizePixel"] = 0;
+NovaHub["11"]["TextSize"] = 18;
+NovaHub["11"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+NovaHub["11"]["TextScaled"] = true;
+NovaHub["11"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["11"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+NovaHub["11"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["11"]["BackgroundTransparency"] = 1;
+NovaHub["11"]["AnchorPoint"] = Vector2.new(0, 0.5);
+NovaHub["11"]["Size"] = UDim2.new(0.5, 0, 0, 18);
+NovaHub["11"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["11"]["Text"] = [[Dropdown]];
+NovaHub["11"]["Name"] = [[Title]];
+NovaHub["11"]["Position"] = UDim2.new(0, 12, 0.5, 0);
 
 
--- NatHub.Window.DropdownSelection.Dropdowns
-NatHub["12"] = Instance.new("Folder", NatHub["4"]);
-NatHub["12"]["Name"] = [[Dropdowns]];
+-- NovaHub.Window.DropdownSelection.Dropdowns
+NovaHub["12"] = Instance.new("Folder", NovaHub["4"]);
+NovaHub["12"]["Name"] = [[Dropdowns]];
 
 
--- NatHub.Window.TabButtons
-NatHub["13"] = Instance.new("Frame", NatHub["2"]);
-NatHub["13"]["BorderSizePixel"] = 0;
-NatHub["13"]["BackgroundColor3"] = Color3.fromRGB(37, 40, 47);
-NatHub["13"]["ClipsDescendants"] = true;
-NatHub["13"]["Size"] = UDim2.new(0, 165, 1, -35);
-NatHub["13"]["Position"] = UDim2.new(0, 0, 0, 35);
-NatHub["13"]["BorderColor3"] = Color3.fromRGB(61, 61, 75);
-NatHub["13"]["Name"] = [[TabButtons]];
-NatHub["13"]["SelectionGroup"] = true;
+-- NovaHub.Window.TabButtons
+NovaHub["13"] = Instance.new("Frame", NovaHub["2"]);
+NovaHub["13"]["BorderSizePixel"] = 0;
+NovaHub["13"]["BackgroundColor3"] = Color3.fromRGB(37, 40, 47);
+NovaHub["13"]["ClipsDescendants"] = true;
+NovaHub["13"]["Size"] = UDim2.new(0, 165, 1, -35);
+NovaHub["13"]["Position"] = UDim2.new(0, 0, 0, 35);
+NovaHub["13"]["BorderColor3"] = Color3.fromRGB(61, 61, 75);
+NovaHub["13"]["Name"] = [[TabButtons]];
+NovaHub["13"]["SelectionGroup"] = true;
 
 
--- NatHub.Window.TabButtons.Lists
-NatHub["14"] = Instance.new("ScrollingFrame", NatHub["13"]);
-NatHub["14"]["Active"] = true;
-NatHub["14"]["ScrollingDirection"] = Enum.ScrollingDirection.Y;
-NatHub["14"]["BorderSizePixel"] = 0;
-NatHub["14"]["CanvasSize"] = UDim2.new(0, 0, 0, 0);
-NatHub["14"]["ElasticBehavior"] = Enum.ElasticBehavior.Never;
-NatHub["14"]["TopImage"] = [[rbxasset://textures/ui/Scroll/scroll-middle.png]];
-NatHub["14"]["BackgroundColor3"] = Color3.fromRGB(37, 40, 47);
-NatHub["14"]["Name"] = [[Lists]];
-NatHub["14"]["Selectable"] = false;
-NatHub["14"]["BottomImage"] = [[rbxasset://textures/ui/Scroll/scroll-middle.png]];
-NatHub["14"]["AutomaticCanvasSize"] = Enum.AutomaticSize.Y;
-NatHub["14"]["Size"] = UDim2.new(1, 0, 1, 0);
-NatHub["14"]["BorderColor3"] = Color3.fromRGB(61, 61, 75);
-NatHub["14"]["ScrollBarThickness"] = 4;
-NatHub["14"]["BackgroundTransparency"] = 1;
+-- NovaHub.Window.TabButtons.Lists
+NovaHub["14"] = Instance.new("ScrollingFrame", NovaHub["13"]);
+NovaHub["14"]["Active"] = true;
+NovaHub["14"]["ScrollingDirection"] = Enum.ScrollingDirection.Y;
+NovaHub["14"]["BorderSizePixel"] = 0;
+NovaHub["14"]["CanvasSize"] = UDim2.new(0, 0, 0, 0);
+NovaHub["14"]["ElasticBehavior"] = Enum.ElasticBehavior.Never;
+NovaHub["14"]["TopImage"] = [[rbxasset://textures/ui/Scroll/scroll-middle.png]];
+NovaHub["14"]["BackgroundColor3"] = Color3.fromRGB(37, 40, 47);
+NovaHub["14"]["Name"] = [[Lists]];
+NovaHub["14"]["Selectable"] = false;
+NovaHub["14"]["BottomImage"] = [[rbxasset://textures/ui/Scroll/scroll-middle.png]];
+NovaHub["14"]["AutomaticCanvasSize"] = Enum.AutomaticSize.Y;
+NovaHub["14"]["Size"] = UDim2.new(1, 0, 1, 0);
+NovaHub["14"]["BorderColor3"] = Color3.fromRGB(61, 61, 75);
+NovaHub["14"]["ScrollBarThickness"] = 4;
+NovaHub["14"]["BackgroundTransparency"] = 1;
 
 
--- NatHub.Window.TabButtons.Lists.UIListLayout
-NatHub["15"] = Instance.new("UIListLayout", NatHub["14"]);
-NatHub["15"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
+-- NovaHub.Window.TabButtons.Lists.UIListLayout
+NovaHub["15"] = Instance.new("UIListLayout", NovaHub["14"]);
+NovaHub["15"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
 
 
--- NatHub.Window.TabButtons.Lists.TabButton
-NatHub["16"] = Instance.new("Frame", NatHub["14"]);
-NatHub["16"]["Visible"] = false;
-NatHub["16"]["BorderSizePixel"] = 0;
-NatHub["16"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["16"]["Size"] = UDim2.new(1, 0, 0, 36);
-NatHub["16"]["Position"] = UDim2.new(-0.0375, 0, 0.38434, 0);
-NatHub["16"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["16"]["Name"] = [[TabButton]];
-NatHub["16"]["BackgroundTransparency"] = 1;
+-- NovaHub.Window.TabButtons.Lists.TabButton
+NovaHub["16"] = Instance.new("Frame", NovaHub["14"]);
+NovaHub["16"]["Visible"] = false;
+NovaHub["16"]["BorderSizePixel"] = 0;
+NovaHub["16"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["16"]["Size"] = UDim2.new(1, 0, 0, 36);
+NovaHub["16"]["Position"] = UDim2.new(-0.0375, 0, 0.38434, 0);
+NovaHub["16"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["16"]["Name"] = [[TabButton]];
+NovaHub["16"]["BackgroundTransparency"] = 1;
 
 
--- NatHub.Window.TabButtons.Lists.TabButton.Bar
-NatHub["17"] = Instance.new("Frame", NatHub["16"]);
-NatHub["17"]["BorderSizePixel"] = 0;
-NatHub["17"]["BackgroundColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["17"]["AnchorPoint"] = Vector2.new(0, 0.5);
-NatHub["17"]["Size"] = UDim2.new(0, 5, 0, 25);
-NatHub["17"]["Position"] = UDim2.new(0, 8, 0, 18);
-NatHub["17"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["17"]["Name"] = [[Bar]];
+-- NovaHub.Window.TabButtons.Lists.TabButton.Bar
+NovaHub["17"] = Instance.new("Frame", NovaHub["16"]);
+NovaHub["17"]["BorderSizePixel"] = 0;
+NovaHub["17"]["BackgroundColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["17"]["AnchorPoint"] = Vector2.new(0, 0.5);
+NovaHub["17"]["Size"] = UDim2.new(0, 5, 0, 25);
+NovaHub["17"]["Position"] = UDim2.new(0, 8, 0, 18);
+NovaHub["17"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["17"]["Name"] = [[Bar]];
 
 
--- NatHub.Window.TabButtons.Lists.TabButton.Bar.UIGradient
-NatHub["18"] = Instance.new("UIGradient", NatHub["17"]);
-NatHub["18"]["Enabled"] = false;
-NatHub["18"]["Rotation"] = 90;
-NatHub["18"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(110, 212, 255)),ColorSequenceKeypoint.new(0.978, Color3.fromRGB(0, 124, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 218, 255))};
+-- NovaHub.Window.TabButtons.Lists.TabButton.Bar.UIGradient
+NovaHub["18"] = Instance.new("UIGradient", NovaHub["17"]);
+NovaHub["18"]["Enabled"] = false;
+NovaHub["18"]["Rotation"] = 90;
+NovaHub["18"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(110, 212, 255)),ColorSequenceKeypoint.new(0.978, Color3.fromRGB(0, 124, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 218, 255))};
 
 
--- NatHub.Window.TabButtons.Lists.TabButton.Bar.UICorner
-NatHub["19"] = Instance.new("UICorner", NatHub["17"]);
-NatHub["19"]["CornerRadius"] = UDim.new(0, 100);
+-- NovaHub.Window.TabButtons.Lists.TabButton.Bar.UICorner
+NovaHub["19"] = Instance.new("UICorner", NovaHub["17"]);
+NovaHub["19"]["CornerRadius"] = UDim.new(0, 100);
 
 
--- NatHub.Window.TabButtons.Lists.TabButton.ImageButton
-NatHub["1a"] = Instance.new("ImageButton", NatHub["16"]);
-NatHub["1a"]["BorderSizePixel"] = 0;
-NatHub["1a"]["BackgroundTransparency"] = 1;
+-- NovaHub.Window.TabButtons.Lists.TabButton.ImageButton
+NovaHub["1a"] = Instance.new("ImageButton", NovaHub["16"]);
+NovaHub["1a"]["BorderSizePixel"] = 0;
+NovaHub["1a"]["BackgroundTransparency"] = 1;
 -- [ERROR] cannot convert ImageContent, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
-NatHub["1a"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["1a"]["ImageColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["1a"]["AnchorPoint"] = Vector2.new(0, 0.5);
-NatHub["1a"]["Image"] = [[rbxassetid://113216930555884]];
-NatHub["1a"]["Size"] = UDim2.new(0, 31, 0, 30);
-NatHub["1a"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["1a"]["Position"] = UDim2.new(0, 21, 0, 18);
+NovaHub["1a"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["1a"]["ImageColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["1a"]["AnchorPoint"] = Vector2.new(0, 0.5);
+NovaHub["1a"]["Image"] = [[rbxassetid://113216930555884]];
+NovaHub["1a"]["Size"] = UDim2.new(0, 31, 0, 30);
+NovaHub["1a"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["1a"]["Position"] = UDim2.new(0, 21, 0, 18);
 
 
--- NatHub.Window.TabButtons.Lists.TabButton.ImageButton.UIAspectRatioConstraint
-NatHub["1b"] = Instance.new("UIAspectRatioConstraint", NatHub["1a"]);
+-- NovaHub.Window.TabButtons.Lists.TabButton.ImageButton.UIAspectRatioConstraint
+NovaHub["1b"] = Instance.new("UIAspectRatioConstraint", NovaHub["1a"]);
 
 
 
--- NatHub.Window.TabButtons.Lists.TabButton.TextLabel
-NatHub["1c"] = Instance.new("TextLabel", NatHub["16"]);
-NatHub["1c"]["TextWrapped"] = true;
-NatHub["1c"]["BorderSizePixel"] = 0;
-NatHub["1c"]["TextSize"] = 14;
-NatHub["1c"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-NatHub["1c"]["TextScaled"] = true;
-NatHub["1c"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["1c"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-NatHub["1c"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["1c"]["BackgroundTransparency"] = 1;
-NatHub["1c"]["AnchorPoint"] = Vector2.new(0, 0.5);
-NatHub["1c"]["Size"] = UDim2.new(0, 88, 0, 16);
-NatHub["1c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["1c"]["Text"] = [[NatHub]];
-NatHub["1c"]["Position"] = UDim2.new(0, 57, 0.5, 0);
+-- NovaHub.Window.TabButtons.Lists.TabButton.TextLabel
+NovaHub["1c"] = Instance.new("TextLabel", NovaHub["16"]);
+NovaHub["1c"]["TextWrapped"] = true;
+NovaHub["1c"]["BorderSizePixel"] = 0;
+NovaHub["1c"]["TextSize"] = 14;
+NovaHub["1c"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+NovaHub["1c"]["TextScaled"] = true;
+NovaHub["1c"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["1c"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+NovaHub["1c"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["1c"]["BackgroundTransparency"] = 1;
+NovaHub["1c"]["AnchorPoint"] = Vector2.new(0, 0.5);
+NovaHub["1c"]["Size"] = UDim2.new(0, 88, 0, 16);
+NovaHub["1c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["1c"]["Text"] = [[NovaHub]];
+NovaHub["1c"]["Position"] = UDim2.new(0, 57, 0.5, 0);
 
 
--- NatHub.Window.TabButtons.Lists.UIPadding
-NatHub["1d"] = Instance.new("UIPadding", NatHub["14"]);
-NatHub["1d"]["PaddingTop"] = UDim.new(0, 8);
+-- NovaHub.Window.TabButtons.Lists.UIPadding
+NovaHub["1d"] = Instance.new("UIPadding", NovaHub["14"]);
+NovaHub["1d"]["PaddingTop"] = UDim.new(0, 8);
 
 
--- NatHub.Window.TabButtons.Lists.Divider
-NatHub["1e"] = Instance.new("Frame", NatHub["14"]);
-NatHub["1e"]["Visible"] = false;
-NatHub["1e"]["BorderSizePixel"] = 0;
-NatHub["1e"]["BackgroundColor3"] = Color3.fromRGB(61, 61, 75);
-NatHub["1e"]["Size"] = UDim2.new(1, 0, 0, 1);
-NatHub["1e"]["BorderColor3"] = Color3.fromRGB(61, 61, 75);
-NatHub["1e"]["Name"] = [[Divider]];
+-- NovaHub.Window.TabButtons.Lists.Divider
+NovaHub["1e"] = Instance.new("Frame", NovaHub["14"]);
+NovaHub["1e"]["Visible"] = false;
+NovaHub["1e"]["BorderSizePixel"] = 0;
+NovaHub["1e"]["BackgroundColor3"] = Color3.fromRGB(61, 61, 75);
+NovaHub["1e"]["Size"] = UDim2.new(1, 0, 0, 1);
+NovaHub["1e"]["BorderColor3"] = Color3.fromRGB(61, 61, 75);
+NovaHub["1e"]["Name"] = [[Divider]];
 
 
--- NatHub.Window.TabButtons.Lists.TabButton
-NatHub["1f"] = Instance.new("ImageButton", NatHub["14"]);
-NatHub["1f"]["Active"] = false;
-NatHub["1f"]["BorderSizePixel"] = 0;
-NatHub["1f"]["AutoButtonColor"] = false;
-NatHub["1f"]["Visible"] = false;
-NatHub["1f"]["BackgroundTransparency"] = 1;
-NatHub["1f"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["1f"]["Selectable"] = false;
-NatHub["1f"]["Size"] = UDim2.new(1, 0, 0, 36);
-NatHub["1f"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["1f"]["Name"] = [[TabButton]];
+-- NovaHub.Window.TabButtons.Lists.TabButton
+NovaHub["1f"] = Instance.new("ImageButton", NovaHub["14"]);
+NovaHub["1f"]["Active"] = false;
+NovaHub["1f"]["BorderSizePixel"] = 0;
+NovaHub["1f"]["AutoButtonColor"] = false;
+NovaHub["1f"]["Visible"] = false;
+NovaHub["1f"]["BackgroundTransparency"] = 1;
+NovaHub["1f"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["1f"]["Selectable"] = false;
+NovaHub["1f"]["Size"] = UDim2.new(1, 0, 0, 36);
+NovaHub["1f"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["1f"]["Name"] = [[TabButton]];
 
 
--- NatHub.Window.TabButtons.Lists.TabButton.ImageButton
-NatHub["20"] = Instance.new("ImageButton", NatHub["1f"]);
-NatHub["20"]["BorderSizePixel"] = 0;
-NatHub["20"]["ImageTransparency"] = 0.5;
-NatHub["20"]["BackgroundTransparency"] = 1;
+-- NovaHub.Window.TabButtons.Lists.TabButton.ImageButton
+NovaHub["20"] = Instance.new("ImageButton", NovaHub["1f"]);
+NovaHub["20"]["BorderSizePixel"] = 0;
+NovaHub["20"]["ImageTransparency"] = 0.5;
+NovaHub["20"]["BackgroundTransparency"] = 1;
 -- [ERROR] cannot convert ImageContent, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
-NatHub["20"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["20"]["ImageColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["20"]["AnchorPoint"] = Vector2.new(0, 0.5);
-NatHub["20"]["Image"] = [[rbxassetid://113216930555884]];
-NatHub["20"]["Size"] = UDim2.new(0, 31, 0, 30);
-NatHub["20"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["20"]["Position"] = UDim2.new(0, 6, 0, 18);
+NovaHub["20"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["20"]["ImageColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["20"]["AnchorPoint"] = Vector2.new(0, 0.5);
+NovaHub["20"]["Image"] = [[rbxassetid://113216930555884]];
+NovaHub["20"]["Size"] = UDim2.new(0, 31, 0, 30);
+NovaHub["20"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["20"]["Position"] = UDim2.new(0, 6, 0, 18);
 
 
--- NatHub.Window.TabButtons.Lists.TabButton.ImageButton.UIAspectRatioConstraint
-NatHub["21"] = Instance.new("UIAspectRatioConstraint", NatHub["20"]);
+-- NovaHub.Window.TabButtons.Lists.TabButton.ImageButton.UIAspectRatioConstraint
+NovaHub["21"] = Instance.new("UIAspectRatioConstraint", NovaHub["20"]);
 
 
 
--- NatHub.Window.TabButtons.Lists.TabButton.TextLabel
-NatHub["22"] = Instance.new("TextLabel", NatHub["1f"]);
-NatHub["22"]["TextWrapped"] = true;
-NatHub["22"]["BorderSizePixel"] = 0;
-NatHub["22"]["TextSize"] = 14;
-NatHub["22"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-NatHub["22"]["TextTransparency"] = 0.5;
-NatHub["22"]["TextScaled"] = true;
-NatHub["22"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["22"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Medium, Enum.FontStyle.Normal);
-NatHub["22"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["22"]["BackgroundTransparency"] = 1;
-NatHub["22"]["AnchorPoint"] = Vector2.new(0, 0.5);
-NatHub["22"]["Size"] = UDim2.new(0, 103, 0, 16);
-NatHub["22"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["22"]["Text"] = [[NatHub]];
-NatHub["22"]["Position"] = UDim2.new(0, 42, 0.5, 0);
+-- NovaHub.Window.TabButtons.Lists.TabButton.TextLabel
+NovaHub["22"] = Instance.new("TextLabel", NovaHub["1f"]);
+NovaHub["22"]["TextWrapped"] = true;
+NovaHub["22"]["BorderSizePixel"] = 0;
+NovaHub["22"]["TextSize"] = 14;
+NovaHub["22"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+NovaHub["22"]["TextTransparency"] = 0.5;
+NovaHub["22"]["TextScaled"] = true;
+NovaHub["22"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["22"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Medium, Enum.FontStyle.Normal);
+NovaHub["22"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["22"]["BackgroundTransparency"] = 1;
+NovaHub["22"]["AnchorPoint"] = Vector2.new(0, 0.5);
+NovaHub["22"]["Size"] = UDim2.new(0, 103, 0, 16);
+NovaHub["22"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["22"]["Text"] = [[NovaHub]];
+NovaHub["22"]["Position"] = UDim2.new(0, 42, 0.5, 0);
 
 
--- NatHub.Window.TabButtons.Lists.TabButton.Bar
-NatHub["23"] = Instance.new("Frame", NatHub["1f"]);
-NatHub["23"]["BorderSizePixel"] = 0;
-NatHub["23"]["BackgroundColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["23"]["AnchorPoint"] = Vector2.new(0, 0.5);
-NatHub["23"]["Size"] = UDim2.new(0, 5, 0, 0);
-NatHub["23"]["Position"] = UDim2.new(0, 8, 0, 18);
-NatHub["23"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["23"]["Name"] = [[Bar]];
-NatHub["23"]["BackgroundTransparency"] = 1;
+-- NovaHub.Window.TabButtons.Lists.TabButton.Bar
+NovaHub["23"] = Instance.new("Frame", NovaHub["1f"]);
+NovaHub["23"]["BorderSizePixel"] = 0;
+NovaHub["23"]["BackgroundColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["23"]["AnchorPoint"] = Vector2.new(0, 0.5);
+NovaHub["23"]["Size"] = UDim2.new(0, 5, 0, 0);
+NovaHub["23"]["Position"] = UDim2.new(0, 8, 0, 18);
+NovaHub["23"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["23"]["Name"] = [[Bar]];
+NovaHub["23"]["BackgroundTransparency"] = 1;
 
 
--- NatHub.Window.TabButtons.Lists.TabButton.Bar.UICorner
-NatHub["24"] = Instance.new("UICorner", NatHub["23"]);
-NatHub["24"]["CornerRadius"] = UDim.new(0, 100);
+-- NovaHub.Window.TabButtons.Lists.TabButton.Bar.UICorner
+NovaHub["24"] = Instance.new("UICorner", NovaHub["23"]);
+NovaHub["24"]["CornerRadius"] = UDim.new(0, 100);
 
 
--- NatHub.Window.TabButtons.UICorner
-NatHub["25"] = Instance.new("UICorner", NatHub["13"]);
-NatHub["25"]["CornerRadius"] = UDim.new(0, 6);
+-- NovaHub.Window.TabButtons.UICorner
+NovaHub["25"] = Instance.new("UICorner", NovaHub["13"]);
+NovaHub["25"]["CornerRadius"] = UDim.new(0, 6);
 
 
--- NatHub.Window.TabButtons.AntiCornerTop
-NatHub["26"] = Instance.new("Frame", NatHub["13"]);
-NatHub["26"]["BorderSizePixel"] = 0;
-NatHub["26"]["BackgroundColor3"] = Color3.fromRGB(37, 40, 47);
-NatHub["26"]["Size"] = UDim2.new(1, 0, 0, 5);
-NatHub["26"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["26"]["Name"] = [[AntiCornerTop]];
+-- NovaHub.Window.TabButtons.AntiCornerTop
+NovaHub["26"] = Instance.new("Frame", NovaHub["13"]);
+NovaHub["26"]["BorderSizePixel"] = 0;
+NovaHub["26"]["BackgroundColor3"] = Color3.fromRGB(37, 40, 47);
+NovaHub["26"]["Size"] = UDim2.new(1, 0, 0, 5);
+NovaHub["26"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["26"]["Name"] = [[AntiCornerTop]];
 
 
--- NatHub.Window.TabButtons.AntiCornerRight
-NatHub["27"] = Instance.new("Frame", NatHub["13"]);
-NatHub["27"]["BorderSizePixel"] = 0;
-NatHub["27"]["BackgroundColor3"] = Color3.fromRGB(37, 40, 47);
-NatHub["27"]["AnchorPoint"] = Vector2.new(0.5, 0);
-NatHub["27"]["Size"] = UDim2.new(0, 2, 1, 0);
-NatHub["27"]["Position"] = UDim2.new(1, 1, 0, 0);
-NatHub["27"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["27"]["Name"] = [[AntiCornerRight]];
+-- NovaHub.Window.TabButtons.AntiCornerRight
+NovaHub["27"] = Instance.new("Frame", NovaHub["13"]);
+NovaHub["27"]["BorderSizePixel"] = 0;
+NovaHub["27"]["BackgroundColor3"] = Color3.fromRGB(37, 40, 47);
+NovaHub["27"]["AnchorPoint"] = Vector2.new(0.5, 0);
+NovaHub["27"]["Size"] = UDim2.new(0, 2, 1, 0);
+NovaHub["27"]["Position"] = UDim2.new(1, 1, 0, 0);
+NovaHub["27"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["27"]["Name"] = [[AntiCornerRight]];
 
 
--- NatHub.Window.TabButtons.Border
-NatHub["28"] = Instance.new("Frame", NatHub["13"]);
-NatHub["28"]["ZIndex"] = 2;
-NatHub["28"]["BorderSizePixel"] = 0;
-NatHub["28"]["BackgroundColor3"] = Color3.fromRGB(61, 61, 75);
-NatHub["28"]["AnchorPoint"] = Vector2.new(1, 0);
-NatHub["28"]["Size"] = UDim2.new(0, 2, 1, 0);
-NatHub["28"]["Position"] = UDim2.new(1, 0, 0, 0);
-NatHub["28"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["28"]["Name"] = [[Border]];
+-- NovaHub.Window.TabButtons.Border
+NovaHub["28"] = Instance.new("Frame", NovaHub["13"]);
+NovaHub["28"]["ZIndex"] = 2;
+NovaHub["28"]["BorderSizePixel"] = 0;
+NovaHub["28"]["BackgroundColor3"] = Color3.fromRGB(61, 61, 75);
+NovaHub["28"]["AnchorPoint"] = Vector2.new(1, 0);
+NovaHub["28"]["Size"] = UDim2.new(0, 2, 1, 0);
+NovaHub["28"]["Position"] = UDim2.new(1, 0, 0, 0);
+NovaHub["28"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["28"]["Name"] = [[Border]];
 
 
--- NatHub.Window.TopFrame
-NatHub["29"] = Instance.new("Frame", NatHub["2"]);
-NatHub["29"]["BorderSizePixel"] = 0;
-NatHub["29"]["BackgroundColor3"] = Color3.fromRGB(37, 40, 47);
-NatHub["29"]["ClipsDescendants"] = true;
-NatHub["29"]["Size"] = UDim2.new(1, 0, 0, 35);
-NatHub["29"]["BorderColor3"] = Color3.fromRGB(61, 61, 75);
-NatHub["29"]["Name"] = [[TopFrame]];
+-- NovaHub.Window.TopFrame
+NovaHub["29"] = Instance.new("Frame", NovaHub["2"]);
+NovaHub["29"]["BorderSizePixel"] = 0;
+NovaHub["29"]["BackgroundColor3"] = Color3.fromRGB(37, 40, 47);
+NovaHub["29"]["ClipsDescendants"] = true;
+NovaHub["29"]["Size"] = UDim2.new(1, 0, 0, 35);
+NovaHub["29"]["BorderColor3"] = Color3.fromRGB(61, 61, 75);
+NovaHub["29"]["Name"] = [[TopFrame]];
 
 
--- NatHub.Window.TopFrame.Icon
-NatHub["2a"] = Instance.new("ImageButton", NatHub["29"]);
-NatHub["2a"]["Active"] = false;
-NatHub["2a"]["Interactable"] = false;
-NatHub["2a"]["BorderSizePixel"] = 0;
-NatHub["2a"]["BackgroundTransparency"] = 1;
+-- NovaHub.Window.TopFrame.Icon
+NovaHub["2a"] = Instance.new("ImageButton", NovaHub["29"]);
+NovaHub["2a"]["Active"] = false;
+NovaHub["2a"]["Interactable"] = false;
+NovaHub["2a"]["BorderSizePixel"] = 0;
+NovaHub["2a"]["BackgroundTransparency"] = 1;
 -- [ERROR] cannot convert ImageContent, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
-NatHub["2a"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["2a"]["AnchorPoint"] = Vector2.new(0, 0.5);
-NatHub["2a"]["Image"] = [[rbxassetid://113216930555884]];
-NatHub["2a"]["Size"] = UDim2.new(0, 25, 0, 25);
-NatHub["2a"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["2a"]["Name"] = [[Icon]];
-NatHub["2a"]["Position"] = UDim2.new(0, 10, 0.5, 0);
+NovaHub["2a"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["2a"]["AnchorPoint"] = Vector2.new(0, 0.5);
+NovaHub["2a"]["Image"] = [[rbxassetid://113216930555884]];
+NovaHub["2a"]["Size"] = UDim2.new(0, 25, 0, 25);
+NovaHub["2a"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["2a"]["Name"] = [[Icon]];
+NovaHub["2a"]["Position"] = UDim2.new(0, 10, 0.5, 0);
 
 
--- NatHub.Window.TopFrame.Icon.UIAspectRatioConstraint
-NatHub["2b"] = Instance.new("UIAspectRatioConstraint", NatHub["2a"]);
+-- NovaHub.Window.TopFrame.Icon.UIAspectRatioConstraint
+NovaHub["2b"] = Instance.new("UIAspectRatioConstraint", NovaHub["2a"]);
 
 
 
--- NatHub.Window.TopFrame.TextLabel
-NatHub["2c"] = Instance.new("TextLabel", NatHub["29"]);
-NatHub["2c"]["TextWrapped"] = true;
-NatHub["2c"]["Interactable"] = false;
-NatHub["2c"]["BorderSizePixel"] = 0;
-NatHub["2c"]["TextSize"] = 14;
-NatHub["2c"]["TextScaled"] = true;
-NatHub["2c"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["2c"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-NatHub["2c"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["2c"]["BackgroundTransparency"] = 1;
-NatHub["2c"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
-NatHub["2c"]["Size"] = UDim2.new(1, 0, 0, 16);
-NatHub["2c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["2c"]["Text"] = [[NatHub - v1.2.3]];
-NatHub["2c"]["Position"] = UDim2.new(0.5, 0, 0.5, -1);
+-- NovaHub.Window.TopFrame.TextLabel
+NovaHub["2c"] = Instance.new("TextLabel", NovaHub["29"]);
+NovaHub["2c"]["TextWrapped"] = true;
+NovaHub["2c"]["Interactable"] = false;
+NovaHub["2c"]["BorderSizePixel"] = 0;
+NovaHub["2c"]["TextSize"] = 14;
+NovaHub["2c"]["TextScaled"] = true;
+NovaHub["2c"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["2c"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+NovaHub["2c"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["2c"]["BackgroundTransparency"] = 1;
+NovaHub["2c"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
+NovaHub["2c"]["Size"] = UDim2.new(1, 0, 0, 16);
+NovaHub["2c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["2c"]["Text"] = [[NovaHub - v1.2.3]];
+NovaHub["2c"]["Position"] = UDim2.new(0.5, 0, 0.5, -1);
 
 
--- NatHub.Window.TopFrame.Close
-NatHub["2d"] = Instance.new("ImageButton", NatHub["29"]);
-NatHub["2d"]["BorderSizePixel"] = 0;
-NatHub["2d"]["BackgroundTransparency"] = 1;
+-- NovaHub.Window.TopFrame.Close
+NovaHub["2d"] = Instance.new("ImageButton", NovaHub["29"]);
+NovaHub["2d"]["BorderSizePixel"] = 0;
+NovaHub["2d"]["BackgroundTransparency"] = 1;
 -- [ERROR] cannot convert ImageContent, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
-NatHub["2d"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["2d"]["ImageColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["2d"]["AnchorPoint"] = Vector2.new(1, 0.5);
-NatHub["2d"]["Image"] = [[rbxassetid://132453323679056]];
-NatHub["2d"]["Size"] = UDim2.new(0, 20, 0, 20);
-NatHub["2d"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["2d"]["Name"] = [[Close]];
-NatHub["2d"]["Position"] = UDim2.new(1, -15, 0.5, 0);
+NovaHub["2d"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["2d"]["ImageColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["2d"]["AnchorPoint"] = Vector2.new(1, 0.5);
+NovaHub["2d"]["Image"] = [[rbxassetid://132453323679056]];
+NovaHub["2d"]["Size"] = UDim2.new(0, 20, 0, 20);
+NovaHub["2d"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["2d"]["Name"] = [[Close]];
+NovaHub["2d"]["Position"] = UDim2.new(1, -15, 0.5, 0);
 
 
--- NatHub.Window.TopFrame.Maximize
-NatHub["2e"] = Instance.new("ImageButton", NatHub["29"]);
-NatHub["2e"]["BorderSizePixel"] = 0;
-NatHub["2e"]["BackgroundTransparency"] = 1;
+-- NovaHub.Window.TopFrame.Maximize
+NovaHub["2e"] = Instance.new("ImageButton", NovaHub["29"]);
+NovaHub["2e"]["BorderSizePixel"] = 0;
+NovaHub["2e"]["BackgroundTransparency"] = 1;
 -- [ERROR] cannot convert ImageContent, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
-NatHub["2e"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["2e"]["ImageColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["2e"]["AnchorPoint"] = Vector2.new(1, 0.5);
-NatHub["2e"]["Image"] = [[rbxassetid://108285848026510]];
-NatHub["2e"]["Size"] = UDim2.new(0, 15, 0, 15);
-NatHub["2e"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["2e"]["Name"] = [[Maximize]];
-NatHub["2e"]["Position"] = UDim2.new(1, -55, 0.5, 0);
+NovaHub["2e"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["2e"]["ImageColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["2e"]["AnchorPoint"] = Vector2.new(1, 0.5);
+NovaHub["2e"]["Image"] = [[rbxassetid://108285848026510]];
+NovaHub["2e"]["Size"] = UDim2.new(0, 15, 0, 15);
+NovaHub["2e"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["2e"]["Name"] = [[Maximize]];
+NovaHub["2e"]["Position"] = UDim2.new(1, -55, 0.5, 0);
 
 
--- NatHub.Window.TopFrame.Hide
-NatHub["2f"] = Instance.new("ImageButton", NatHub["29"]);
-NatHub["2f"]["BorderSizePixel"] = 0;
-NatHub["2f"]["BackgroundTransparency"] = 1;
+-- NovaHub.Window.TopFrame.Hide
+NovaHub["2f"] = Instance.new("ImageButton", NovaHub["29"]);
+NovaHub["2f"]["BorderSizePixel"] = 0;
+NovaHub["2f"]["BackgroundTransparency"] = 1;
 -- [ERROR] cannot convert ImageContent, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
-NatHub["2f"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["2f"]["ImageColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["2f"]["AnchorPoint"] = Vector2.new(1, 0.5);
-NatHub["2f"]["Image"] = [[rbxassetid://128209591224511]];
-NatHub["2f"]["Size"] = UDim2.new(0, 20, 0, 20);
-NatHub["2f"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["2f"]["Name"] = [[Hide]];
-NatHub["2f"]["Position"] = UDim2.new(1, -90, 0.5, 0);
+NovaHub["2f"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["2f"]["ImageColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["2f"]["AnchorPoint"] = Vector2.new(1, 0.5);
+NovaHub["2f"]["Image"] = [[rbxassetid://128209591224511]];
+NovaHub["2f"]["Size"] = UDim2.new(0, 20, 0, 20);
+NovaHub["2f"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["2f"]["Name"] = [[Hide]];
+NovaHub["2f"]["Position"] = UDim2.new(1, -90, 0.5, 0);
 
 
--- NatHub.Window.TopFrame.UICorner
-NatHub["30"] = Instance.new("UICorner", NatHub["29"]);
-NatHub["30"]["CornerRadius"] = UDim.new(0, 6);
+-- NovaHub.Window.TopFrame.UICorner
+NovaHub["30"] = Instance.new("UICorner", NovaHub["29"]);
+NovaHub["30"]["CornerRadius"] = UDim.new(0, 6);
 
 
--- NatHub.Window.TopFrame.Border
-NatHub["31"] = Instance.new("Frame", NatHub["29"]);
-NatHub["31"]["ZIndex"] = 2;
-NatHub["31"]["BorderSizePixel"] = 0;
-NatHub["31"]["BackgroundColor3"] = Color3.fromRGB(61, 61, 75);
-NatHub["31"]["AnchorPoint"] = Vector2.new(0, 0.5);
-NatHub["31"]["Size"] = UDim2.new(1, 0, 0, 2);
-NatHub["31"]["Position"] = UDim2.new(0, 0, 1, 0);
-NatHub["31"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["31"]["Name"] = [[Border]];
+-- NovaHub.Window.TopFrame.Border
+NovaHub["31"] = Instance.new("Frame", NovaHub["29"]);
+NovaHub["31"]["ZIndex"] = 2;
+NovaHub["31"]["BorderSizePixel"] = 0;
+NovaHub["31"]["BackgroundColor3"] = Color3.fromRGB(61, 61, 75);
+NovaHub["31"]["AnchorPoint"] = Vector2.new(0, 0.5);
+NovaHub["31"]["Size"] = UDim2.new(1, 0, 0, 2);
+NovaHub["31"]["Position"] = UDim2.new(0, 0, 1, 0);
+NovaHub["31"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["31"]["Name"] = [[Border]];
 
 
--- NatHub.Window.UIStroke
-NatHub["32"] = Instance.new("UIStroke", NatHub["2"]);
-NatHub["32"]["Transparency"] = 0.5;
-NatHub["32"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
-NatHub["32"]["Color"] = Color3.fromRGB(95, 95, 117);
+-- NovaHub.Window.UIStroke
+NovaHub["32"] = Instance.new("UIStroke", NovaHub["2"]);
+NovaHub["32"]["Transparency"] = 0.5;
+NovaHub["32"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+NovaHub["32"]["Color"] = Color3.fromRGB(95, 95, 117);
 
 
--- NatHub.Window.Tabs
-NatHub["33"] = Instance.new("Frame", NatHub["2"]);
-NatHub["33"]["BorderSizePixel"] = 0;
-NatHub["33"]["BackgroundColor3"] = Color3.fromRGB(32, 35, 41);
-NatHub["33"]["Size"] = UDim2.new(1, -165, 1, -35);
-NatHub["33"]["Position"] = UDim2.new(0, 165, 0, 35);
-NatHub["33"]["BorderColor3"] = Color3.fromRGB(61, 61, 75);
-NatHub["33"]["Name"] = [[Tabs]];
+-- NovaHub.Window.Tabs
+NovaHub["33"] = Instance.new("Frame", NovaHub["2"]);
+NovaHub["33"]["BorderSizePixel"] = 0;
+NovaHub["33"]["BackgroundColor3"] = Color3.fromRGB(32, 35, 41);
+NovaHub["33"]["Size"] = UDim2.new(1, -165, 1, -35);
+NovaHub["33"]["Position"] = UDim2.new(0, 165, 0, 35);
+NovaHub["33"]["BorderColor3"] = Color3.fromRGB(61, 61, 75);
+NovaHub["33"]["Name"] = [[Tabs]];
 
 
--- NatHub.Window.Tabs.UICorner
-NatHub["34"] = Instance.new("UICorner", NatHub["33"]);
-NatHub["34"]["CornerRadius"] = UDim.new(0, 6);
+-- NovaHub.Window.Tabs.UICorner
+NovaHub["34"] = Instance.new("UICorner", NovaHub["33"]);
+NovaHub["34"]["CornerRadius"] = UDim.new(0, 6);
 
 
--- NatHub.Window.Tabs.AntiCornerLeft
-NatHub["35"] = Instance.new("Frame", NatHub["33"]);
-NatHub["35"]["Visible"] = false;
-NatHub["35"]["BorderSizePixel"] = 0;
-NatHub["35"]["BackgroundColor3"] = Color3.fromRGB(32, 35, 41);
-NatHub["35"]["Size"] = UDim2.new(0, 5, 1, 0);
-NatHub["35"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["35"]["Name"] = [[AntiCornerLeft]];
+-- NovaHub.Window.Tabs.AntiCornerLeft
+NovaHub["35"] = Instance.new("Frame", NovaHub["33"]);
+NovaHub["35"]["Visible"] = false;
+NovaHub["35"]["BorderSizePixel"] = 0;
+NovaHub["35"]["BackgroundColor3"] = Color3.fromRGB(32, 35, 41);
+NovaHub["35"]["Size"] = UDim2.new(0, 5, 1, 0);
+NovaHub["35"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["35"]["Name"] = [[AntiCornerLeft]];
 
 
--- NatHub.Window.Tabs.AntiCornerTop
-NatHub["36"] = Instance.new("Frame", NatHub["33"]);
-NatHub["36"]["BorderSizePixel"] = 0;
-NatHub["36"]["BackgroundColor3"] = Color3.fromRGB(32, 35, 41);
-NatHub["36"]["Size"] = UDim2.new(1, 0, 0, 5);
-NatHub["36"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["36"]["Name"] = [[AntiCornerTop]];
+-- NovaHub.Window.Tabs.AntiCornerTop
+NovaHub["36"] = Instance.new("Frame", NovaHub["33"]);
+NovaHub["36"]["BorderSizePixel"] = 0;
+NovaHub["36"]["BackgroundColor3"] = Color3.fromRGB(32, 35, 41);
+NovaHub["36"]["Size"] = UDim2.new(1, 0, 0, 5);
+NovaHub["36"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["36"]["Name"] = [[AntiCornerTop]];
 
 
--- NatHub.Window.Tabs.NoObjectFoundText
-NatHub["37"] = Instance.new("TextLabel", NatHub["33"]);
-NatHub["37"]["TextWrapped"] = true;
-NatHub["37"]["Interactable"] = false;
-NatHub["37"]["BorderSizePixel"] = 0;
-NatHub["37"]["TextSize"] = 14;
-NatHub["37"]["TextScaled"] = true;
-NatHub["37"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["37"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-NatHub["37"]["TextColor3"] = Color3.fromRGB(135, 140, 150);
-NatHub["37"]["BackgroundTransparency"] = 1;
-NatHub["37"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
-NatHub["37"]["Size"] = UDim2.new(1, 0, 0, 16);
-NatHub["37"]["Visible"] = false;
-NatHub["37"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["37"]["Text"] = [[This tab is empty :(]];
-NatHub["37"]["Name"] = [[NoObjectFoundText]];
-NatHub["37"]["Position"] = UDim2.new(0.5, 0, 0.45, 0);
+-- NovaHub.Window.Tabs.NoObjectFoundText
+NovaHub["37"] = Instance.new("TextLabel", NovaHub["33"]);
+NovaHub["37"]["TextWrapped"] = true;
+NovaHub["37"]["Interactable"] = false;
+NovaHub["37"]["BorderSizePixel"] = 0;
+NovaHub["37"]["TextSize"] = 14;
+NovaHub["37"]["TextScaled"] = true;
+NovaHub["37"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["37"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+NovaHub["37"]["TextColor3"] = Color3.fromRGB(135, 140, 150);
+NovaHub["37"]["BackgroundTransparency"] = 1;
+NovaHub["37"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
+NovaHub["37"]["Size"] = UDim2.new(1, 0, 0, 16);
+NovaHub["37"]["Visible"] = false;
+NovaHub["37"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["37"]["Text"] = [[This tab is empty :(]];
+NovaHub["37"]["Name"] = [[NoObjectFoundText]];
+NovaHub["37"]["Position"] = UDim2.new(0.5, 0, 0.45, 0);
 
 
--- NatHub.Window.NotificationFrame
-NatHub["38"] = Instance.new("Frame", NatHub["2"]);
-NatHub["38"]["BorderSizePixel"] = 0;
-NatHub["38"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["38"]["ClipsDescendants"] = true;
-NatHub["38"]["Size"] = UDim2.new(1, 0, 1, 0);
-NatHub["38"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["38"]["Name"] = [[NotificationFrame]];
-NatHub["38"]["BackgroundTransparency"] = 1;
+-- NovaHub.Window.NotificationFrame
+NovaHub["38"] = Instance.new("Frame", NovaHub["2"]);
+NovaHub["38"]["BorderSizePixel"] = 0;
+NovaHub["38"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["38"]["ClipsDescendants"] = true;
+NovaHub["38"]["Size"] = UDim2.new(1, 0, 1, 0);
+NovaHub["38"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["38"]["Name"] = [[NotificationFrame]];
+NovaHub["38"]["BackgroundTransparency"] = 1;
 
 
--- NatHub.Window.NotificationFrame.NotificationList
-NatHub["39"] = Instance.new("Frame", NatHub["38"]);
-NatHub["39"]["ZIndex"] = 5;
-NatHub["39"]["BorderSizePixel"] = 0;
-NatHub["39"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["39"]["AnchorPoint"] = Vector2.new(0.5, 0);
-NatHub["39"]["ClipsDescendants"] = true;
-NatHub["39"]["Size"] = UDim2.new(0, 630, 1, -35);
-NatHub["39"]["Position"] = UDim2.new(1, 0, 0, 35);
-NatHub["39"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["39"]["Name"] = [[NotificationList]];
-NatHub["39"]["BackgroundTransparency"] = 1;
+-- NovaHub.Window.NotificationFrame.NotificationList
+NovaHub["39"] = Instance.new("Frame", NovaHub["38"]);
+NovaHub["39"]["ZIndex"] = 5;
+NovaHub["39"]["BorderSizePixel"] = 0;
+NovaHub["39"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["39"]["AnchorPoint"] = Vector2.new(0.5, 0);
+NovaHub["39"]["ClipsDescendants"] = true;
+NovaHub["39"]["Size"] = UDim2.new(0, 630, 1, -35);
+NovaHub["39"]["Position"] = UDim2.new(1, 0, 0, 35);
+NovaHub["39"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["39"]["Name"] = [[NotificationList]];
+NovaHub["39"]["BackgroundTransparency"] = 1;
 
 
--- NatHub.Window.NotificationFrame.NotificationList.UIListLayout
-NatHub["3a"] = Instance.new("UIListLayout", NatHub["39"]);
-NatHub["3a"]["Padding"] = UDim.new(0, 12);
-NatHub["3a"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
+-- NovaHub.Window.NotificationFrame.NotificationList.UIListLayout
+NovaHub["3a"] = Instance.new("UIListLayout", NovaHub["39"]);
+NovaHub["3a"]["Padding"] = UDim.new(0, 12);
+NovaHub["3a"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
 
 
--- NatHub.Window.NotificationFrame.NotificationList.UIPadding
-NatHub["3b"] = Instance.new("UIPadding", NatHub["39"]);
-NatHub["3b"]["PaddingTop"] = UDim.new(0, 10);
-NatHub["3b"]["PaddingRight"] = UDim.new(0, 40);
-NatHub["3b"]["PaddingLeft"] = UDim.new(0, 40);
+-- NovaHub.Window.NotificationFrame.NotificationList.UIPadding
+NovaHub["3b"] = Instance.new("UIPadding", NovaHub["39"]);
+NovaHub["3b"]["PaddingTop"] = UDim.new(0, 10);
+NovaHub["3b"]["PaddingRight"] = UDim.new(0, 40);
+NovaHub["3b"]["PaddingLeft"] = UDim.new(0, 40);
 
 
--- NatHub.Window.DarkOverlay
-NatHub["3c"] = Instance.new("Frame", NatHub["2"]);
-NatHub["3c"]["Visible"] = false;
-NatHub["3c"]["BorderSizePixel"] = 0;
-NatHub["3c"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["3c"]["Size"] = UDim2.new(1, 0, 1, 0);
-NatHub["3c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["3c"]["Name"] = [[DarkOverlay]];
-NatHub["3c"]["BackgroundTransparency"] = 0.6;
+-- NovaHub.Window.DarkOverlay
+NovaHub["3c"] = Instance.new("Frame", NovaHub["2"]);
+NovaHub["3c"]["Visible"] = false;
+NovaHub["3c"]["BorderSizePixel"] = 0;
+NovaHub["3c"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["3c"]["Size"] = UDim2.new(1, 0, 1, 0);
+NovaHub["3c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["3c"]["Name"] = [[DarkOverlay]];
+NovaHub["3c"]["BackgroundTransparency"] = 0.6;
 
 
--- NatHub.Window.DarkOverlay.UICorner
-NatHub["3d"] = Instance.new("UICorner", NatHub["3c"]);
-NatHub["3d"]["CornerRadius"] = UDim.new(0, 10);
+-- NovaHub.Window.DarkOverlay.UICorner
+NovaHub["3d"] = Instance.new("UICorner", NovaHub["3c"]);
+NovaHub["3d"]["CornerRadius"] = UDim.new(0, 10);
 
 
--- NatHub.Library
-NatHub["3e"] = Instance.new("ModuleScript", NatHub["1"]);
-NatHub["3e"]["Name"] = [[Library]];
+-- NovaHub.Library
+NovaHub["3e"] = Instance.new("ModuleScript", NovaHub["1"]);
+NovaHub["3e"]["Name"] = [[Library]];
 
 
--- NatHub.Library.IconModule
-NatHub["3f"] = Instance.new("ModuleScript", NatHub["3e"]);
-NatHub["3f"]["Name"] = [[IconModule]];
+-- NovaHub.Library.IconModule
+NovaHub["3f"] = Instance.new("ModuleScript", NovaHub["3e"]);
+NovaHub["3f"]["Name"] = [[IconModule]];
 
 
--- NatHub.Library.IconModule.Lucide
-NatHub["40"] = Instance.new("ModuleScript", NatHub["3f"]);
-NatHub["40"]["Name"] = [[Lucide]];
+-- NovaHub.Library.IconModule.Lucide
+NovaHub["40"] = Instance.new("ModuleScript", NovaHub["3f"]);
+NovaHub["40"]["Name"] = [[Lucide]];
 
 
--- NatHub.Templates
-NatHub["41"] = Instance.new("Folder", NatHub["1"]);
-NatHub["41"]["Name"] = [[Templates]];
+-- NovaHub.Templates
+NovaHub["41"] = Instance.new("Folder", NovaHub["1"]);
+NovaHub["41"]["Name"] = [[Templates]];
 
 
--- NatHub.Templates.Divider
-NatHub["42"] = Instance.new("Frame", NatHub["41"]);
-NatHub["42"]["Visible"] = false;
-NatHub["42"]["BorderSizePixel"] = 0;
-NatHub["42"]["BackgroundColor3"] = Color3.fromRGB(61, 61, 75);
-NatHub["42"]["Size"] = UDim2.new(1, 0, 0, 1);
-NatHub["42"]["BorderColor3"] = Color3.fromRGB(61, 61, 75);
-NatHub["42"]["Name"] = [[Divider]];
+-- NovaHub.Templates.Divider
+NovaHub["42"] = Instance.new("Frame", NovaHub["41"]);
+NovaHub["42"]["Visible"] = false;
+NovaHub["42"]["BorderSizePixel"] = 0;
+NovaHub["42"]["BackgroundColor3"] = Color3.fromRGB(61, 61, 75);
+NovaHub["42"]["Size"] = UDim2.new(1, 0, 0, 1);
+NovaHub["42"]["BorderColor3"] = Color3.fromRGB(61, 61, 75);
+NovaHub["42"]["Name"] = [[Divider]];
 
 
--- NatHub.Templates.Tab
-NatHub["43"] = Instance.new("ScrollingFrame", NatHub["41"]);
-NatHub["43"]["Visible"] = false;
-NatHub["43"]["Active"] = true;
-NatHub["43"]["ScrollingDirection"] = Enum.ScrollingDirection.Y;
-NatHub["43"]["BorderSizePixel"] = 0;
-NatHub["43"]["CanvasSize"] = UDim2.new(0, 0, 0, 0);
-NatHub["43"]["ElasticBehavior"] = Enum.ElasticBehavior.Never;
-NatHub["43"]["TopImage"] = [[rbxasset://textures/ui/Scroll/scroll-middle.png]];
-NatHub["43"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["43"]["Name"] = [[Tab]];
-NatHub["43"]["Selectable"] = false;
-NatHub["43"]["BottomImage"] = [[rbxasset://textures/ui/Scroll/scroll-middle.png]];
-NatHub["43"]["AutomaticCanvasSize"] = Enum.AutomaticSize.Y;
-NatHub["43"]["Size"] = UDim2.new(1, 0, 1, 0);
-NatHub["43"]["ScrollBarImageColor3"] = Color3.fromRGB(99, 106, 122);
-NatHub["43"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["43"]["ScrollBarThickness"] = 5;
-NatHub["43"]["BackgroundTransparency"] = 1;
+-- NovaHub.Templates.Tab
+NovaHub["43"] = Instance.new("ScrollingFrame", NovaHub["41"]);
+NovaHub["43"]["Visible"] = false;
+NovaHub["43"]["Active"] = true;
+NovaHub["43"]["ScrollingDirection"] = Enum.ScrollingDirection.Y;
+NovaHub["43"]["BorderSizePixel"] = 0;
+NovaHub["43"]["CanvasSize"] = UDim2.new(0, 0, 0, 0);
+NovaHub["43"]["ElasticBehavior"] = Enum.ElasticBehavior.Never;
+NovaHub["43"]["TopImage"] = [[rbxasset://textures/ui/Scroll/scroll-middle.png]];
+NovaHub["43"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["43"]["Name"] = [[Tab]];
+NovaHub["43"]["Selectable"] = false;
+NovaHub["43"]["BottomImage"] = [[rbxasset://textures/ui/Scroll/scroll-middle.png]];
+NovaHub["43"]["AutomaticCanvasSize"] = Enum.AutomaticSize.Y;
+NovaHub["43"]["Size"] = UDim2.new(1, 0, 1, 0);
+NovaHub["43"]["ScrollBarImageColor3"] = Color3.fromRGB(99, 106, 122);
+NovaHub["43"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["43"]["ScrollBarThickness"] = 5;
+NovaHub["43"]["BackgroundTransparency"] = 1;
 
 
--- NatHub.Templates.Tab.UIListLayout
-NatHub["44"] = Instance.new("UIListLayout", NatHub["43"]);
-NatHub["44"]["Padding"] = UDim.new(0, 15);
-NatHub["44"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
+-- NovaHub.Templates.Tab.UIListLayout
+NovaHub["44"] = Instance.new("UIListLayout", NovaHub["43"]);
+NovaHub["44"]["Padding"] = UDim.new(0, 15);
+NovaHub["44"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
 
 
--- NatHub.Templates.Tab.UIPadding
-NatHub["45"] = Instance.new("UIPadding", NatHub["43"]);
-NatHub["45"]["PaddingTop"] = UDim.new(0, 10);
-NatHub["45"]["PaddingRight"] = UDim.new(0, 14);
-NatHub["45"]["PaddingLeft"] = UDim.new(0, 10);
-NatHub["45"]["PaddingBottom"] = UDim.new(0, 10);
+-- NovaHub.Templates.Tab.UIPadding
+NovaHub["45"] = Instance.new("UIPadding", NovaHub["43"]);
+NovaHub["45"]["PaddingTop"] = UDim.new(0, 10);
+NovaHub["45"]["PaddingRight"] = UDim.new(0, 14);
+NovaHub["45"]["PaddingLeft"] = UDim.new(0, 10);
+NovaHub["45"]["PaddingBottom"] = UDim.new(0, 10);
 
 
--- NatHub.Templates.TabButton
-NatHub["46"] = Instance.new("ImageButton", NatHub["41"]);
-NatHub["46"]["BorderSizePixel"] = 0;
-NatHub["46"]["AutoButtonColor"] = false;
-NatHub["46"]["Visible"] = false;
-NatHub["46"]["BackgroundTransparency"] = 1;
-NatHub["46"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["46"]["Selectable"] = false;
-NatHub["46"]["Size"] = UDim2.new(1, 0, 0, 36);
-NatHub["46"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["46"]["Name"] = [[TabButton]];
+-- NovaHub.Templates.TabButton
+NovaHub["46"] = Instance.new("ImageButton", NovaHub["41"]);
+NovaHub["46"]["BorderSizePixel"] = 0;
+NovaHub["46"]["AutoButtonColor"] = false;
+NovaHub["46"]["Visible"] = false;
+NovaHub["46"]["BackgroundTransparency"] = 1;
+NovaHub["46"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["46"]["Selectable"] = false;
+NovaHub["46"]["Size"] = UDim2.new(1, 0, 0, 36);
+NovaHub["46"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["46"]["Name"] = [[TabButton]];
 
 
--- NatHub.Templates.TabButton.ImageButton
-NatHub["47"] = Instance.new("ImageButton", NatHub["46"]);
-NatHub["47"]["BorderSizePixel"] = 0;
-NatHub["47"]["ImageTransparency"] = 0.5;
-NatHub["47"]["BackgroundTransparency"] = 1;
+-- NovaHub.Templates.TabButton.ImageButton
+NovaHub["47"] = Instance.new("ImageButton", NovaHub["46"]);
+NovaHub["47"]["BorderSizePixel"] = 0;
+NovaHub["47"]["ImageTransparency"] = 0.5;
+NovaHub["47"]["BackgroundTransparency"] = 1;
 -- [ERROR] cannot convert ImageContent, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
-NatHub["47"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["47"]["ImageColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["47"]["AnchorPoint"] = Vector2.new(0, 0.5);
-NatHub["47"]["Image"] = [[rbxassetid://113216930555884]];
-NatHub["47"]["Size"] = UDim2.new(0, 20, 0, 20);
-NatHub["47"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["47"]["Position"] = UDim2.new(0, 12, 0, 18);
+NovaHub["47"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["47"]["ImageColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["47"]["AnchorPoint"] = Vector2.new(0, 0.5);
+NovaHub["47"]["Image"] = [[rbxassetid://113216930555884]];
+NovaHub["47"]["Size"] = UDim2.new(0, 20, 0, 20);
+NovaHub["47"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["47"]["Position"] = UDim2.new(0, 12, 0, 18);
 
 
--- NatHub.Templates.TabButton.ImageButton.UIAspectRatioConstraint
-NatHub["48"] = Instance.new("UIAspectRatioConstraint", NatHub["47"]);
+-- NovaHub.Templates.TabButton.ImageButton.UIAspectRatioConstraint
+NovaHub["48"] = Instance.new("UIAspectRatioConstraint", NovaHub["47"]);
 
 
 
--- NatHub.Templates.TabButton.TextLabel
-NatHub["49"] = Instance.new("TextLabel", NatHub["46"]);
-NatHub["49"]["TextWrapped"] = true;
-NatHub["49"]["BorderSizePixel"] = 0;
-NatHub["49"]["TextSize"] = 14;
-NatHub["49"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-NatHub["49"]["TextTransparency"] = 0.5;
-NatHub["49"]["TextScaled"] = true;
-NatHub["49"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["49"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Medium, Enum.FontStyle.Normal);
-NatHub["49"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["49"]["BackgroundTransparency"] = 1;
-NatHub["49"]["AnchorPoint"] = Vector2.new(0, 0.5);
-NatHub["49"]["Size"] = UDim2.new(0, 103, 0, 16);
-NatHub["49"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["49"]["Text"] = [[]];
-NatHub["49"]["Position"] = UDim2.new(0, 42, 0.5, 0);
+-- NovaHub.Templates.TabButton.TextLabel
+NovaHub["49"] = Instance.new("TextLabel", NovaHub["46"]);
+NovaHub["49"]["TextWrapped"] = true;
+NovaHub["49"]["BorderSizePixel"] = 0;
+NovaHub["49"]["TextSize"] = 14;
+NovaHub["49"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+NovaHub["49"]["TextTransparency"] = 0.5;
+NovaHub["49"]["TextScaled"] = true;
+NovaHub["49"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["49"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Medium, Enum.FontStyle.Normal);
+NovaHub["49"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["49"]["BackgroundTransparency"] = 1;
+NovaHub["49"]["AnchorPoint"] = Vector2.new(0, 0.5);
+NovaHub["49"]["Size"] = UDim2.new(0, 103, 0, 16);
+NovaHub["49"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["49"]["Text"] = [[]];
+NovaHub["49"]["Position"] = UDim2.new(0, 42, 0.5, 0);
 
 
--- NatHub.Templates.TabButton.Bar
-NatHub["4a"] = Instance.new("Frame", NatHub["46"]);
-NatHub["4a"]["BorderSizePixel"] = 0;
-NatHub["4a"]["BackgroundColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["4a"]["AnchorPoint"] = Vector2.new(0, 0.5);
-NatHub["4a"]["Size"] = UDim2.new(0, 5, 0, 0);
-NatHub["4a"]["Position"] = UDim2.new(0, 8, 0, 18);
-NatHub["4a"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["4a"]["Name"] = [[Bar]];
-NatHub["4a"]["BackgroundTransparency"] = 1;
+-- NovaHub.Templates.TabButton.Bar
+NovaHub["4a"] = Instance.new("Frame", NovaHub["46"]);
+NovaHub["4a"]["BorderSizePixel"] = 0;
+NovaHub["4a"]["BackgroundColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["4a"]["AnchorPoint"] = Vector2.new(0, 0.5);
+NovaHub["4a"]["Size"] = UDim2.new(0, 5, 0, 0);
+NovaHub["4a"]["Position"] = UDim2.new(0, 8, 0, 18);
+NovaHub["4a"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["4a"]["Name"] = [[Bar]];
+NovaHub["4a"]["BackgroundTransparency"] = 1;
 
 
--- NatHub.Templates.TabButton.Bar.UICorner
-NatHub["4b"] = Instance.new("UICorner", NatHub["4a"]);
-NatHub["4b"]["CornerRadius"] = UDim.new(0, 100);
+-- NovaHub.Templates.TabButton.Bar.UICorner
+NovaHub["4b"] = Instance.new("UICorner", NovaHub["4a"]);
+NovaHub["4b"]["CornerRadius"] = UDim.new(0, 100);
 
 
--- NatHub.Templates.Button
-NatHub["4c"] = Instance.new("ImageButton", NatHub["41"]);
-NatHub["4c"]["BorderSizePixel"] = 0;
-NatHub["4c"]["AutoButtonColor"] = false;
-NatHub["4c"]["Visible"] = false;
-NatHub["4c"]["BackgroundColor3"] = Color3.fromRGB(43, 46, 53);
-NatHub["4c"]["Selectable"] = false;
-NatHub["4c"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["4c"]["Size"] = UDim2.new(1, 0, 0, 35);
-NatHub["4c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["4c"]["Name"] = [[Button]];
-NatHub["4c"]["Position"] = UDim2.new(0, 0, 0.384, 0);
+-- NovaHub.Templates.Button
+NovaHub["4c"] = Instance.new("ImageButton", NovaHub["41"]);
+NovaHub["4c"]["BorderSizePixel"] = 0;
+NovaHub["4c"]["AutoButtonColor"] = false;
+NovaHub["4c"]["Visible"] = false;
+NovaHub["4c"]["BackgroundColor3"] = Color3.fromRGB(43, 46, 53);
+NovaHub["4c"]["Selectable"] = false;
+NovaHub["4c"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["4c"]["Size"] = UDim2.new(1, 0, 0, 35);
+NovaHub["4c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["4c"]["Name"] = [[Button]];
+NovaHub["4c"]["Position"] = UDim2.new(0, 0, 0.384, 0);
 
 
--- NatHub.Templates.Button.UICorner
-NatHub["4d"] = Instance.new("UICorner", NatHub["4c"]);
-NatHub["4d"]["CornerRadius"] = UDim.new(0, 6);
+-- NovaHub.Templates.Button.UICorner
+NovaHub["4d"] = Instance.new("UICorner", NovaHub["4c"]);
+NovaHub["4d"]["CornerRadius"] = UDim.new(0, 6);
 
 
--- NatHub.Templates.Button.Frame
-NatHub["4e"] = Instance.new("Frame", NatHub["4c"]);
-NatHub["4e"]["BorderSizePixel"] = 0;
-NatHub["4e"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["4e"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["4e"]["Size"] = UDim2.new(1, 0, 0, 35);
-NatHub["4e"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["4e"]["BackgroundTransparency"] = 1;
+-- NovaHub.Templates.Button.Frame
+NovaHub["4e"] = Instance.new("Frame", NovaHub["4c"]);
+NovaHub["4e"]["BorderSizePixel"] = 0;
+NovaHub["4e"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["4e"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["4e"]["Size"] = UDim2.new(1, 0, 0, 35);
+NovaHub["4e"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["4e"]["BackgroundTransparency"] = 1;
 
 
--- NatHub.Templates.Button.Frame.UIListLayout
-NatHub["4f"] = Instance.new("UIListLayout", NatHub["4e"]);
-NatHub["4f"]["Padding"] = UDim.new(0, 5);
-NatHub["4f"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
+-- NovaHub.Templates.Button.Frame.UIListLayout
+NovaHub["4f"] = Instance.new("UIListLayout", NovaHub["4e"]);
+NovaHub["4f"]["Padding"] = UDim.new(0, 5);
+NovaHub["4f"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
 
 
--- NatHub.Templates.Button.Frame.UIPadding
-NatHub["50"] = Instance.new("UIPadding", NatHub["4e"]);
-NatHub["50"]["PaddingTop"] = UDim.new(0, 10);
-NatHub["50"]["PaddingRight"] = UDim.new(0, 10);
-NatHub["50"]["PaddingLeft"] = UDim.new(0, 10);
-NatHub["50"]["PaddingBottom"] = UDim.new(0, 10);
+-- NovaHub.Templates.Button.Frame.UIPadding
+NovaHub["50"] = Instance.new("UIPadding", NovaHub["4e"]);
+NovaHub["50"]["PaddingTop"] = UDim.new(0, 10);
+NovaHub["50"]["PaddingRight"] = UDim.new(0, 10);
+NovaHub["50"]["PaddingLeft"] = UDim.new(0, 10);
+NovaHub["50"]["PaddingBottom"] = UDim.new(0, 10);
 
 
--- NatHub.Templates.Button.Frame.Title
-NatHub["51"] = Instance.new("TextLabel", NatHub["4e"]);
-NatHub["51"]["TextWrapped"] = true;
-NatHub["51"]["Interactable"] = false;
-NatHub["51"]["BorderSizePixel"] = 0;
-NatHub["51"]["TextSize"] = 16;
-NatHub["51"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-NatHub["51"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["51"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-NatHub["51"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["51"]["BackgroundTransparency"] = 1;
-NatHub["51"]["Size"] = UDim2.new(1, 0, 0, 15);
-NatHub["51"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["51"]["Text"] = [[Button]];
-NatHub["51"]["Name"] = [[Title]];
+-- NovaHub.Templates.Button.Frame.Title
+NovaHub["51"] = Instance.new("TextLabel", NovaHub["4e"]);
+NovaHub["51"]["TextWrapped"] = true;
+NovaHub["51"]["Interactable"] = false;
+NovaHub["51"]["BorderSizePixel"] = 0;
+NovaHub["51"]["TextSize"] = 16;
+NovaHub["51"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+NovaHub["51"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["51"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+NovaHub["51"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["51"]["BackgroundTransparency"] = 1;
+NovaHub["51"]["Size"] = UDim2.new(1, 0, 0, 15);
+NovaHub["51"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["51"]["Text"] = [[Button]];
+NovaHub["51"]["Name"] = [[Title]];
 
 
--- NatHub.Templates.Button.Frame.Title.ClickIcon
-NatHub["52"] = Instance.new("ImageButton", NatHub["51"]);
-NatHub["52"]["BorderSizePixel"] = 0;
-NatHub["52"]["AutoButtonColor"] = false;
-NatHub["52"]["BackgroundTransparency"] = 1;
+-- NovaHub.Templates.Button.Frame.Title.ClickIcon
+NovaHub["52"] = Instance.new("ImageButton", NovaHub["51"]);
+NovaHub["52"]["BorderSizePixel"] = 0;
+NovaHub["52"]["AutoButtonColor"] = false;
+NovaHub["52"]["BackgroundTransparency"] = 1;
 -- [ERROR] cannot convert ImageContent, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
-NatHub["52"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["52"]["ImageColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["52"]["AnchorPoint"] = Vector2.new(1, 0.5);
-NatHub["52"]["Image"] = [[rbxassetid://91877599529856]];
-NatHub["52"]["Size"] = UDim2.new(0, 23, 0, 23);
-NatHub["52"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["52"]["Name"] = [[ClickIcon]];
-NatHub["52"]["Position"] = UDim2.new(1, 0, 0.5, 0);
-
-
--- NatHub.Templates.Button.Frame.Description
-NatHub["53"] = Instance.new("TextLabel", NatHub["4e"]);
-NatHub["53"]["TextWrapped"] = true;
-NatHub["53"]["Interactable"] = false;
-NatHub["53"]["BorderSizePixel"] = 0;
-NatHub["53"]["TextSize"] = 16;
-NatHub["53"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-NatHub["53"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["53"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Medium, Enum.FontStyle.Normal);
-NatHub["53"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["53"]["BackgroundTransparency"] = 1;
-NatHub["53"]["Size"] = UDim2.new(1, 0, 0, 15);
-NatHub["53"]["Visible"] = false;
-NatHub["53"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["53"]["Text"] = [[Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus placerat lacus in enim congue, fermentum euismod leo ultricies. Nulla sodales. ]];
-NatHub["53"]["LayoutOrder"] = 1;
-NatHub["53"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["53"]["Name"] = [[Description]];
-
-
--- NatHub.Templates.Button.Frame.UIGradient
-NatHub["54"] = Instance.new("UIGradient", NatHub["4e"]);
-NatHub["54"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.160, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.320, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.540, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.782, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 158, 255))};
-
-
--- NatHub.Templates.Button.Frame.UIGradient
-NatHub["55"] = Instance.new("UIGradient", NatHub["4e"]);
-NatHub["55"]["Enabled"] = false;
-NatHub["55"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.160, Color3.fromRGB(0, 235, 255)),ColorSequenceKeypoint.new(0.320, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.540, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.782, Color3.fromRGB(0, 235, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 158, 255))};
-
-
--- NatHub.Templates.Button.Frame.UIGradient
-NatHub["56"] = Instance.new("UIGradient", NatHub["4e"]);
-NatHub["56"]["Enabled"] = false;
-NatHub["56"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.160, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.320, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.540, Color3.fromRGB(0, 235, 255)),ColorSequenceKeypoint.new(0.782, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 158, 255))};
-
-
--- NatHub.Templates.Button.Frame.UICorner
-NatHub["57"] = Instance.new("UICorner", NatHub["4e"]);
-NatHub["57"]["CornerRadius"] = UDim.new(0, 6);
-
-
--- NatHub.Templates.Button.UIStroke
-NatHub["58"] = Instance.new("UIStroke", NatHub["4c"]);
-NatHub["58"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
-NatHub["58"]["Thickness"] = 1.5;
-NatHub["58"]["Color"] = Color3.fromRGB(61, 61, 75);
-
-
--- NatHub.Templates.Paragraph
-NatHub["59"] = Instance.new("Frame", NatHub["41"]);
-NatHub["59"]["Visible"] = false;
-NatHub["59"]["BorderSizePixel"] = 0;
-NatHub["59"]["BackgroundColor3"] = Color3.fromRGB(43, 46, 53);
-NatHub["59"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["59"]["Size"] = UDim2.new(1, 0, 0, 35);
-NatHub["59"]["Position"] = UDim2.new(-0.0375, 0, 0.38434, 0);
-NatHub["59"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["59"]["Name"] = [[Paragraph]];
-
-
--- NatHub.Templates.Paragraph.UICorner
-NatHub["5a"] = Instance.new("UICorner", NatHub["59"]);
-NatHub["5a"]["CornerRadius"] = UDim.new(0, 6);
-
-
--- NatHub.Templates.Paragraph.UIStroke
-NatHub["5b"] = Instance.new("UIStroke", NatHub["59"]);
-NatHub["5b"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
-NatHub["5b"]["Thickness"] = 1.5;
-NatHub["5b"]["Color"] = Color3.fromRGB(61, 61, 75);
-
-
--- NatHub.Templates.Paragraph.Title
-NatHub["5c"] = Instance.new("TextLabel", NatHub["59"]);
-NatHub["5c"]["TextWrapped"] = true;
-NatHub["5c"]["Interactable"] = false;
-NatHub["5c"]["BorderSizePixel"] = 0;
-NatHub["5c"]["TextSize"] = 16;
-NatHub["5c"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-NatHub["5c"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["5c"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
-NatHub["5c"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["5c"]["BackgroundTransparency"] = 1;
-NatHub["5c"]["Size"] = UDim2.new(1, 0, 0, 15);
-NatHub["5c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["5c"]["Text"] = [[Title]];
-NatHub["5c"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["5c"]["Name"] = [[Title]];
-
-
--- NatHub.Templates.Paragraph.UIPadding
-NatHub["5d"] = Instance.new("UIPadding", NatHub["59"]);
-NatHub["5d"]["PaddingTop"] = UDim.new(0, 10);
-NatHub["5d"]["PaddingRight"] = UDim.new(0, 10);
-NatHub["5d"]["PaddingLeft"] = UDim.new(0, 10);
-NatHub["5d"]["PaddingBottom"] = UDim.new(0, 10);
-
-
--- NatHub.Templates.Paragraph.UIListLayout
-NatHub["5e"] = Instance.new("UIListLayout", NatHub["59"]);
-NatHub["5e"]["Padding"] = UDim.new(0, 5);
-NatHub["5e"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
-
-
--- NatHub.Templates.Paragraph.Description
-NatHub["5f"] = Instance.new("TextLabel", NatHub["59"]);
-NatHub["5f"]["TextWrapped"] = true;
-NatHub["5f"]["Interactable"] = false;
-NatHub["5f"]["BorderSizePixel"] = 0;
-NatHub["5f"]["TextSize"] = 16;
-NatHub["5f"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-NatHub["5f"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["5f"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Medium, Enum.FontStyle.Normal);
-NatHub["5f"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["5f"]["BackgroundTransparency"] = 1;
-NatHub["5f"]["Size"] = UDim2.new(1, 0, 0, 15);
-NatHub["5f"]["Visible"] = false;
-NatHub["5f"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["5f"]["Text"] = [[Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus placerat lacus in enim congue, fermentum euismod leo ultricies. Nulla sodales. ]];
-NatHub["5f"]["LayoutOrder"] = 1;
-NatHub["5f"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["5f"]["Name"] = [[Description]];
-
-
--- NatHub.Templates.Toggle
-NatHub["60"] = Instance.new("ImageButton", NatHub["41"]);
-NatHub["60"]["BorderSizePixel"] = 0;
-NatHub["60"]["AutoButtonColor"] = false;
-NatHub["60"]["Visible"] = false;
-NatHub["60"]["BackgroundColor3"] = Color3.fromRGB(43, 46, 53);
-NatHub["60"]["Selectable"] = false;
-NatHub["60"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["60"]["Size"] = UDim2.new(1, 0, 0, 35);
-NatHub["60"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["60"]["Name"] = [[Toggle]];
-NatHub["60"]["Position"] = UDim2.new(-0.0375, 0, 0.38434, 0);
-
-
--- NatHub.Templates.Toggle.UICorner
-NatHub["61"] = Instance.new("UICorner", NatHub["60"]);
-NatHub["61"]["CornerRadius"] = UDim.new(0, 6);
-
-
--- NatHub.Templates.Toggle.UIStroke
-NatHub["62"] = Instance.new("UIStroke", NatHub["60"]);
-NatHub["62"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
-NatHub["62"]["Thickness"] = 1.5;
-NatHub["62"]["Color"] = Color3.fromRGB(61, 61, 75);
-
-
--- NatHub.Templates.Toggle.UIPadding
-NatHub["63"] = Instance.new("UIPadding", NatHub["60"]);
-NatHub["63"]["PaddingTop"] = UDim.new(0, 10);
-NatHub["63"]["PaddingRight"] = UDim.new(0, 10);
-NatHub["63"]["PaddingLeft"] = UDim.new(0, 10);
-NatHub["63"]["PaddingBottom"] = UDim.new(0, 10);
-
-
--- NatHub.Templates.Toggle.UIListLayout
-NatHub["64"] = Instance.new("UIListLayout", NatHub["60"]);
-NatHub["64"]["Padding"] = UDim.new(0, 5);
-NatHub["64"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
-
-
--- NatHub.Templates.Toggle.Description
-NatHub["65"] = Instance.new("TextLabel", NatHub["60"]);
-NatHub["65"]["TextWrapped"] = true;
-NatHub["65"]["Interactable"] = false;
-NatHub["65"]["BorderSizePixel"] = 0;
-NatHub["65"]["TextSize"] = 16;
-NatHub["65"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-NatHub["65"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["65"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Medium, Enum.FontStyle.Normal);
-NatHub["65"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["65"]["BackgroundTransparency"] = 1;
-NatHub["65"]["Size"] = UDim2.new(1, 0, 0, 15);
-NatHub["65"]["Visible"] = false;
-NatHub["65"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["65"]["Text"] = [[Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus placerat lacus in enim congue, fermentum euismod leo ultricies. Nulla sodales. ]];
-NatHub["65"]["LayoutOrder"] = 1;
-NatHub["65"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["65"]["Name"] = [[Description]];
-
-
--- NatHub.Templates.Toggle.Title
-NatHub["66"] = Instance.new("TextLabel", NatHub["60"]);
-NatHub["66"]["TextWrapped"] = true;
-NatHub["66"]["BorderSizePixel"] = 0;
-NatHub["66"]["TextSize"] = 16;
-NatHub["66"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-NatHub["66"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["66"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-NatHub["66"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["66"]["BackgroundTransparency"] = 1;
-NatHub["66"]["Size"] = UDim2.new(1, 0, 0, 15);
-NatHub["66"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["66"]["Text"] = [[Toggle]];
-NatHub["66"]["Name"] = [[Title]];
-
-
--- NatHub.Templates.Toggle.Title.Fill
-NatHub["67"] = Instance.new("ImageButton", NatHub["66"]);
-NatHub["67"]["BorderSizePixel"] = 0;
-NatHub["67"]["AutoButtonColor"] = false;
-NatHub["67"]["BackgroundColor3"] = Color3.fromRGB(54, 57, 63);
-NatHub["67"]["ImageColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["67"]["AnchorPoint"] = Vector2.new(1, 0.5);
-NatHub["67"]["Size"] = UDim2.new(0, 45, 0, 25);
-NatHub["67"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["67"]["Name"] = [[Fill]];
-NatHub["67"]["Position"] = UDim2.new(1, 0, 0.5, 0);
-
-
--- NatHub.Templates.Toggle.Title.Fill.UICorner
-NatHub["68"] = Instance.new("UICorner", NatHub["67"]);
-NatHub["68"]["CornerRadius"] = UDim.new(100, 0);
-
-
--- NatHub.Templates.Toggle.Title.Fill.Ball
-NatHub["69"] = Instance.new("ImageButton", NatHub["67"]);
-NatHub["69"]["Active"] = false;
-NatHub["69"]["Interactable"] = false;
-NatHub["69"]["BorderSizePixel"] = 0;
-NatHub["69"]["AutoButtonColor"] = false;
-NatHub["69"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["69"]["ImageColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["69"]["AnchorPoint"] = Vector2.new(0, 0.5);
-NatHub["69"]["Size"] = UDim2.new(0, 20, 0, 20);
-NatHub["69"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["69"]["Name"] = [[Ball]];
-NatHub["69"]["Position"] = UDim2.new(0, 0, 0.5, 0);
-
-
--- NatHub.Templates.Toggle.Title.Fill.Ball.UICorner
-NatHub["6a"] = Instance.new("UICorner", NatHub["69"]);
-NatHub["6a"]["CornerRadius"] = UDim.new(100, 0);
-
-
--- NatHub.Templates.Toggle.Title.Fill.Ball.Icon
-NatHub["6b"] = Instance.new("ImageLabel", NatHub["69"]);
-NatHub["6b"]["BorderSizePixel"] = 0;
-NatHub["6b"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["6b"]["ImageColor3"] = Color3.fromRGB(54, 57, 63);
-NatHub["6b"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
-NatHub["6b"]["Size"] = UDim2.new(1, -5, 1, -5);
-NatHub["6b"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["6b"]["BackgroundTransparency"] = 1;
-NatHub["6b"]["Name"] = [[Icon]];
-NatHub["6b"]["Position"] = UDim2.new(0.5, 0, 0.5, 0);
-
-
--- NatHub.Templates.Toggle.Title.Fill.UIPadding
-NatHub["6c"] = Instance.new("UIPadding", NatHub["67"]);
-NatHub["6c"]["PaddingTop"] = UDim.new(0, 2);
-NatHub["6c"]["PaddingRight"] = UDim.new(0, 2);
-NatHub["6c"]["PaddingLeft"] = UDim.new(0, 2);
-NatHub["6c"]["PaddingBottom"] = UDim.new(0, 2);
-
-
--- NatHub.Templates.Notification
-NatHub["6d"] = Instance.new("Frame", NatHub["41"]);
-NatHub["6d"]["Visible"] = false;
-NatHub["6d"]["BorderSizePixel"] = 0;
-NatHub["6d"]["BackgroundColor3"] = Color3.fromRGB(37, 40, 47);
-NatHub["6d"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
-NatHub["6d"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["6d"]["Size"] = UDim2.new(1, 0, 0, 65);
-NatHub["6d"]["Position"] = UDim2.new(0.8244, 0, 0.88221, 0);
-NatHub["6d"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["6d"]["Name"] = [[Notification]];
-NatHub["6d"]["BackgroundTransparency"] = 1;
-
-
--- NatHub.Templates.Notification.Items
-NatHub["6e"] = Instance.new("CanvasGroup", NatHub["6d"]);
-NatHub["6e"]["ZIndex"] = 2;
-NatHub["6e"]["BorderSizePixel"] = 0;
-NatHub["6e"]["BackgroundColor3"] = Color3.fromRGB(37, 40, 47);
-NatHub["6e"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["6e"]["Size"] = UDim2.new(0, 265, 0, 70);
-NatHub["6e"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["6e"]["Name"] = [[Items]];
-
-
--- NatHub.Templates.Notification.Items.Frame
-NatHub["6f"] = Instance.new("Frame", NatHub["6e"]);
-NatHub["6f"]["BorderSizePixel"] = 0;
-NatHub["6f"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["6f"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["6f"]["Size"] = UDim2.new(0, 265, 0, 70);
-NatHub["6f"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["6f"]["BackgroundTransparency"] = 1;
-
-
--- NatHub.Templates.Notification.Items.Frame.UIListLayout
-NatHub["70"] = Instance.new("UIListLayout", NatHub["6f"]);
-NatHub["70"]["Padding"] = UDim.new(0, 5);
-NatHub["70"]["VerticalAlignment"] = Enum.VerticalAlignment.Center;
-NatHub["70"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
-
-
--- NatHub.Templates.Notification.Items.Frame.UIPadding
-NatHub["71"] = Instance.new("UIPadding", NatHub["6f"]);
-NatHub["71"]["PaddingTop"] = UDim.new(0, 15);
-NatHub["71"]["PaddingLeft"] = UDim.new(0, 15);
-NatHub["71"]["PaddingBottom"] = UDim.new(0, 15);
-
-
--- NatHub.Templates.Notification.Items.Frame.SubContent
-NatHub["72"] = Instance.new("TextLabel", NatHub["6f"]);
-NatHub["72"]["TextWrapped"] = true;
-NatHub["72"]["BorderSizePixel"] = 0;
-NatHub["72"]["TextSize"] = 12;
-NatHub["72"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-NatHub["72"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["72"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
-NatHub["72"]["TextColor3"] = Color3.fromRGB(181, 181, 181);
-NatHub["72"]["BackgroundTransparency"] = 1;
-NatHub["72"]["AnchorPoint"] = Vector2.new(0, 0.5);
-NatHub["72"]["Size"] = UDim2.new(0, 218, 0, 10);
-NatHub["72"]["Visible"] = false;
-NatHub["72"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["72"]["Text"] = [[This is a notification]];
-NatHub["72"]["LayoutOrder"] = 1;
-NatHub["72"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["72"]["Name"] = [[SubContent]];
-NatHub["72"]["Position"] = UDim2.new(0, 0, 0, 19);
-
-
--- NatHub.Templates.Notification.Items.Frame.SubContent.UIGradient
-NatHub["73"] = Instance.new("UIGradient", NatHub["72"]);
-NatHub["73"]["Enabled"] = false;
-NatHub["73"]["Rotation"] = -90;
-NatHub["73"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(3, 100, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 255, 226))};
-
-
--- NatHub.Templates.Notification.Items.Frame.Title
-NatHub["74"] = Instance.new("TextLabel", NatHub["6f"]);
-NatHub["74"]["TextWrapped"] = true;
-NatHub["74"]["BorderSizePixel"] = 0;
-NatHub["74"]["TextSize"] = 16;
-NatHub["74"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-NatHub["74"]["TextScaled"] = true;
-NatHub["74"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["74"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
-NatHub["74"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["74"]["BackgroundTransparency"] = 1;
-NatHub["74"]["AnchorPoint"] = Vector2.new(0, 0.5);
-NatHub["74"]["Size"] = UDim2.new(0, 235, 0, 18);
-NatHub["74"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["74"]["Text"] = [[Title]];
-NatHub["74"]["Name"] = [[Title]];
-NatHub["74"]["Position"] = UDim2.new(0, 0, 0, 9);
-
-
--- NatHub.Templates.Notification.Items.Frame.Title.Close
-NatHub["75"] = Instance.new("ImageButton", NatHub["74"]);
-NatHub["75"]["BorderSizePixel"] = 0;
-NatHub["75"]["BackgroundTransparency"] = 1;
+NovaHub["52"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["52"]["ImageColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["52"]["AnchorPoint"] = Vector2.new(1, 0.5);
+NovaHub["52"]["Image"] = [[rbxassetid://91877599529856]];
+NovaHub["52"]["Size"] = UDim2.new(0, 23, 0, 23);
+NovaHub["52"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["52"]["Name"] = [[ClickIcon]];
+NovaHub["52"]["Position"] = UDim2.new(1, 0, 0.5, 0);
+
+
+-- NovaHub.Templates.Button.Frame.Description
+NovaHub["53"] = Instance.new("TextLabel", NovaHub["4e"]);
+NovaHub["53"]["TextWrapped"] = true;
+NovaHub["53"]["Interactable"] = false;
+NovaHub["53"]["BorderSizePixel"] = 0;
+NovaHub["53"]["TextSize"] = 16;
+NovaHub["53"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+NovaHub["53"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["53"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Medium, Enum.FontStyle.Normal);
+NovaHub["53"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["53"]["BackgroundTransparency"] = 1;
+NovaHub["53"]["Size"] = UDim2.new(1, 0, 0, 15);
+NovaHub["53"]["Visible"] = false;
+NovaHub["53"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["53"]["Text"] = [[Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus placerat lacus in enim congue, fermentum euismod leo ultricies. Nulla sodales. ]];
+NovaHub["53"]["LayoutOrder"] = 1;
+NovaHub["53"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["53"]["Name"] = [[Description]];
+
+
+-- NovaHub.Templates.Button.Frame.UIGradient
+NovaHub["54"] = Instance.new("UIGradient", NovaHub["4e"]);
+NovaHub["54"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.160, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.320, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.540, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.782, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 158, 255))};
+
+
+-- NovaHub.Templates.Button.Frame.UIGradient
+NovaHub["55"] = Instance.new("UIGradient", NovaHub["4e"]);
+NovaHub["55"]["Enabled"] = false;
+NovaHub["55"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.160, Color3.fromRGB(0, 235, 255)),ColorSequenceKeypoint.new(0.320, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.540, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.782, Color3.fromRGB(0, 235, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 158, 255))};
+
+
+-- NovaHub.Templates.Button.Frame.UIGradient
+NovaHub["56"] = Instance.new("UIGradient", NovaHub["4e"]);
+NovaHub["56"]["Enabled"] = false;
+NovaHub["56"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.160, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.320, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.540, Color3.fromRGB(0, 235, 255)),ColorSequenceKeypoint.new(0.782, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 158, 255))};
+
+
+-- NovaHub.Templates.Button.Frame.UICorner
+NovaHub["57"] = Instance.new("UICorner", NovaHub["4e"]);
+NovaHub["57"]["CornerRadius"] = UDim.new(0, 6);
+
+
+-- NovaHub.Templates.Button.UIStroke
+NovaHub["58"] = Instance.new("UIStroke", NovaHub["4c"]);
+NovaHub["58"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+NovaHub["58"]["Thickness"] = 1.5;
+NovaHub["58"]["Color"] = Color3.fromRGB(61, 61, 75);
+
+
+-- NovaHub.Templates.Paragraph
+NovaHub["59"] = Instance.new("Frame", NovaHub["41"]);
+NovaHub["59"]["Visible"] = false;
+NovaHub["59"]["BorderSizePixel"] = 0;
+NovaHub["59"]["BackgroundColor3"] = Color3.fromRGB(43, 46, 53);
+NovaHub["59"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["59"]["Size"] = UDim2.new(1, 0, 0, 35);
+NovaHub["59"]["Position"] = UDim2.new(-0.0375, 0, 0.38434, 0);
+NovaHub["59"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["59"]["Name"] = [[Paragraph]];
+
+
+-- NovaHub.Templates.Paragraph.UICorner
+NovaHub["5a"] = Instance.new("UICorner", NovaHub["59"]);
+NovaHub["5a"]["CornerRadius"] = UDim.new(0, 6);
+
+
+-- NovaHub.Templates.Paragraph.UIStroke
+NovaHub["5b"] = Instance.new("UIStroke", NovaHub["59"]);
+NovaHub["5b"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+NovaHub["5b"]["Thickness"] = 1.5;
+NovaHub["5b"]["Color"] = Color3.fromRGB(61, 61, 75);
+
+
+-- NovaHub.Templates.Paragraph.Title
+NovaHub["5c"] = Instance.new("TextLabel", NovaHub["59"]);
+NovaHub["5c"]["TextWrapped"] = true;
+NovaHub["5c"]["Interactable"] = false;
+NovaHub["5c"]["BorderSizePixel"] = 0;
+NovaHub["5c"]["TextSize"] = 16;
+NovaHub["5c"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+NovaHub["5c"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["5c"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+NovaHub["5c"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["5c"]["BackgroundTransparency"] = 1;
+NovaHub["5c"]["Size"] = UDim2.new(1, 0, 0, 15);
+NovaHub["5c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["5c"]["Text"] = [[Title]];
+NovaHub["5c"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["5c"]["Name"] = [[Title]];
+
+
+-- NovaHub.Templates.Paragraph.UIPadding
+NovaHub["5d"] = Instance.new("UIPadding", NovaHub["59"]);
+NovaHub["5d"]["PaddingTop"] = UDim.new(0, 10);
+NovaHub["5d"]["PaddingRight"] = UDim.new(0, 10);
+NovaHub["5d"]["PaddingLeft"] = UDim.new(0, 10);
+NovaHub["5d"]["PaddingBottom"] = UDim.new(0, 10);
+
+
+-- NovaHub.Templates.Paragraph.UIListLayout
+NovaHub["5e"] = Instance.new("UIListLayout", NovaHub["59"]);
+NovaHub["5e"]["Padding"] = UDim.new(0, 5);
+NovaHub["5e"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
+
+
+-- NovaHub.Templates.Paragraph.Description
+NovaHub["5f"] = Instance.new("TextLabel", NovaHub["59"]);
+NovaHub["5f"]["TextWrapped"] = true;
+NovaHub["5f"]["Interactable"] = false;
+NovaHub["5f"]["BorderSizePixel"] = 0;
+NovaHub["5f"]["TextSize"] = 16;
+NovaHub["5f"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+NovaHub["5f"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["5f"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Medium, Enum.FontStyle.Normal);
+NovaHub["5f"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["5f"]["BackgroundTransparency"] = 1;
+NovaHub["5f"]["Size"] = UDim2.new(1, 0, 0, 15);
+NovaHub["5f"]["Visible"] = false;
+NovaHub["5f"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["5f"]["Text"] = [[Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus placerat lacus in enim congue, fermentum euismod leo ultricies. Nulla sodales. ]];
+NovaHub["5f"]["LayoutOrder"] = 1;
+NovaHub["5f"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["5f"]["Name"] = [[Description]];
+
+
+-- NovaHub.Templates.Toggle
+NovaHub["60"] = Instance.new("ImageButton", NovaHub["41"]);
+NovaHub["60"]["BorderSizePixel"] = 0;
+NovaHub["60"]["AutoButtonColor"] = false;
+NovaHub["60"]["Visible"] = false;
+NovaHub["60"]["BackgroundColor3"] = Color3.fromRGB(43, 46, 53);
+NovaHub["60"]["Selectable"] = false;
+NovaHub["60"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["60"]["Size"] = UDim2.new(1, 0, 0, 35);
+NovaHub["60"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["60"]["Name"] = [[Toggle]];
+NovaHub["60"]["Position"] = UDim2.new(-0.0375, 0, 0.38434, 0);
+
+
+-- NovaHub.Templates.Toggle.UICorner
+NovaHub["61"] = Instance.new("UICorner", NovaHub["60"]);
+NovaHub["61"]["CornerRadius"] = UDim.new(0, 6);
+
+
+-- NovaHub.Templates.Toggle.UIStroke
+NovaHub["62"] = Instance.new("UIStroke", NovaHub["60"]);
+NovaHub["62"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+NovaHub["62"]["Thickness"] = 1.5;
+NovaHub["62"]["Color"] = Color3.fromRGB(61, 61, 75);
+
+
+-- NovaHub.Templates.Toggle.UIPadding
+NovaHub["63"] = Instance.new("UIPadding", NovaHub["60"]);
+NovaHub["63"]["PaddingTop"] = UDim.new(0, 10);
+NovaHub["63"]["PaddingRight"] = UDim.new(0, 10);
+NovaHub["63"]["PaddingLeft"] = UDim.new(0, 10);
+NovaHub["63"]["PaddingBottom"] = UDim.new(0, 10);
+
+
+-- NovaHub.Templates.Toggle.UIListLayout
+NovaHub["64"] = Instance.new("UIListLayout", NovaHub["60"]);
+NovaHub["64"]["Padding"] = UDim.new(0, 5);
+NovaHub["64"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
+
+
+-- NovaHub.Templates.Toggle.Description
+NovaHub["65"] = Instance.new("TextLabel", NovaHub["60"]);
+NovaHub["65"]["TextWrapped"] = true;
+NovaHub["65"]["Interactable"] = false;
+NovaHub["65"]["BorderSizePixel"] = 0;
+NovaHub["65"]["TextSize"] = 16;
+NovaHub["65"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+NovaHub["65"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["65"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Medium, Enum.FontStyle.Normal);
+NovaHub["65"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["65"]["BackgroundTransparency"] = 1;
+NovaHub["65"]["Size"] = UDim2.new(1, 0, 0, 15);
+NovaHub["65"]["Visible"] = false;
+NovaHub["65"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["65"]["Text"] = [[Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus placerat lacus in enim congue, fermentum euismod leo ultricies. Nulla sodales. ]];
+NovaHub["65"]["LayoutOrder"] = 1;
+NovaHub["65"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["65"]["Name"] = [[Description]];
+
+
+-- NovaHub.Templates.Toggle.Title
+NovaHub["66"] = Instance.new("TextLabel", NovaHub["60"]);
+NovaHub["66"]["TextWrapped"] = true;
+NovaHub["66"]["BorderSizePixel"] = 0;
+NovaHub["66"]["TextSize"] = 16;
+NovaHub["66"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+NovaHub["66"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["66"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+NovaHub["66"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["66"]["BackgroundTransparency"] = 1;
+NovaHub["66"]["Size"] = UDim2.new(1, 0, 0, 15);
+NovaHub["66"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["66"]["Text"] = [[Toggle]];
+NovaHub["66"]["Name"] = [[Title]];
+
+
+-- NovaHub.Templates.Toggle.Title.Fill
+NovaHub["67"] = Instance.new("ImageButton", NovaHub["66"]);
+NovaHub["67"]["BorderSizePixel"] = 0;
+NovaHub["67"]["AutoButtonColor"] = false;
+NovaHub["67"]["BackgroundColor3"] = Color3.fromRGB(54, 57, 63);
+NovaHub["67"]["ImageColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["67"]["AnchorPoint"] = Vector2.new(1, 0.5);
+NovaHub["67"]["Size"] = UDim2.new(0, 45, 0, 25);
+NovaHub["67"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["67"]["Name"] = [[Fill]];
+NovaHub["67"]["Position"] = UDim2.new(1, 0, 0.5, 0);
+
+
+-- NovaHub.Templates.Toggle.Title.Fill.UICorner
+NovaHub["68"] = Instance.new("UICorner", NovaHub["67"]);
+NovaHub["68"]["CornerRadius"] = UDim.new(100, 0);
+
+
+-- NovaHub.Templates.Toggle.Title.Fill.Ball
+NovaHub["69"] = Instance.new("ImageButton", NovaHub["67"]);
+NovaHub["69"]["Active"] = false;
+NovaHub["69"]["Interactable"] = false;
+NovaHub["69"]["BorderSizePixel"] = 0;
+NovaHub["69"]["AutoButtonColor"] = false;
+NovaHub["69"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["69"]["ImageColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["69"]["AnchorPoint"] = Vector2.new(0, 0.5);
+NovaHub["69"]["Size"] = UDim2.new(0, 20, 0, 20);
+NovaHub["69"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["69"]["Name"] = [[Ball]];
+NovaHub["69"]["Position"] = UDim2.new(0, 0, 0.5, 0);
+
+
+-- NovaHub.Templates.Toggle.Title.Fill.Ball.UICorner
+NovaHub["6a"] = Instance.new("UICorner", NovaHub["69"]);
+NovaHub["6a"]["CornerRadius"] = UDim.new(100, 0);
+
+
+-- NovaHub.Templates.Toggle.Title.Fill.Ball.Icon
+NovaHub["6b"] = Instance.new("ImageLabel", NovaHub["69"]);
+NovaHub["6b"]["BorderSizePixel"] = 0;
+NovaHub["6b"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["6b"]["ImageColor3"] = Color3.fromRGB(54, 57, 63);
+NovaHub["6b"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
+NovaHub["6b"]["Size"] = UDim2.new(1, -5, 1, -5);
+NovaHub["6b"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["6b"]["BackgroundTransparency"] = 1;
+NovaHub["6b"]["Name"] = [[Icon]];
+NovaHub["6b"]["Position"] = UDim2.new(0.5, 0, 0.5, 0);
+
+
+-- NovaHub.Templates.Toggle.Title.Fill.UIPadding
+NovaHub["6c"] = Instance.new("UIPadding", NovaHub["67"]);
+NovaHub["6c"]["PaddingTop"] = UDim.new(0, 2);
+NovaHub["6c"]["PaddingRight"] = UDim.new(0, 2);
+NovaHub["6c"]["PaddingLeft"] = UDim.new(0, 2);
+NovaHub["6c"]["PaddingBottom"] = UDim.new(0, 2);
+
+
+-- NovaHub.Templates.Notification
+NovaHub["6d"] = Instance.new("Frame", NovaHub["41"]);
+NovaHub["6d"]["Visible"] = false;
+NovaHub["6d"]["BorderSizePixel"] = 0;
+NovaHub["6d"]["BackgroundColor3"] = Color3.fromRGB(37, 40, 47);
+NovaHub["6d"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
+NovaHub["6d"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["6d"]["Size"] = UDim2.new(1, 0, 0, 65);
+NovaHub["6d"]["Position"] = UDim2.new(0.8244, 0, 0.88221, 0);
+NovaHub["6d"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["6d"]["Name"] = [[Notification]];
+NovaHub["6d"]["BackgroundTransparency"] = 1;
+
+
+-- NovaHub.Templates.Notification.Items
+NovaHub["6e"] = Instance.new("CanvasGroup", NovaHub["6d"]);
+NovaHub["6e"]["ZIndex"] = 2;
+NovaHub["6e"]["BorderSizePixel"] = 0;
+NovaHub["6e"]["BackgroundColor3"] = Color3.fromRGB(37, 40, 47);
+NovaHub["6e"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["6e"]["Size"] = UDim2.new(0, 265, 0, 70);
+NovaHub["6e"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["6e"]["Name"] = [[Items]];
+
+
+-- NovaHub.Templates.Notification.Items.Frame
+NovaHub["6f"] = Instance.new("Frame", NovaHub["6e"]);
+NovaHub["6f"]["BorderSizePixel"] = 0;
+NovaHub["6f"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["6f"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["6f"]["Size"] = UDim2.new(0, 265, 0, 70);
+NovaHub["6f"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["6f"]["BackgroundTransparency"] = 1;
+
+
+-- NovaHub.Templates.Notification.Items.Frame.UIListLayout
+NovaHub["70"] = Instance.new("UIListLayout", NovaHub["6f"]);
+NovaHub["70"]["Padding"] = UDim.new(0, 5);
+NovaHub["70"]["VerticalAlignment"] = Enum.VerticalAlignment.Center;
+NovaHub["70"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
+
+
+-- NovaHub.Templates.Notification.Items.Frame.UIPadding
+NovaHub["71"] = Instance.new("UIPadding", NovaHub["6f"]);
+NovaHub["71"]["PaddingTop"] = UDim.new(0, 15);
+NovaHub["71"]["PaddingLeft"] = UDim.new(0, 15);
+NovaHub["71"]["PaddingBottom"] = UDim.new(0, 15);
+
+
+-- NovaHub.Templates.Notification.Items.Frame.SubContent
+NovaHub["72"] = Instance.new("TextLabel", NovaHub["6f"]);
+NovaHub["72"]["TextWrapped"] = true;
+NovaHub["72"]["BorderSizePixel"] = 0;
+NovaHub["72"]["TextSize"] = 12;
+NovaHub["72"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+NovaHub["72"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["72"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+NovaHub["72"]["TextColor3"] = Color3.fromRGB(181, 181, 181);
+NovaHub["72"]["BackgroundTransparency"] = 1;
+NovaHub["72"]["AnchorPoint"] = Vector2.new(0, 0.5);
+NovaHub["72"]["Size"] = UDim2.new(0, 218, 0, 10);
+NovaHub["72"]["Visible"] = false;
+NovaHub["72"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["72"]["Text"] = [[This is a notification]];
+NovaHub["72"]["LayoutOrder"] = 1;
+NovaHub["72"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["72"]["Name"] = [[SubContent]];
+NovaHub["72"]["Position"] = UDim2.new(0, 0, 0, 19);
+
+
+-- NovaHub.Templates.Notification.Items.Frame.SubContent.UIGradient
+NovaHub["73"] = Instance.new("UIGradient", NovaHub["72"]);
+NovaHub["73"]["Enabled"] = false;
+NovaHub["73"]["Rotation"] = -90;
+NovaHub["73"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(3, 100, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 255, 226))};
+
+
+-- NovaHub.Templates.Notification.Items.Frame.Title
+NovaHub["74"] = Instance.new("TextLabel", NovaHub["6f"]);
+NovaHub["74"]["TextWrapped"] = true;
+NovaHub["74"]["BorderSizePixel"] = 0;
+NovaHub["74"]["TextSize"] = 16;
+NovaHub["74"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+NovaHub["74"]["TextScaled"] = true;
+NovaHub["74"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["74"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+NovaHub["74"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["74"]["BackgroundTransparency"] = 1;
+NovaHub["74"]["AnchorPoint"] = Vector2.new(0, 0.5);
+NovaHub["74"]["Size"] = UDim2.new(0, 235, 0, 18);
+NovaHub["74"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["74"]["Text"] = [[Title]];
+NovaHub["74"]["Name"] = [[Title]];
+NovaHub["74"]["Position"] = UDim2.new(0, 0, 0, 9);
+
+
+-- NovaHub.Templates.Notification.Items.Frame.Title.Close
+NovaHub["75"] = Instance.new("ImageButton", NovaHub["74"]);
+NovaHub["75"]["BorderSizePixel"] = 0;
+NovaHub["75"]["BackgroundTransparency"] = 1;
 -- [ERROR] cannot convert ImageContent, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
-NatHub["75"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["75"]["ImageColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["75"]["AnchorPoint"] = Vector2.new(0, 0.5);
-NatHub["75"]["Image"] = [[rbxassetid://132453323679056]];
-NatHub["75"]["Size"] = UDim2.new(0.09706, 0, 1.33333, 0);
-NatHub["75"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["75"]["Name"] = [[Close]];
-NatHub["75"]["Position"] = UDim2.new(0.92, 0, 0.5, 0);
+NovaHub["75"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["75"]["ImageColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["75"]["AnchorPoint"] = Vector2.new(0, 0.5);
+NovaHub["75"]["Image"] = [[rbxassetid://132453323679056]];
+NovaHub["75"]["Size"] = UDim2.new(0.09706, 0, 1.33333, 0);
+NovaHub["75"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["75"]["Name"] = [[Close]];
+NovaHub["75"]["Position"] = UDim2.new(0.92, 0, 0.5, 0);
 
 
--- NatHub.Templates.Notification.Items.Frame.Title.Close.UIAspectRatioConstraint
-NatHub["76"] = Instance.new("UIAspectRatioConstraint", NatHub["75"]);
+-- NovaHub.Templates.Notification.Items.Frame.Title.Close.UIAspectRatioConstraint
+NovaHub["76"] = Instance.new("UIAspectRatioConstraint", NovaHub["75"]);
 
 
 
--- NatHub.Templates.Notification.Items.Frame.Title.UIPadding
-NatHub["77"] = Instance.new("UIPadding", NatHub["74"]);
-NatHub["77"]["PaddingLeft"] = UDim.new(0, 30);
+-- NovaHub.Templates.Notification.Items.Frame.Title.UIPadding
+NovaHub["77"] = Instance.new("UIPadding", NovaHub["74"]);
+NovaHub["77"]["PaddingLeft"] = UDim.new(0, 30);
 
 
--- NatHub.Templates.Notification.Items.Frame.Title.Icon
-NatHub["78"] = Instance.new("ImageButton", NatHub["74"]);
-NatHub["78"]["BorderSizePixel"] = 0;
-NatHub["78"]["BackgroundTransparency"] = 1;
+-- NovaHub.Templates.Notification.Items.Frame.Title.Icon
+NovaHub["78"] = Instance.new("ImageButton", NovaHub["74"]);
+NovaHub["78"]["BorderSizePixel"] = 0;
+NovaHub["78"]["BackgroundTransparency"] = 1;
 -- [ERROR] cannot convert ImageContent, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
-NatHub["78"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["78"]["ImageColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["78"]["AnchorPoint"] = Vector2.new(0, 0.5);
-NatHub["78"]["Image"] = [[rbxassetid://92049322344253]];
-NatHub["78"]["Size"] = UDim2.new(0.09706, 0, 1.33333, 0);
-NatHub["78"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["78"]["Name"] = [[Icon]];
-NatHub["78"]["Position"] = UDim2.new(0, -30, 0.5, 0);
+NovaHub["78"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["78"]["ImageColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["78"]["AnchorPoint"] = Vector2.new(0, 0.5);
+NovaHub["78"]["Image"] = [[rbxassetid://92049322344253]];
+NovaHub["78"]["Size"] = UDim2.new(0.09706, 0, 1.33333, 0);
+NovaHub["78"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["78"]["Name"] = [[Icon]];
+NovaHub["78"]["Position"] = UDim2.new(0, -30, 0.5, 0);
 
 
--- NatHub.Templates.Notification.Items.Frame.Title.Icon.UIAspectRatioConstraint
-NatHub["79"] = Instance.new("UIAspectRatioConstraint", NatHub["78"]);
-
-
-
--- NatHub.Templates.Notification.Items.Frame.Content
-NatHub["7a"] = Instance.new("TextLabel", NatHub["6f"]);
-NatHub["7a"]["TextWrapped"] = true;
-NatHub["7a"]["BorderSizePixel"] = 0;
-NatHub["7a"]["TextSize"] = 16;
-NatHub["7a"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-NatHub["7a"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["7a"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Medium, Enum.FontStyle.Normal);
-NatHub["7a"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["7a"]["BackgroundTransparency"] = 1;
-NatHub["7a"]["AnchorPoint"] = Vector2.new(0, 0.5);
-NatHub["7a"]["Size"] = UDim2.new(0, 218, 0, 10);
-NatHub["7a"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["7a"]["Text"] = [[Content]];
-NatHub["7a"]["LayoutOrder"] = 2;
-NatHub["7a"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["7a"]["Name"] = [[Content]];
-NatHub["7a"]["Position"] = UDim2.new(0, 0, 0, 19);
-
-
--- NatHub.Templates.Notification.Items.Frame.Content.UIGradient
-NatHub["7b"] = Instance.new("UIGradient", NatHub["7a"]);
-NatHub["7b"]["Enabled"] = false;
-NatHub["7b"]["Rotation"] = -90;
-NatHub["7b"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(3, 100, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 255, 226))};
-
-
--- NatHub.Templates.Notification.Items.TimerBarFill
-NatHub["7c"] = Instance.new("Frame", NatHub["6e"]);
-NatHub["7c"]["BorderSizePixel"] = 0;
-NatHub["7c"]["BackgroundColor3"] = Color3.fromRGB(61, 61, 75);
-NatHub["7c"]["AnchorPoint"] = Vector2.new(0, 1);
-NatHub["7c"]["Size"] = UDim2.new(1, 0, 0, 5);
-NatHub["7c"]["Position"] = UDim2.new(0, 0, 1, 0);
-NatHub["7c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["7c"]["Name"] = [[TimerBarFill]];
-NatHub["7c"]["BackgroundTransparency"] = 0.7;
-
-
--- NatHub.Templates.Notification.Items.TimerBarFill.UICorner
-NatHub["7d"] = Instance.new("UICorner", NatHub["7c"]);
+-- NovaHub.Templates.Notification.Items.Frame.Title.Icon.UIAspectRatioConstraint
+NovaHub["79"] = Instance.new("UIAspectRatioConstraint", NovaHub["78"]);
 
 
 
--- NatHub.Templates.Notification.Items.TimerBarFill.Bar
-NatHub["7e"] = Instance.new("Frame", NatHub["7c"]);
-NatHub["7e"]["BorderSizePixel"] = 0;
-NatHub["7e"]["BackgroundColor3"] = Color3.fromRGB(61, 61, 75);
-NatHub["7e"]["Size"] = UDim2.new(1, 0, 1, 0);
-NatHub["7e"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["7e"]["Name"] = [[Bar]];
+-- NovaHub.Templates.Notification.Items.Frame.Content
+NovaHub["7a"] = Instance.new("TextLabel", NovaHub["6f"]);
+NovaHub["7a"]["TextWrapped"] = true;
+NovaHub["7a"]["BorderSizePixel"] = 0;
+NovaHub["7a"]["TextSize"] = 16;
+NovaHub["7a"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+NovaHub["7a"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["7a"]["FontFace"] = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.Medium, Enum.FontStyle.Normal);
+NovaHub["7a"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["7a"]["BackgroundTransparency"] = 1;
+NovaHub["7a"]["AnchorPoint"] = Vector2.new(0, 0.5);
+NovaHub["7a"]["Size"] = UDim2.new(0, 218, 0, 10);
+NovaHub["7a"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["7a"]["Text"] = [[Content]];
+NovaHub["7a"]["LayoutOrder"] = 2;
+NovaHub["7a"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["7a"]["Name"] = [[Content]];
+NovaHub["7a"]["Position"] = UDim2.new(0, 0, 0, 19);
 
 
--- NatHub.Templates.Notification.Items.TimerBarFill.Bar.UICorner
-NatHub["7f"] = Instance.new("UICorner", NatHub["7e"]);
+-- NovaHub.Templates.Notification.Items.Frame.Content.UIGradient
+NovaHub["7b"] = Instance.new("UIGradient", NovaHub["7a"]);
+NovaHub["7b"]["Enabled"] = false;
+NovaHub["7b"]["Rotation"] = -90;
+NovaHub["7b"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(3, 100, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 255, 226))};
+
+
+-- NovaHub.Templates.Notification.Items.TimerBarFill
+NovaHub["7c"] = Instance.new("Frame", NovaHub["6e"]);
+NovaHub["7c"]["BorderSizePixel"] = 0;
+NovaHub["7c"]["BackgroundColor3"] = Color3.fromRGB(61, 61, 75);
+NovaHub["7c"]["AnchorPoint"] = Vector2.new(0, 1);
+NovaHub["7c"]["Size"] = UDim2.new(1, 0, 0, 5);
+NovaHub["7c"]["Position"] = UDim2.new(0, 0, 1, 0);
+NovaHub["7c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["7c"]["Name"] = [[TimerBarFill]];
+NovaHub["7c"]["BackgroundTransparency"] = 0.7;
+
+
+-- NovaHub.Templates.Notification.Items.TimerBarFill.UICorner
+NovaHub["7d"] = Instance.new("UICorner", NovaHub["7c"]);
 
 
 
--- NatHub.Templates.Notification.Items.UIStroke
-NatHub["80"] = Instance.new("UIStroke", NatHub["6e"]);
-NatHub["80"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
-NatHub["80"]["Thickness"] = 1.5;
-NatHub["80"]["Color"] = Color3.fromRGB(61, 61, 75);
+-- NovaHub.Templates.Notification.Items.TimerBarFill.Bar
+NovaHub["7e"] = Instance.new("Frame", NovaHub["7c"]);
+NovaHub["7e"]["BorderSizePixel"] = 0;
+NovaHub["7e"]["BackgroundColor3"] = Color3.fromRGB(61, 61, 75);
+NovaHub["7e"]["Size"] = UDim2.new(1, 0, 1, 0);
+NovaHub["7e"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["7e"]["Name"] = [[Bar]];
 
 
--- NatHub.Templates.Notification.Items.UICorner
-NatHub["81"] = Instance.new("UICorner", NatHub["6e"]);
+-- NovaHub.Templates.Notification.Items.TimerBarFill.Bar.UICorner
+NovaHub["7f"] = Instance.new("UICorner", NovaHub["7e"]);
 
 
 
--- NatHub.Templates.Slider
-NatHub["82"] = Instance.new("Frame", NatHub["41"]);
-NatHub["82"]["Visible"] = false;
-NatHub["82"]["BorderSizePixel"] = 0;
-NatHub["82"]["BackgroundColor3"] = Color3.fromRGB(43, 46, 53);
-NatHub["82"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["82"]["Size"] = UDim2.new(1, 0, 0, 35);
-NatHub["82"]["Position"] = UDim2.new(-0.0375, 0, 0.38434, 0);
-NatHub["82"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["82"]["Name"] = [[Slider]];
+-- NovaHub.Templates.Notification.Items.UIStroke
+NovaHub["80"] = Instance.new("UIStroke", NovaHub["6e"]);
+NovaHub["80"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+NovaHub["80"]["Thickness"] = 1.5;
+NovaHub["80"]["Color"] = Color3.fromRGB(61, 61, 75);
 
 
--- NatHub.Templates.Slider.UICorner
-NatHub["83"] = Instance.new("UICorner", NatHub["82"]);
-NatHub["83"]["CornerRadius"] = UDim.new(0, 6);
+-- NovaHub.Templates.Notification.Items.UICorner
+NovaHub["81"] = Instance.new("UICorner", NovaHub["6e"]);
 
 
--- NatHub.Templates.Slider.UIStroke
-NatHub["84"] = Instance.new("UIStroke", NatHub["82"]);
-NatHub["84"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
-NatHub["84"]["Thickness"] = 1.5;
-NatHub["84"]["Color"] = Color3.fromRGB(61, 61, 75);
+
+-- NovaHub.Templates.Slider
+NovaHub["82"] = Instance.new("Frame", NovaHub["41"]);
+NovaHub["82"]["Visible"] = false;
+NovaHub["82"]["BorderSizePixel"] = 0;
+NovaHub["82"]["BackgroundColor3"] = Color3.fromRGB(43, 46, 53);
+NovaHub["82"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["82"]["Size"] = UDim2.new(1, 0, 0, 35);
+NovaHub["82"]["Position"] = UDim2.new(-0.0375, 0, 0.38434, 0);
+NovaHub["82"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["82"]["Name"] = [[Slider]];
 
 
--- NatHub.Templates.Slider.Title
-NatHub["85"] = Instance.new("TextLabel", NatHub["82"]);
-NatHub["85"]["TextWrapped"] = true;
-NatHub["85"]["Interactable"] = false;
-NatHub["85"]["BorderSizePixel"] = 0;
-NatHub["85"]["TextSize"] = 16;
-NatHub["85"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-NatHub["85"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["85"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
-NatHub["85"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["85"]["BackgroundTransparency"] = 1;
-NatHub["85"]["Size"] = UDim2.new(1, 0, 0, 15);
-NatHub["85"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["85"]["Text"] = [[Slider]];
-NatHub["85"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["85"]["Name"] = [[Title]];
+-- NovaHub.Templates.Slider.UICorner
+NovaHub["83"] = Instance.new("UICorner", NovaHub["82"]);
+NovaHub["83"]["CornerRadius"] = UDim.new(0, 6);
 
 
--- NatHub.Templates.Slider.UIPadding
-NatHub["86"] = Instance.new("UIPadding", NatHub["82"]);
-NatHub["86"]["PaddingTop"] = UDim.new(0, 10);
-NatHub["86"]["PaddingRight"] = UDim.new(0, 10);
-NatHub["86"]["PaddingLeft"] = UDim.new(0, 10);
-NatHub["86"]["PaddingBottom"] = UDim.new(0, 10);
+-- NovaHub.Templates.Slider.UIStroke
+NovaHub["84"] = Instance.new("UIStroke", NovaHub["82"]);
+NovaHub["84"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+NovaHub["84"]["Thickness"] = 1.5;
+NovaHub["84"]["Color"] = Color3.fromRGB(61, 61, 75);
 
 
--- NatHub.Templates.Slider.UIListLayout
-NatHub["87"] = Instance.new("UIListLayout", NatHub["82"]);
-NatHub["87"]["Padding"] = UDim.new(0, 5);
-NatHub["87"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
+-- NovaHub.Templates.Slider.Title
+NovaHub["85"] = Instance.new("TextLabel", NovaHub["82"]);
+NovaHub["85"]["TextWrapped"] = true;
+NovaHub["85"]["Interactable"] = false;
+NovaHub["85"]["BorderSizePixel"] = 0;
+NovaHub["85"]["TextSize"] = 16;
+NovaHub["85"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+NovaHub["85"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["85"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+NovaHub["85"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["85"]["BackgroundTransparency"] = 1;
+NovaHub["85"]["Size"] = UDim2.new(1, 0, 0, 15);
+NovaHub["85"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["85"]["Text"] = [[Slider]];
+NovaHub["85"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["85"]["Name"] = [[Title]];
 
 
--- NatHub.Templates.Slider.Description
-NatHub["88"] = Instance.new("TextLabel", NatHub["82"]);
-NatHub["88"]["TextWrapped"] = true;
-NatHub["88"]["Interactable"] = false;
-NatHub["88"]["BorderSizePixel"] = 0;
-NatHub["88"]["TextSize"] = 16;
-NatHub["88"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-NatHub["88"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["88"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Medium, Enum.FontStyle.Normal);
-NatHub["88"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["88"]["BackgroundTransparency"] = 1;
-NatHub["88"]["Size"] = UDim2.new(1, 0, 0, 15);
-NatHub["88"]["Visible"] = false;
-NatHub["88"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["88"]["Text"] = [[Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus placerat lacus in enim congue, fermentum euismod leo ultricies. Nulla sodales. ]];
-NatHub["88"]["LayoutOrder"] = 1;
-NatHub["88"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["88"]["Name"] = [[Description]];
+-- NovaHub.Templates.Slider.UIPadding
+NovaHub["86"] = Instance.new("UIPadding", NovaHub["82"]);
+NovaHub["86"]["PaddingTop"] = UDim.new(0, 10);
+NovaHub["86"]["PaddingRight"] = UDim.new(0, 10);
+NovaHub["86"]["PaddingLeft"] = UDim.new(0, 10);
+NovaHub["86"]["PaddingBottom"] = UDim.new(0, 10);
 
 
--- NatHub.Templates.Slider.SliderFrame
-NatHub["89"] = Instance.new("Frame", NatHub["82"]);
-NatHub["89"]["ZIndex"] = 0;
-NatHub["89"]["BorderSizePixel"] = 0;
-NatHub["89"]["Size"] = UDim2.new(1, 0, 0, 25);
-NatHub["89"]["Name"] = [[SliderFrame]];
-NatHub["89"]["LayoutOrder"] = 2;
-NatHub["89"]["BackgroundTransparency"] = 1;
+-- NovaHub.Templates.Slider.UIListLayout
+NovaHub["87"] = Instance.new("UIListLayout", NovaHub["82"]);
+NovaHub["87"]["Padding"] = UDim.new(0, 5);
+NovaHub["87"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
 
 
--- NatHub.Templates.Slider.SliderFrame.Frame
-NatHub["8a"] = Instance.new("Frame", NatHub["89"]);
-NatHub["8a"]["ZIndex"] = 0;
-NatHub["8a"]["BorderSizePixel"] = 0;
-NatHub["8a"]["AnchorPoint"] = Vector2.new(0, 0.5);
-NatHub["8a"]["Size"] = UDim2.new(1, 0, 0, 20);
-NatHub["8a"]["Position"] = UDim2.new(0, 0, 0.5, 0);
-NatHub["8a"]["BackgroundTransparency"] = 1;
+-- NovaHub.Templates.Slider.Description
+NovaHub["88"] = Instance.new("TextLabel", NovaHub["82"]);
+NovaHub["88"]["TextWrapped"] = true;
+NovaHub["88"]["Interactable"] = false;
+NovaHub["88"]["BorderSizePixel"] = 0;
+NovaHub["88"]["TextSize"] = 16;
+NovaHub["88"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+NovaHub["88"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["88"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Medium, Enum.FontStyle.Normal);
+NovaHub["88"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["88"]["BackgroundTransparency"] = 1;
+NovaHub["88"]["Size"] = UDim2.new(1, 0, 0, 15);
+NovaHub["88"]["Visible"] = false;
+NovaHub["88"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["88"]["Text"] = [[Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus placerat lacus in enim congue, fermentum euismod leo ultricies. Nulla sodales. ]];
+NovaHub["88"]["LayoutOrder"] = 1;
+NovaHub["88"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["88"]["Name"] = [[Description]];
 
 
--- NatHub.Templates.Slider.SliderFrame.Frame.DropShadow
-NatHub["8b"] = Instance.new("ImageLabel", NatHub["8a"]);
-NatHub["8b"]["ZIndex"] = 0;
-NatHub["8b"]["BorderSizePixel"] = 0;
-NatHub["8b"]["SliceCenter"] = Rect.new(49, 49, 450, 450);
-NatHub["8b"]["ScaleType"] = Enum.ScaleType.Slice;
-NatHub["8b"]["ImageTransparency"] = 0.75;
+-- NovaHub.Templates.Slider.SliderFrame
+NovaHub["89"] = Instance.new("Frame", NovaHub["82"]);
+NovaHub["89"]["ZIndex"] = 0;
+NovaHub["89"]["BorderSizePixel"] = 0;
+NovaHub["89"]["Size"] = UDim2.new(1, 0, 0, 25);
+NovaHub["89"]["Name"] = [[SliderFrame]];
+NovaHub["89"]["LayoutOrder"] = 2;
+NovaHub["89"]["BackgroundTransparency"] = 1;
+
+
+-- NovaHub.Templates.Slider.SliderFrame.Frame
+NovaHub["8a"] = Instance.new("Frame", NovaHub["89"]);
+NovaHub["8a"]["ZIndex"] = 0;
+NovaHub["8a"]["BorderSizePixel"] = 0;
+NovaHub["8a"]["AnchorPoint"] = Vector2.new(0, 0.5);
+NovaHub["8a"]["Size"] = UDim2.new(1, 0, 0, 20);
+NovaHub["8a"]["Position"] = UDim2.new(0, 0, 0.5, 0);
+NovaHub["8a"]["BackgroundTransparency"] = 1;
+
+
+-- NovaHub.Templates.Slider.SliderFrame.Frame.DropShadow
+NovaHub["8b"] = Instance.new("ImageLabel", NovaHub["8a"]);
+NovaHub["8b"]["ZIndex"] = 0;
+NovaHub["8b"]["BorderSizePixel"] = 0;
+NovaHub["8b"]["SliceCenter"] = Rect.new(49, 49, 450, 450);
+NovaHub["8b"]["ScaleType"] = Enum.ScaleType.Slice;
+NovaHub["8b"]["ImageTransparency"] = 0.75;
 -- [ERROR] cannot convert ImageContent, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
-NatHub["8b"]["ImageColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["8b"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
-NatHub["8b"]["Image"] = [[rbxassetid://6014261993]];
-NatHub["8b"]["Size"] = UDim2.new(1, 25, 1, 25);
-NatHub["8b"]["BackgroundTransparency"] = 1;
-NatHub["8b"]["Name"] = [[DropShadow]];
-NatHub["8b"]["Position"] = UDim2.new(0.5, 0, 0.5, 0);
+NovaHub["8b"]["ImageColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["8b"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
+NovaHub["8b"]["Image"] = [[rbxassetid://6014261993]];
+NovaHub["8b"]["Size"] = UDim2.new(1, 25, 1, 25);
+NovaHub["8b"]["BackgroundTransparency"] = 1;
+NovaHub["8b"]["Name"] = [[DropShadow]];
+NovaHub["8b"]["Position"] = UDim2.new(0.5, 0, 0.5, 0);
 
 
--- NatHub.Templates.Slider.SliderFrame.Frame.Slider
-NatHub["8c"] = Instance.new("CanvasGroup", NatHub["8a"]);
-NatHub["8c"]["BorderSizePixel"] = 0;
-NatHub["8c"]["BackgroundColor3"] = Color3.fromRGB(43, 46, 53);
-NatHub["8c"]["Size"] = UDim2.new(1, 0, 1, 0);
-NatHub["8c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["8c"]["Name"] = [[Slider]];
+-- NovaHub.Templates.Slider.SliderFrame.Frame.Slider
+NovaHub["8c"] = Instance.new("CanvasGroup", NovaHub["8a"]);
+NovaHub["8c"]["BorderSizePixel"] = 0;
+NovaHub["8c"]["BackgroundColor3"] = Color3.fromRGB(43, 46, 53);
+NovaHub["8c"]["Size"] = UDim2.new(1, 0, 1, 0);
+NovaHub["8c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["8c"]["Name"] = [[Slider]];
 
 
--- NatHub.Templates.Slider.SliderFrame.Frame.Slider.UICorner
-NatHub["8d"] = Instance.new("UICorner", NatHub["8c"]);
-NatHub["8d"]["CornerRadius"] = UDim.new(0, 5);
+-- NovaHub.Templates.Slider.SliderFrame.Frame.Slider.UICorner
+NovaHub["8d"] = Instance.new("UICorner", NovaHub["8c"]);
+NovaHub["8d"]["CornerRadius"] = UDim.new(0, 5);
 
 
--- NatHub.Templates.Slider.SliderFrame.Frame.Slider.UIStroke
-NatHub["8e"] = Instance.new("UIStroke", NatHub["8c"]);
-NatHub["8e"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
-NatHub["8e"]["Thickness"] = 1.5;
-NatHub["8e"]["Color"] = Color3.fromRGB(61, 61, 75);
+-- NovaHub.Templates.Slider.SliderFrame.Frame.Slider.UIStroke
+NovaHub["8e"] = Instance.new("UIStroke", NovaHub["8c"]);
+NovaHub["8e"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+NovaHub["8e"]["Thickness"] = 1.5;
+NovaHub["8e"]["Color"] = Color3.fromRGB(61, 61, 75);
 
 
--- NatHub.Templates.Slider.SliderFrame.Frame.Slider.UIPadding
-NatHub["8f"] = Instance.new("UIPadding", NatHub["8c"]);
-NatHub["8f"]["PaddingTop"] = UDim.new(0, 2);
-NatHub["8f"]["PaddingRight"] = UDim.new(0, 2);
-NatHub["8f"]["PaddingLeft"] = UDim.new(0, 2);
-NatHub["8f"]["PaddingBottom"] = UDim.new(0, 2);
+-- NovaHub.Templates.Slider.SliderFrame.Frame.Slider.UIPadding
+NovaHub["8f"] = Instance.new("UIPadding", NovaHub["8c"]);
+NovaHub["8f"]["PaddingTop"] = UDim.new(0, 2);
+NovaHub["8f"]["PaddingRight"] = UDim.new(0, 2);
+NovaHub["8f"]["PaddingLeft"] = UDim.new(0, 2);
+NovaHub["8f"]["PaddingBottom"] = UDim.new(0, 2);
 
 
--- NatHub.Templates.Slider.SliderFrame.Frame.Slider.Trigger
-NatHub["90"] = Instance.new("TextButton", NatHub["8c"]);
-NatHub["90"]["BorderSizePixel"] = 0;
-NatHub["90"]["TextSize"] = 14;
-NatHub["90"]["AutoButtonColor"] = false;
-NatHub["90"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["90"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["90"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
-NatHub["90"]["BackgroundTransparency"] = 1;
-NatHub["90"]["Size"] = UDim2.new(1, 0, 1, 0);
-NatHub["90"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["90"]["Text"] = [[]];
-NatHub["90"]["Name"] = [[Trigger]];
+-- NovaHub.Templates.Slider.SliderFrame.Frame.Slider.Trigger
+NovaHub["90"] = Instance.new("TextButton", NovaHub["8c"]);
+NovaHub["90"]["BorderSizePixel"] = 0;
+NovaHub["90"]["TextSize"] = 14;
+NovaHub["90"]["AutoButtonColor"] = false;
+NovaHub["90"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["90"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["90"]["FontFace"] = Font.new([[rbxasset://fonts/families/SourceSansPro.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+NovaHub["90"]["BackgroundTransparency"] = 1;
+NovaHub["90"]["Size"] = UDim2.new(1, 0, 1, 0);
+NovaHub["90"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["90"]["Text"] = [[]];
+NovaHub["90"]["Name"] = [[Trigger]];
 
 
--- NatHub.Templates.Slider.SliderFrame.Frame.Slider.Fill
-NatHub["91"] = Instance.new("ImageButton", NatHub["8c"]);
-NatHub["91"]["Active"] = false;
-NatHub["91"]["Interactable"] = false;
-NatHub["91"]["BorderSizePixel"] = 0;
-NatHub["91"]["AutoButtonColor"] = false;
-NatHub["91"]["BackgroundTransparency"] = 1;
-NatHub["91"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["91"]["Selectable"] = false;
-NatHub["91"]["AnchorPoint"] = Vector2.new(0, 0.5);
-NatHub["91"]["Size"] = UDim2.new(0, 0, 1, 0);
-NatHub["91"]["ClipsDescendants"] = true;
-NatHub["91"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["91"]["Name"] = [[Fill]];
-NatHub["91"]["Position"] = UDim2.new(0, 0, 0.5, 0);
+-- NovaHub.Templates.Slider.SliderFrame.Frame.Slider.Fill
+NovaHub["91"] = Instance.new("ImageButton", NovaHub["8c"]);
+NovaHub["91"]["Active"] = false;
+NovaHub["91"]["Interactable"] = false;
+NovaHub["91"]["BorderSizePixel"] = 0;
+NovaHub["91"]["AutoButtonColor"] = false;
+NovaHub["91"]["BackgroundTransparency"] = 1;
+NovaHub["91"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["91"]["Selectable"] = false;
+NovaHub["91"]["AnchorPoint"] = Vector2.new(0, 0.5);
+NovaHub["91"]["Size"] = UDim2.new(0, 0, 1, 0);
+NovaHub["91"]["ClipsDescendants"] = true;
+NovaHub["91"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["91"]["Name"] = [[Fill]];
+NovaHub["91"]["Position"] = UDim2.new(0, 0, 0.5, 0);
 
 
--- NatHub.Templates.Slider.SliderFrame.Frame.Slider.Fill.UICorner
-NatHub["92"] = Instance.new("UICorner", NatHub["91"]);
-NatHub["92"]["CornerRadius"] = UDim.new(0, 4);
+-- NovaHub.Templates.Slider.SliderFrame.Frame.Slider.Fill.UICorner
+NovaHub["92"] = Instance.new("UICorner", NovaHub["91"]);
+NovaHub["92"]["CornerRadius"] = UDim.new(0, 4);
 
 
--- NatHub.Templates.Slider.SliderFrame.Frame.Slider.Fill.UIStroke
-NatHub["93"] = Instance.new("UIStroke", NatHub["91"]);
-NatHub["93"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
-NatHub["93"]["Thickness"] = 1.5;
-NatHub["93"]["Color"] = Color3.fromRGB(11, 136, 214);
+-- NovaHub.Templates.Slider.SliderFrame.Frame.Slider.Fill.UIStroke
+NovaHub["93"] = Instance.new("UIStroke", NovaHub["91"]);
+NovaHub["93"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+NovaHub["93"]["Thickness"] = 1.5;
+NovaHub["93"]["Color"] = Color3.fromRGB(11, 136, 214);
 
 
--- NatHub.Templates.Slider.SliderFrame.Frame.Slider.Fill.BackgroundGradient
-NatHub["94"] = Instance.new("ImageButton", NatHub["91"]);
-NatHub["94"]["Active"] = false;
-NatHub["94"]["Interactable"] = false;
-NatHub["94"]["BorderSizePixel"] = 0;
-NatHub["94"]["AutoButtonColor"] = false;
-NatHub["94"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["94"]["Selectable"] = false;
-NatHub["94"]["AnchorPoint"] = Vector2.new(0, 0.5);
-NatHub["94"]["Size"] = UDim2.new(1, 0, 1, 0);
-NatHub["94"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["94"]["Name"] = [[BackgroundGradient]];
-NatHub["94"]["Position"] = UDim2.new(0, 0, 0.5, 0);
+-- NovaHub.Templates.Slider.SliderFrame.Frame.Slider.Fill.BackgroundGradient
+NovaHub["94"] = Instance.new("ImageButton", NovaHub["91"]);
+NovaHub["94"]["Active"] = false;
+NovaHub["94"]["Interactable"] = false;
+NovaHub["94"]["BorderSizePixel"] = 0;
+NovaHub["94"]["AutoButtonColor"] = false;
+NovaHub["94"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["94"]["Selectable"] = false;
+NovaHub["94"]["AnchorPoint"] = Vector2.new(0, 0.5);
+NovaHub["94"]["Size"] = UDim2.new(1, 0, 1, 0);
+NovaHub["94"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["94"]["Name"] = [[BackgroundGradient]];
+NovaHub["94"]["Position"] = UDim2.new(0, 0, 0.5, 0);
 
 
--- NatHub.Templates.Slider.SliderFrame.Frame.Slider.Fill.BackgroundGradient.UICorner
-NatHub["95"] = Instance.new("UICorner", NatHub["94"]);
-NatHub["95"]["CornerRadius"] = UDim.new(0, 4);
+-- NovaHub.Templates.Slider.SliderFrame.Frame.Slider.Fill.BackgroundGradient.UICorner
+NovaHub["95"] = Instance.new("UICorner", NovaHub["94"]);
+NovaHub["95"]["CornerRadius"] = UDim.new(0, 4);
 
 
--- NatHub.Templates.Slider.SliderFrame.Frame.Slider.Fill.BackgroundGradient.UIGradient
-NatHub["96"] = Instance.new("UIGradient", NatHub["94"]);
-NatHub["96"]["Enabled"] = false;
-NatHub["96"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.160, Color3.fromRGB(0, 235, 255)),ColorSequenceKeypoint.new(0.320, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.540, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.782, Color3.fromRGB(0, 235, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 158, 255))};
+-- NovaHub.Templates.Slider.SliderFrame.Frame.Slider.Fill.BackgroundGradient.UIGradient
+NovaHub["96"] = Instance.new("UIGradient", NovaHub["94"]);
+NovaHub["96"]["Enabled"] = false;
+NovaHub["96"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.160, Color3.fromRGB(0, 235, 255)),ColorSequenceKeypoint.new(0.320, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.540, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.782, Color3.fromRGB(0, 235, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 158, 255))};
 
 
--- NatHub.Templates.Slider.SliderFrame.Frame.Slider.Fill.BackgroundGradient.UIGradient
-NatHub["97"] = Instance.new("UIGradient", NatHub["94"]);
-NatHub["97"]["Enabled"] = false;
-NatHub["97"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.160, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.320, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.540, Color3.fromRGB(0, 235, 255)),ColorSequenceKeypoint.new(0.782, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 158, 255))};
+-- NovaHub.Templates.Slider.SliderFrame.Frame.Slider.Fill.BackgroundGradient.UIGradient
+NovaHub["97"] = Instance.new("UIGradient", NovaHub["94"]);
+NovaHub["97"]["Enabled"] = false;
+NovaHub["97"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.160, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.320, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.540, Color3.fromRGB(0, 235, 255)),ColorSequenceKeypoint.new(0.782, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 158, 255))};
 
 
--- NatHub.Templates.Slider.SliderFrame.Frame.Slider.Fill.BackgroundGradient.UIGradient
-NatHub["98"] = Instance.new("UIGradient", NatHub["94"]);
-NatHub["98"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.160, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.320, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.540, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.782, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 158, 255))};
+-- NovaHub.Templates.Slider.SliderFrame.Frame.Slider.Fill.BackgroundGradient.UIGradient
+NovaHub["98"] = Instance.new("UIGradient", NovaHub["94"]);
+NovaHub["98"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.160, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.320, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.540, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.782, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 158, 255))};
 
 
--- NatHub.Templates.Slider.SliderFrame.Frame.ValueText
-NatHub["99"] = Instance.new("TextLabel", NatHub["8a"]);
-NatHub["99"]["TextWrapped"] = true;
-NatHub["99"]["Interactable"] = false;
-NatHub["99"]["ZIndex"] = 2;
-NatHub["99"]["BorderSizePixel"] = 0;
-NatHub["99"]["TextSize"] = 14;
-NatHub["99"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-NatHub["99"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["99"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
-NatHub["99"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["99"]["BackgroundTransparency"] = 1;
-NatHub["99"]["RichText"] = true;
-NatHub["99"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
-NatHub["99"]["Size"] = UDim2.new(1, -15, 1, 0);
-NatHub["99"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["99"]["Text"] = [[0]];
-NatHub["99"]["Name"] = [[ValueText]];
-NatHub["99"]["Position"] = UDim2.new(0.5, 0, 0.5, 0);
+-- NovaHub.Templates.Slider.SliderFrame.Frame.ValueText
+NovaHub["99"] = Instance.new("TextLabel", NovaHub["8a"]);
+NovaHub["99"]["TextWrapped"] = true;
+NovaHub["99"]["Interactable"] = false;
+NovaHub["99"]["ZIndex"] = 2;
+NovaHub["99"]["BorderSizePixel"] = 0;
+NovaHub["99"]["TextSize"] = 14;
+NovaHub["99"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+NovaHub["99"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["99"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+NovaHub["99"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["99"]["BackgroundTransparency"] = 1;
+NovaHub["99"]["RichText"] = true;
+NovaHub["99"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
+NovaHub["99"]["Size"] = UDim2.new(1, -15, 1, 0);
+NovaHub["99"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["99"]["Text"] = [[0]];
+NovaHub["99"]["Name"] = [[ValueText]];
+NovaHub["99"]["Position"] = UDim2.new(0.5, 0, 0.5, 0);
 
 
--- NatHub.Templates.TextBox
-NatHub["9a"] = Instance.new("Frame", NatHub["41"]);
-NatHub["9a"]["Visible"] = false;
-NatHub["9a"]["BorderSizePixel"] = 0;
-NatHub["9a"]["BackgroundColor3"] = Color3.fromRGB(43, 46, 53);
-NatHub["9a"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["9a"]["Size"] = UDim2.new(1, 0, 0, 35);
-NatHub["9a"]["Position"] = UDim2.new(-0.0375, 0, 0.38434, 0);
-NatHub["9a"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["9a"]["Name"] = [[TextBox]];
+-- NovaHub.Templates.TextBox
+NovaHub["9a"] = Instance.new("Frame", NovaHub["41"]);
+NovaHub["9a"]["Visible"] = false;
+NovaHub["9a"]["BorderSizePixel"] = 0;
+NovaHub["9a"]["BackgroundColor3"] = Color3.fromRGB(43, 46, 53);
+NovaHub["9a"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["9a"]["Size"] = UDim2.new(1, 0, 0, 35);
+NovaHub["9a"]["Position"] = UDim2.new(-0.0375, 0, 0.38434, 0);
+NovaHub["9a"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["9a"]["Name"] = [[TextBox]];
 
 
--- NatHub.Templates.TextBox.UICorner
-NatHub["9b"] = Instance.new("UICorner", NatHub["9a"]);
-NatHub["9b"]["CornerRadius"] = UDim.new(0, 6);
+-- NovaHub.Templates.TextBox.UICorner
+NovaHub["9b"] = Instance.new("UICorner", NovaHub["9a"]);
+NovaHub["9b"]["CornerRadius"] = UDim.new(0, 6);
 
 
--- NatHub.Templates.TextBox.UIStroke
-NatHub["9c"] = Instance.new("UIStroke", NatHub["9a"]);
-NatHub["9c"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
-NatHub["9c"]["Thickness"] = 1.5;
-NatHub["9c"]["Color"] = Color3.fromRGB(61, 61, 75);
+-- NovaHub.Templates.TextBox.UIStroke
+NovaHub["9c"] = Instance.new("UIStroke", NovaHub["9a"]);
+NovaHub["9c"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+NovaHub["9c"]["Thickness"] = 1.5;
+NovaHub["9c"]["Color"] = Color3.fromRGB(61, 61, 75);
 
 
--- NatHub.Templates.TextBox.Title
-NatHub["9d"] = Instance.new("TextLabel", NatHub["9a"]);
-NatHub["9d"]["TextWrapped"] = true;
-NatHub["9d"]["Interactable"] = false;
-NatHub["9d"]["BorderSizePixel"] = 0;
-NatHub["9d"]["TextSize"] = 16;
-NatHub["9d"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-NatHub["9d"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["9d"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
-NatHub["9d"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["9d"]["BackgroundTransparency"] = 1;
-NatHub["9d"]["Size"] = UDim2.new(1, 0, 0, 15);
-NatHub["9d"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["9d"]["Text"] = [[Input Textbox]];
-NatHub["9d"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["9d"]["Name"] = [[Title]];
+-- NovaHub.Templates.TextBox.Title
+NovaHub["9d"] = Instance.new("TextLabel", NovaHub["9a"]);
+NovaHub["9d"]["TextWrapped"] = true;
+NovaHub["9d"]["Interactable"] = false;
+NovaHub["9d"]["BorderSizePixel"] = 0;
+NovaHub["9d"]["TextSize"] = 16;
+NovaHub["9d"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+NovaHub["9d"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["9d"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+NovaHub["9d"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["9d"]["BackgroundTransparency"] = 1;
+NovaHub["9d"]["Size"] = UDim2.new(1, 0, 0, 15);
+NovaHub["9d"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["9d"]["Text"] = [[Input Textbox]];
+NovaHub["9d"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["9d"]["Name"] = [[Title]];
 
 
--- NatHub.Templates.TextBox.UIPadding
-NatHub["9e"] = Instance.new("UIPadding", NatHub["9a"]);
-NatHub["9e"]["PaddingTop"] = UDim.new(0, 10);
-NatHub["9e"]["PaddingRight"] = UDim.new(0, 10);
-NatHub["9e"]["PaddingLeft"] = UDim.new(0, 10);
-NatHub["9e"]["PaddingBottom"] = UDim.new(0, 10);
+-- NovaHub.Templates.TextBox.UIPadding
+NovaHub["9e"] = Instance.new("UIPadding", NovaHub["9a"]);
+NovaHub["9e"]["PaddingTop"] = UDim.new(0, 10);
+NovaHub["9e"]["PaddingRight"] = UDim.new(0, 10);
+NovaHub["9e"]["PaddingLeft"] = UDim.new(0, 10);
+NovaHub["9e"]["PaddingBottom"] = UDim.new(0, 10);
 
 
--- NatHub.Templates.TextBox.UIListLayout
-NatHub["9f"] = Instance.new("UIListLayout", NatHub["9a"]);
-NatHub["9f"]["Padding"] = UDim.new(0, 10);
-NatHub["9f"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
+-- NovaHub.Templates.TextBox.UIListLayout
+NovaHub["9f"] = Instance.new("UIListLayout", NovaHub["9a"]);
+NovaHub["9f"]["Padding"] = UDim.new(0, 10);
+NovaHub["9f"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
 
 
--- NatHub.Templates.TextBox.Description
-NatHub["a0"] = Instance.new("TextLabel", NatHub["9a"]);
-NatHub["a0"]["TextWrapped"] = true;
-NatHub["a0"]["Interactable"] = false;
-NatHub["a0"]["BorderSizePixel"] = 0;
-NatHub["a0"]["TextSize"] = 16;
-NatHub["a0"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-NatHub["a0"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["a0"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Medium, Enum.FontStyle.Normal);
-NatHub["a0"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["a0"]["BackgroundTransparency"] = 1;
-NatHub["a0"]["Size"] = UDim2.new(1, 0, 0, 15);
-NatHub["a0"]["Visible"] = false;
-NatHub["a0"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["a0"]["Text"] = [[Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus placerat lacus in enim congue, fermentum euismod leo ultricies. Nulla sodales. ]];
-NatHub["a0"]["LayoutOrder"] = 1;
-NatHub["a0"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["a0"]["Name"] = [[Description]];
+-- NovaHub.Templates.TextBox.Description
+NovaHub["a0"] = Instance.new("TextLabel", NovaHub["9a"]);
+NovaHub["a0"]["TextWrapped"] = true;
+NovaHub["a0"]["Interactable"] = false;
+NovaHub["a0"]["BorderSizePixel"] = 0;
+NovaHub["a0"]["TextSize"] = 16;
+NovaHub["a0"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+NovaHub["a0"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["a0"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Medium, Enum.FontStyle.Normal);
+NovaHub["a0"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["a0"]["BackgroundTransparency"] = 1;
+NovaHub["a0"]["Size"] = UDim2.new(1, 0, 0, 15);
+NovaHub["a0"]["Visible"] = false;
+NovaHub["a0"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["a0"]["Text"] = [[Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus placerat lacus in enim congue, fermentum euismod leo ultricies. Nulla sodales. ]];
+NovaHub["a0"]["LayoutOrder"] = 1;
+NovaHub["a0"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["a0"]["Name"] = [[Description]];
 
 
--- NatHub.Templates.TextBox.BoxFrame
-NatHub["a1"] = Instance.new("Frame", NatHub["9a"]);
-NatHub["a1"]["ZIndex"] = 0;
-NatHub["a1"]["BorderSizePixel"] = 0;
-NatHub["a1"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["a1"]["Size"] = UDim2.new(1, 0, 0, 25);
-NatHub["a1"]["Name"] = [[BoxFrame]];
-NatHub["a1"]["LayoutOrder"] = 2;
-NatHub["a1"]["BackgroundTransparency"] = 1;
+-- NovaHub.Templates.TextBox.BoxFrame
+NovaHub["a1"] = Instance.new("Frame", NovaHub["9a"]);
+NovaHub["a1"]["ZIndex"] = 0;
+NovaHub["a1"]["BorderSizePixel"] = 0;
+NovaHub["a1"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["a1"]["Size"] = UDim2.new(1, 0, 0, 25);
+NovaHub["a1"]["Name"] = [[BoxFrame]];
+NovaHub["a1"]["LayoutOrder"] = 2;
+NovaHub["a1"]["BackgroundTransparency"] = 1;
 
 
--- NatHub.Templates.TextBox.BoxFrame.DropShadow
-NatHub["a2"] = Instance.new("ImageLabel", NatHub["a1"]);
-NatHub["a2"]["ZIndex"] = 0;
-NatHub["a2"]["BorderSizePixel"] = 0;
-NatHub["a2"]["SliceCenter"] = Rect.new(49, 49, 450, 450);
-NatHub["a2"]["ScaleType"] = Enum.ScaleType.Slice;
-NatHub["a2"]["ImageTransparency"] = 0.75;
+-- NovaHub.Templates.TextBox.BoxFrame.DropShadow
+NovaHub["a2"] = Instance.new("ImageLabel", NovaHub["a1"]);
+NovaHub["a2"]["ZIndex"] = 0;
+NovaHub["a2"]["BorderSizePixel"] = 0;
+NovaHub["a2"]["SliceCenter"] = Rect.new(49, 49, 450, 450);
+NovaHub["a2"]["ScaleType"] = Enum.ScaleType.Slice;
+NovaHub["a2"]["ImageTransparency"] = 0.75;
 -- [ERROR] cannot convert ImageContent, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
-NatHub["a2"]["ImageColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["a2"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
-NatHub["a2"]["Image"] = [[rbxassetid://6014261993]];
-NatHub["a2"]["Size"] = UDim2.new(1, 35, 1, 30);
-NatHub["a2"]["BackgroundTransparency"] = 1;
-NatHub["a2"]["Name"] = [[DropShadow]];
-NatHub["a2"]["Position"] = UDim2.new(0.5, 0, 0.5, 0);
+NovaHub["a2"]["ImageColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["a2"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
+NovaHub["a2"]["Image"] = [[rbxassetid://6014261993]];
+NovaHub["a2"]["Size"] = UDim2.new(1, 35, 1, 30);
+NovaHub["a2"]["BackgroundTransparency"] = 1;
+NovaHub["a2"]["Name"] = [[DropShadow]];
+NovaHub["a2"]["Position"] = UDim2.new(0.5, 0, 0.5, 0);
 
 
--- NatHub.Templates.TextBox.BoxFrame.Frame
-NatHub["a3"] = Instance.new("Frame", NatHub["a1"]);
-NatHub["a3"]["BorderSizePixel"] = 0;
-NatHub["a3"]["BackgroundColor3"] = Color3.fromRGB(43, 46, 53);
-NatHub["a3"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["a3"]["Size"] = UDim2.new(1, 0, 0, 25);
-NatHub["a3"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+-- NovaHub.Templates.TextBox.BoxFrame.Frame
+NovaHub["a3"] = Instance.new("Frame", NovaHub["a1"]);
+NovaHub["a3"]["BorderSizePixel"] = 0;
+NovaHub["a3"]["BackgroundColor3"] = Color3.fromRGB(43, 46, 53);
+NovaHub["a3"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["a3"]["Size"] = UDim2.new(1, 0, 0, 25);
+NovaHub["a3"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
 
 
--- NatHub.Templates.TextBox.BoxFrame.Frame.UICorner
-NatHub["a4"] = Instance.new("UICorner", NatHub["a3"]);
-NatHub["a4"]["CornerRadius"] = UDim.new(0, 5);
+-- NovaHub.Templates.TextBox.BoxFrame.Frame.UICorner
+NovaHub["a4"] = Instance.new("UICorner", NovaHub["a3"]);
+NovaHub["a4"]["CornerRadius"] = UDim.new(0, 5);
 
 
--- NatHub.Templates.TextBox.BoxFrame.Frame.UIStroke
-NatHub["a5"] = Instance.new("UIStroke", NatHub["a3"]);
-NatHub["a5"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
-NatHub["a5"]["Thickness"] = 1.5;
-NatHub["a5"]["Color"] = Color3.fromRGB(61, 61, 75);
+-- NovaHub.Templates.TextBox.BoxFrame.Frame.UIStroke
+NovaHub["a5"] = Instance.new("UIStroke", NovaHub["a3"]);
+NovaHub["a5"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+NovaHub["a5"]["Thickness"] = 1.5;
+NovaHub["a5"]["Color"] = Color3.fromRGB(61, 61, 75);
 
 
--- NatHub.Templates.TextBox.BoxFrame.Frame.UIListLayout
-NatHub["a6"] = Instance.new("UIListLayout", NatHub["a3"]);
-NatHub["a6"]["HorizontalAlignment"] = Enum.HorizontalAlignment.Center;
-NatHub["a6"]["Padding"] = UDim.new(0, 5);
-NatHub["a6"]["VerticalAlignment"] = Enum.VerticalAlignment.Center;
-NatHub["a6"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
+-- NovaHub.Templates.TextBox.BoxFrame.Frame.UIListLayout
+NovaHub["a6"] = Instance.new("UIListLayout", NovaHub["a3"]);
+NovaHub["a6"]["HorizontalAlignment"] = Enum.HorizontalAlignment.Center;
+NovaHub["a6"]["Padding"] = UDim.new(0, 5);
+NovaHub["a6"]["VerticalAlignment"] = Enum.VerticalAlignment.Center;
+NovaHub["a6"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
 
 
--- NatHub.Templates.TextBox.BoxFrame.Frame.TextBox
-NatHub["a7"] = Instance.new("TextBox", NatHub["a3"]);
-NatHub["a7"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-NatHub["a7"]["PlaceholderColor3"] = Color3.fromRGB(140, 140, 140);
-NatHub["a7"]["BorderSizePixel"] = 0;
-NatHub["a7"]["TextWrapped"] = true;
-NatHub["a7"]["TextTruncate"] = Enum.TextTruncate.AtEnd;
-NatHub["a7"]["TextSize"] = 14;
-NatHub["a7"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["a7"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["a7"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Medium, Enum.FontStyle.Normal);
-NatHub["a7"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["a7"]["ClipsDescendants"] = true;
-NatHub["a7"]["PlaceholderText"] = [[Input here...]];
-NatHub["a7"]["Size"] = UDim2.new(1, 0, 0, 25);
-NatHub["a7"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["a7"]["Text"] = [[]];
-NatHub["a7"]["BackgroundTransparency"] = 1;
+-- NovaHub.Templates.TextBox.BoxFrame.Frame.TextBox
+NovaHub["a7"] = Instance.new("TextBox", NovaHub["a3"]);
+NovaHub["a7"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+NovaHub["a7"]["PlaceholderColor3"] = Color3.fromRGB(140, 140, 140);
+NovaHub["a7"]["BorderSizePixel"] = 0;
+NovaHub["a7"]["TextWrapped"] = true;
+NovaHub["a7"]["TextTruncate"] = Enum.TextTruncate.AtEnd;
+NovaHub["a7"]["TextSize"] = 14;
+NovaHub["a7"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["a7"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["a7"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Medium, Enum.FontStyle.Normal);
+NovaHub["a7"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["a7"]["ClipsDescendants"] = true;
+NovaHub["a7"]["PlaceholderText"] = [[Input here...]];
+NovaHub["a7"]["Size"] = UDim2.new(1, 0, 0, 25);
+NovaHub["a7"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["a7"]["Text"] = [[]];
+NovaHub["a7"]["BackgroundTransparency"] = 1;
 
 
--- NatHub.Templates.TextBox.BoxFrame.Frame.TextBox.UIPadding
-NatHub["a8"] = Instance.new("UIPadding", NatHub["a7"]);
-NatHub["a8"]["PaddingTop"] = UDim.new(0, 5);
-NatHub["a8"]["PaddingRight"] = UDim.new(0, 10);
-NatHub["a8"]["PaddingLeft"] = UDim.new(0, 10);
-NatHub["a8"]["PaddingBottom"] = UDim.new(0, 5);
+-- NovaHub.Templates.TextBox.BoxFrame.Frame.TextBox.UIPadding
+NovaHub["a8"] = Instance.new("UIPadding", NovaHub["a7"]);
+NovaHub["a8"]["PaddingTop"] = UDim.new(0, 5);
+NovaHub["a8"]["PaddingRight"] = UDim.new(0, 10);
+NovaHub["a8"]["PaddingLeft"] = UDim.new(0, 10);
+NovaHub["a8"]["PaddingBottom"] = UDim.new(0, 5);
 
 
--- NatHub.Templates.Dropdown
-NatHub["a9"] = Instance.new("ImageButton", NatHub["41"]);
-NatHub["a9"]["BorderSizePixel"] = 0;
-NatHub["a9"]["AutoButtonColor"] = false;
-NatHub["a9"]["Visible"] = false;
-NatHub["a9"]["BackgroundColor3"] = Color3.fromRGB(43, 46, 53);
-NatHub["a9"]["Selectable"] = false;
-NatHub["a9"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["a9"]["Size"] = UDim2.new(1, 0, 0, 35);
-NatHub["a9"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["a9"]["Name"] = [[Dropdown]];
-NatHub["a9"]["Position"] = UDim2.new(-0.0375, 0, 0.38434, 0);
+-- NovaHub.Templates.Dropdown
+NovaHub["a9"] = Instance.new("ImageButton", NovaHub["41"]);
+NovaHub["a9"]["BorderSizePixel"] = 0;
+NovaHub["a9"]["AutoButtonColor"] = false;
+NovaHub["a9"]["Visible"] = false;
+NovaHub["a9"]["BackgroundColor3"] = Color3.fromRGB(43, 46, 53);
+NovaHub["a9"]["Selectable"] = false;
+NovaHub["a9"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["a9"]["Size"] = UDim2.new(1, 0, 0, 35);
+NovaHub["a9"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["a9"]["Name"] = [[Dropdown]];
+NovaHub["a9"]["Position"] = UDim2.new(-0.0375, 0, 0.38434, 0);
 
 
--- NatHub.Templates.Dropdown.UICorner
-NatHub["aa"] = Instance.new("UICorner", NatHub["a9"]);
-NatHub["aa"]["CornerRadius"] = UDim.new(0, 6);
+-- NovaHub.Templates.Dropdown.UICorner
+NovaHub["aa"] = Instance.new("UICorner", NovaHub["a9"]);
+NovaHub["aa"]["CornerRadius"] = UDim.new(0, 6);
 
 
--- NatHub.Templates.Dropdown.UIStroke
-NatHub["ab"] = Instance.new("UIStroke", NatHub["a9"]);
-NatHub["ab"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
-NatHub["ab"]["Thickness"] = 1.5;
-NatHub["ab"]["Color"] = Color3.fromRGB(61, 61, 75);
+-- NovaHub.Templates.Dropdown.UIStroke
+NovaHub["ab"] = Instance.new("UIStroke", NovaHub["a9"]);
+NovaHub["ab"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+NovaHub["ab"]["Thickness"] = 1.5;
+NovaHub["ab"]["Color"] = Color3.fromRGB(61, 61, 75);
 
 
--- NatHub.Templates.Dropdown.Title
-NatHub["ac"] = Instance.new("TextLabel", NatHub["a9"]);
-NatHub["ac"]["TextWrapped"] = true;
-NatHub["ac"]["BorderSizePixel"] = 0;
-NatHub["ac"]["TextSize"] = 16;
-NatHub["ac"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-NatHub["ac"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["ac"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-NatHub["ac"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["ac"]["BackgroundTransparency"] = 1;
-NatHub["ac"]["Size"] = UDim2.new(1, 0, 0, 15);
-NatHub["ac"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["ac"]["Text"] = [[Dropdown]];
-NatHub["ac"]["Name"] = [[Title]];
-NatHub["ac"]["Position"] = UDim2.new(0.03135, 0, 0, 0);
+-- NovaHub.Templates.Dropdown.Title
+NovaHub["ac"] = Instance.new("TextLabel", NovaHub["a9"]);
+NovaHub["ac"]["TextWrapped"] = true;
+NovaHub["ac"]["BorderSizePixel"] = 0;
+NovaHub["ac"]["TextSize"] = 16;
+NovaHub["ac"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+NovaHub["ac"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["ac"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+NovaHub["ac"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["ac"]["BackgroundTransparency"] = 1;
+NovaHub["ac"]["Size"] = UDim2.new(1, 0, 0, 15);
+NovaHub["ac"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["ac"]["Text"] = [[Dropdown]];
+NovaHub["ac"]["Name"] = [[Title]];
+NovaHub["ac"]["Position"] = UDim2.new(0.03135, 0, 0, 0);
 
 
--- NatHub.Templates.Dropdown.Title.ClickIcon
-NatHub["ad"] = Instance.new("ImageButton", NatHub["ac"]);
-NatHub["ad"]["BorderSizePixel"] = 0;
-NatHub["ad"]["AutoButtonColor"] = false;
-NatHub["ad"]["BackgroundTransparency"] = 1;
+-- NovaHub.Templates.Dropdown.Title.ClickIcon
+NovaHub["ad"] = Instance.new("ImageButton", NovaHub["ac"]);
+NovaHub["ad"]["BorderSizePixel"] = 0;
+NovaHub["ad"]["AutoButtonColor"] = false;
+NovaHub["ad"]["BackgroundTransparency"] = 1;
 -- [ERROR] cannot convert ImageContent, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
-NatHub["ad"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["ad"]["ImageColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["ad"]["AnchorPoint"] = Vector2.new(1, 0.5);
-NatHub["ad"]["Image"] = [[rbxassetid://77563793724007]];
-NatHub["ad"]["Size"] = UDim2.new(0, 23, 0, 23);
-NatHub["ad"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["ad"]["Name"] = [[ClickIcon]];
-NatHub["ad"]["Position"] = UDim2.new(1, 0, 0.5, 0);
+NovaHub["ad"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["ad"]["ImageColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["ad"]["AnchorPoint"] = Vector2.new(1, 0.5);
+NovaHub["ad"]["Image"] = [[rbxassetid://77563793724007]];
+NovaHub["ad"]["Size"] = UDim2.new(0, 23, 0, 23);
+NovaHub["ad"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["ad"]["Name"] = [[ClickIcon]];
+NovaHub["ad"]["Position"] = UDim2.new(1, 0, 0.5, 0);
 
 
--- NatHub.Templates.Dropdown.Title.BoxFrame
-NatHub["ae"] = Instance.new("ImageButton", NatHub["ac"]);
-NatHub["ae"]["Active"] = false;
-NatHub["ae"]["BorderSizePixel"] = 0;
-NatHub["ae"]["BackgroundTransparency"] = 1;
-NatHub["ae"]["Selectable"] = false;
-NatHub["ae"]["ZIndex"] = 0;
-NatHub["ae"]["AnchorPoint"] = Vector2.new(1, 0.5);
-NatHub["ae"]["AutomaticSize"] = Enum.AutomaticSize.X;
-NatHub["ae"]["Size"] = UDim2.new(0, 20, 0, 20);
-NatHub["ae"]["Name"] = [[BoxFrame]];
-NatHub["ae"]["Position"] = UDim2.new(1, -33, 0.5, 0);
+-- NovaHub.Templates.Dropdown.Title.BoxFrame
+NovaHub["ae"] = Instance.new("ImageButton", NovaHub["ac"]);
+NovaHub["ae"]["Active"] = false;
+NovaHub["ae"]["BorderSizePixel"] = 0;
+NovaHub["ae"]["BackgroundTransparency"] = 1;
+NovaHub["ae"]["Selectable"] = false;
+NovaHub["ae"]["ZIndex"] = 0;
+NovaHub["ae"]["AnchorPoint"] = Vector2.new(1, 0.5);
+NovaHub["ae"]["AutomaticSize"] = Enum.AutomaticSize.X;
+NovaHub["ae"]["Size"] = UDim2.new(0, 20, 0, 20);
+NovaHub["ae"]["Name"] = [[BoxFrame]];
+NovaHub["ae"]["Position"] = UDim2.new(1, -33, 0.5, 0);
 
 
--- NatHub.Templates.Dropdown.Title.BoxFrame.DropShadow
-NatHub["af"] = Instance.new("ImageLabel", NatHub["ae"]);
-NatHub["af"]["Interactable"] = false;
-NatHub["af"]["ZIndex"] = 0;
-NatHub["af"]["BorderSizePixel"] = 0;
-NatHub["af"]["SliceCenter"] = Rect.new(49, 49, 450, 450);
-NatHub["af"]["ScaleType"] = Enum.ScaleType.Slice;
-NatHub["af"]["ImageTransparency"] = 0.75;
-NatHub["af"]["AutomaticSize"] = Enum.AutomaticSize.X;
+-- NovaHub.Templates.Dropdown.Title.BoxFrame.DropShadow
+NovaHub["af"] = Instance.new("ImageLabel", NovaHub["ae"]);
+NovaHub["af"]["Interactable"] = false;
+NovaHub["af"]["ZIndex"] = 0;
+NovaHub["af"]["BorderSizePixel"] = 0;
+NovaHub["af"]["SliceCenter"] = Rect.new(49, 49, 450, 450);
+NovaHub["af"]["ScaleType"] = Enum.ScaleType.Slice;
+NovaHub["af"]["ImageTransparency"] = 0.75;
+NovaHub["af"]["AutomaticSize"] = Enum.AutomaticSize.X;
 -- [ERROR] cannot convert ImageContent, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
-NatHub["af"]["ImageColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["af"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
-NatHub["af"]["Image"] = [[rbxassetid://6014261993]];
-NatHub["af"]["Size"] = UDim2.new(1, 28, 1, 28);
-NatHub["af"]["Visible"] = false;
-NatHub["af"]["BackgroundTransparency"] = 1;
-NatHub["af"]["Name"] = [[DropShadow]];
-NatHub["af"]["Position"] = UDim2.new(0.5, 0, 0.5, 0);
-
-
--- NatHub.Templates.Dropdown.Title.BoxFrame.Trigger
-NatHub["b0"] = Instance.new("ImageButton", NatHub["ae"]);
-NatHub["b0"]["BorderSizePixel"] = 0;
-NatHub["b0"]["AutoButtonColor"] = false;
-NatHub["b0"]["BackgroundColor3"] = Color3.fromRGB(43, 46, 53);
-NatHub["b0"]["Selectable"] = false;
-NatHub["b0"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
-NatHub["b0"]["AutomaticSize"] = Enum.AutomaticSize.X;
-NatHub["b0"]["Size"] = UDim2.new(0, 20, 0, 20);
-NatHub["b0"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["b0"]["Name"] = [[Trigger]];
-NatHub["b0"]["Position"] = UDim2.new(0.5, 0, 0.5, 0);
-
-
--- NatHub.Templates.Dropdown.Title.BoxFrame.Trigger.UICorner
-NatHub["b1"] = Instance.new("UICorner", NatHub["b0"]);
-NatHub["b1"]["CornerRadius"] = UDim.new(0, 5);
-
-
--- NatHub.Templates.Dropdown.Title.BoxFrame.Trigger.UIStroke
-NatHub["b2"] = Instance.new("UIStroke", NatHub["b0"]);
-NatHub["b2"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
-NatHub["b2"]["Thickness"] = 1.5;
-NatHub["b2"]["Color"] = Color3.fromRGB(61, 61, 75);
-
-
--- NatHub.Templates.Dropdown.Title.BoxFrame.Trigger.UIListLayout
-NatHub["b3"] = Instance.new("UIListLayout", NatHub["b0"]);
-NatHub["b3"]["Padding"] = UDim.new(0, 5);
-NatHub["b3"]["VerticalAlignment"] = Enum.VerticalAlignment.Center;
-NatHub["b3"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
-
-
--- NatHub.Templates.Dropdown.Title.BoxFrame.Trigger.Title
-NatHub["b4"] = Instance.new("TextLabel", NatHub["b0"]);
-NatHub["b4"]["TextWrapped"] = true;
-NatHub["b4"]["Interactable"] = false;
-NatHub["b4"]["BorderSizePixel"] = 0;
-NatHub["b4"]["TextSize"] = 16;
-NatHub["b4"]["TextScaled"] = true;
-NatHub["b4"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["b4"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Medium, Enum.FontStyle.Normal);
-NatHub["b4"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["b4"]["BackgroundTransparency"] = 1;
-NatHub["b4"]["AnchorPoint"] = Vector2.new(0, 0.5);
-NatHub["b4"]["Size"] = UDim2.new(0, 15, 0, 14);
-NatHub["b4"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["b4"]["Text"] = [[]];
-NatHub["b4"]["AutomaticSize"] = Enum.AutomaticSize.X;
-NatHub["b4"]["Name"] = [[Title]];
-NatHub["b4"]["Position"] = UDim2.new(-0.00345, 0, 0.5, 0);
-
-
--- NatHub.Templates.Dropdown.Title.BoxFrame.Trigger.UIPadding
-NatHub["b5"] = Instance.new("UIPadding", NatHub["b0"]);
-NatHub["b5"]["PaddingRight"] = UDim.new(0, 5);
-NatHub["b5"]["PaddingLeft"] = UDim.new(0, 5);
-
-
--- NatHub.Templates.Dropdown.UIPadding
-NatHub["b6"] = Instance.new("UIPadding", NatHub["a9"]);
-NatHub["b6"]["PaddingTop"] = UDim.new(0, 10);
-NatHub["b6"]["PaddingRight"] = UDim.new(0, 10);
-NatHub["b6"]["PaddingLeft"] = UDim.new(0, 10);
-NatHub["b6"]["PaddingBottom"] = UDim.new(0, 10);
-
-
--- NatHub.Templates.Dropdown.UIListLayout
-NatHub["b7"] = Instance.new("UIListLayout", NatHub["a9"]);
-NatHub["b7"]["Padding"] = UDim.new(0, 5);
-NatHub["b7"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
-
-
--- NatHub.Templates.Dropdown.Description
-NatHub["b8"] = Instance.new("TextLabel", NatHub["a9"]);
-NatHub["b8"]["TextWrapped"] = true;
-NatHub["b8"]["Interactable"] = false;
-NatHub["b8"]["BorderSizePixel"] = 0;
-NatHub["b8"]["TextSize"] = 16;
-NatHub["b8"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-NatHub["b8"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["b8"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Medium, Enum.FontStyle.Normal);
-NatHub["b8"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["b8"]["BackgroundTransparency"] = 1;
-NatHub["b8"]["Size"] = UDim2.new(1, 0, 0, 15);
-NatHub["b8"]["Visible"] = false;
-NatHub["b8"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["b8"]["Text"] = [[Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus placerat lacus in enim congue, fermentum euismod leo ultricies. Nulla sodales. ]];
-NatHub["b8"]["LayoutOrder"] = 1;
-NatHub["b8"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["b8"]["Name"] = [[Description]];
-
-
--- NatHub.Templates.Dropdown.UIGradient
-NatHub["b9"] = Instance.new("UIGradient", NatHub["a9"]);
-NatHub["b9"]["Enabled"] = false;
-NatHub["b9"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.160, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.320, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.540, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.782, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 158, 255))};
-
-
--- NatHub.Templates.Dropdown.UIGradient
-NatHub["ba"] = Instance.new("UIGradient", NatHub["a9"]);
-NatHub["ba"]["Enabled"] = false;
-NatHub["ba"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.160, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.320, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.540, Color3.fromRGB(0, 235, 255)),ColorSequenceKeypoint.new(0.782, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 158, 255))};
-
-
--- NatHub.Templates.Dropdown.UIGradient
-NatHub["bb"] = Instance.new("UIGradient", NatHub["a9"]);
-NatHub["bb"]["Enabled"] = false;
-NatHub["bb"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.160, Color3.fromRGB(0, 235, 255)),ColorSequenceKeypoint.new(0.320, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.540, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.782, Color3.fromRGB(0, 235, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 158, 255))};
-
-
--- NatHub.Templates.DropdownList
-NatHub["bc"] = Instance.new("Folder", NatHub["41"]);
-NatHub["bc"]["Name"] = [[DropdownList]];
-
-
--- NatHub.Templates.DropdownList.DropdownItems
-NatHub["bd"] = Instance.new("ScrollingFrame", NatHub["bc"]);
-NatHub["bd"]["Visible"] = false;
-NatHub["bd"]["Active"] = true;
-NatHub["bd"]["ScrollingDirection"] = Enum.ScrollingDirection.Y;
-NatHub["bd"]["BorderSizePixel"] = 0;
-NatHub["bd"]["CanvasSize"] = UDim2.new(0, 0, 0, 0);
-NatHub["bd"]["ElasticBehavior"] = Enum.ElasticBehavior.Never;
-NatHub["bd"]["TopImage"] = [[rbxasset://textures/ui/Scroll/scroll-middle.png]];
-NatHub["bd"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["bd"]["Name"] = [[DropdownItems]];
-NatHub["bd"]["Selectable"] = false;
-NatHub["bd"]["BottomImage"] = [[rbxasset://textures/ui/Scroll/scroll-middle.png]];
-NatHub["bd"]["AutomaticCanvasSize"] = Enum.AutomaticSize.Y;
-NatHub["bd"]["Size"] = UDim2.new(1, 0, 1, -50);
-NatHub["bd"]["ScrollBarImageColor3"] = Color3.fromRGB(99, 106, 122);
-NatHub["bd"]["Position"] = UDim2.new(0, 0, 0, 50);
-NatHub["bd"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["bd"]["ScrollBarThickness"] = 5;
-NatHub["bd"]["BackgroundTransparency"] = 1;
-
-
--- NatHub.Templates.DropdownList.DropdownItems.UIListLayout
-NatHub["be"] = Instance.new("UIListLayout", NatHub["bd"]);
-NatHub["be"]["Padding"] = UDim.new(0, 15);
-NatHub["be"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
-
-
--- NatHub.Templates.DropdownList.DropdownItems.UIPadding
-NatHub["bf"] = Instance.new("UIPadding", NatHub["bd"]);
-NatHub["bf"]["PaddingTop"] = UDim.new(0, 2);
-NatHub["bf"]["PaddingRight"] = UDim.new(0, 10);
-NatHub["bf"]["PaddingLeft"] = UDim.new(0, 10);
-NatHub["bf"]["PaddingBottom"] = UDim.new(0, 10);
-
-
--- NatHub.Templates.DropdownList.DropdownItemsSearch
-NatHub["c0"] = Instance.new("ScrollingFrame", NatHub["bc"]);
-NatHub["c0"]["Visible"] = false;
-NatHub["c0"]["Active"] = true;
-NatHub["c0"]["ScrollingDirection"] = Enum.ScrollingDirection.Y;
-NatHub["c0"]["BorderSizePixel"] = 0;
-NatHub["c0"]["CanvasSize"] = UDim2.new(0, 0, 0, 0);
-NatHub["c0"]["ElasticBehavior"] = Enum.ElasticBehavior.Never;
-NatHub["c0"]["TopImage"] = [[rbxasset://textures/ui/Scroll/scroll-middle.png]];
-NatHub["c0"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["c0"]["Name"] = [[DropdownItemsSearch]];
-NatHub["c0"]["Selectable"] = false;
-NatHub["c0"]["BottomImage"] = [[rbxasset://textures/ui/Scroll/scroll-middle.png]];
-NatHub["c0"]["AutomaticCanvasSize"] = Enum.AutomaticSize.Y;
-NatHub["c0"]["Size"] = UDim2.new(1, 0, 1, -50);
-NatHub["c0"]["ScrollBarImageColor3"] = Color3.fromRGB(99, 106, 122);
-NatHub["c0"]["Position"] = UDim2.new(0, 0, 0, 50);
-NatHub["c0"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["c0"]["ScrollBarThickness"] = 5;
-NatHub["c0"]["BackgroundTransparency"] = 1;
-
-
--- NatHub.Templates.DropdownList.DropdownItemsSearch.UIListLayout
-NatHub["c1"] = Instance.new("UIListLayout", NatHub["c0"]);
-NatHub["c1"]["Padding"] = UDim.new(0, 15);
-NatHub["c1"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
-
-
--- NatHub.Templates.DropdownList.DropdownItemsSearch.UIPadding
-NatHub["c2"] = Instance.new("UIPadding", NatHub["c0"]);
-NatHub["c2"]["PaddingTop"] = UDim.new(0, 2);
-NatHub["c2"]["PaddingRight"] = UDim.new(0, 10);
-NatHub["c2"]["PaddingLeft"] = UDim.new(0, 10);
-NatHub["c2"]["PaddingBottom"] = UDim.new(0, 10);
-
-
--- NatHub.Templates.DropdownButton
-NatHub["c3"] = Instance.new("ImageButton", NatHub["41"]);
-NatHub["c3"]["BorderSizePixel"] = 0;
-NatHub["c3"]["AutoButtonColor"] = false;
-NatHub["c3"]["Visible"] = false;
-NatHub["c3"]["BackgroundColor3"] = Color3.fromRGB(43, 46, 53);
-NatHub["c3"]["Selectable"] = false;
-NatHub["c3"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["c3"]["Size"] = UDim2.new(1, 0, 0, 35);
-NatHub["c3"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["c3"]["Name"] = [[DropdownButton]];
-NatHub["c3"]["Position"] = UDim2.new(0, 0, 0.384, 0);
-
-
--- NatHub.Templates.DropdownButton.UICorner
-NatHub["c4"] = Instance.new("UICorner", NatHub["c3"]);
-NatHub["c4"]["CornerRadius"] = UDim.new(0, 6);
-
-
--- NatHub.Templates.DropdownButton.Frame
-NatHub["c5"] = Instance.new("Frame", NatHub["c3"]);
-NatHub["c5"]["BorderSizePixel"] = 0;
-NatHub["c5"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["c5"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["c5"]["Size"] = UDim2.new(1, 0, 0, 35);
-NatHub["c5"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["c5"]["BackgroundTransparency"] = 1;
-
-
--- NatHub.Templates.DropdownButton.Frame.UIListLayout
-NatHub["c6"] = Instance.new("UIListLayout", NatHub["c5"]);
-NatHub["c6"]["Padding"] = UDim.new(0, 5);
-NatHub["c6"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
-
-
--- NatHub.Templates.DropdownButton.Frame.UIPadding
-NatHub["c7"] = Instance.new("UIPadding", NatHub["c5"]);
-NatHub["c7"]["PaddingTop"] = UDim.new(0, 10);
-NatHub["c7"]["PaddingRight"] = UDim.new(0, 10);
-NatHub["c7"]["PaddingLeft"] = UDim.new(0, 10);
-NatHub["c7"]["PaddingBottom"] = UDim.new(0, 10);
-
-
--- NatHub.Templates.DropdownButton.Frame.Title
-NatHub["c8"] = Instance.new("TextLabel", NatHub["c5"]);
-NatHub["c8"]["TextWrapped"] = true;
-NatHub["c8"]["Interactable"] = false;
-NatHub["c8"]["BorderSizePixel"] = 0;
-NatHub["c8"]["TextSize"] = 16;
-NatHub["c8"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["c8"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-NatHub["c8"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["c8"]["BackgroundTransparency"] = 1;
-NatHub["c8"]["Size"] = UDim2.new(1, 0, 0, 15);
-NatHub["c8"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["c8"]["Text"] = [[Button]];
-NatHub["c8"]["Name"] = [[Title]];
-
-
--- NatHub.Templates.DropdownButton.Frame.Description
-NatHub["c9"] = Instance.new("TextLabel", NatHub["c5"]);
-NatHub["c9"]["TextWrapped"] = true;
-NatHub["c9"]["Interactable"] = false;
-NatHub["c9"]["BorderSizePixel"] = 0;
-NatHub["c9"]["TextSize"] = 16;
-NatHub["c9"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-NatHub["c9"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["c9"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Medium, Enum.FontStyle.Normal);
-NatHub["c9"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["c9"]["BackgroundTransparency"] = 1;
-NatHub["c9"]["Size"] = UDim2.new(1, 0, 0, 15);
-NatHub["c9"]["Visible"] = false;
-NatHub["c9"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["c9"]["Text"] = [[Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus placerat lacus in enim congue, fermentum euismod leo ultricies. Nulla sodales. ]];
-NatHub["c9"]["LayoutOrder"] = 1;
-NatHub["c9"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["c9"]["Name"] = [[Description]];
-
-
--- NatHub.Templates.DropdownButton.Frame.UIGradient
-NatHub["ca"] = Instance.new("UIGradient", NatHub["c5"]);
-NatHub["ca"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.160, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.320, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.540, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.782, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 158, 255))};
-
-
--- NatHub.Templates.DropdownButton.Frame.UIGradient
-NatHub["cb"] = Instance.new("UIGradient", NatHub["c5"]);
-NatHub["cb"]["Enabled"] = false;
-NatHub["cb"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.160, Color3.fromRGB(0, 235, 255)),ColorSequenceKeypoint.new(0.320, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.540, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.782, Color3.fromRGB(0, 235, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 158, 255))};
-
-
--- NatHub.Templates.DropdownButton.Frame.UIGradient
-NatHub["cc"] = Instance.new("UIGradient", NatHub["c5"]);
-NatHub["cc"]["Enabled"] = false;
-NatHub["cc"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.160, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.320, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.540, Color3.fromRGB(0, 235, 255)),ColorSequenceKeypoint.new(0.782, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 158, 255))};
-
-
--- NatHub.Templates.DropdownButton.Frame.UICorner
-NatHub["cd"] = Instance.new("UICorner", NatHub["c5"]);
-NatHub["cd"]["CornerRadius"] = UDim.new(0, 6);
-
-
--- NatHub.Templates.DropdownButton.UIStroke
-NatHub["ce"] = Instance.new("UIStroke", NatHub["c3"]);
-NatHub["ce"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
-NatHub["ce"]["Thickness"] = 1.5;
-NatHub["ce"]["Color"] = Color3.fromRGB(61, 61, 75);
-
-
--- NatHub.Templates.Code
-NatHub["cf"] = Instance.new("Frame", NatHub["41"]);
-NatHub["cf"]["Visible"] = false;
-NatHub["cf"]["BorderSizePixel"] = 0;
-NatHub["cf"]["BackgroundColor3"] = Color3.fromRGB(43, 46, 53);
-NatHub["cf"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["cf"]["Size"] = UDim2.new(1, 0, 0, 35);
-NatHub["cf"]["Position"] = UDim2.new(-0.0375, 0, 0.38434, 0);
-NatHub["cf"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["cf"]["Name"] = [[Code]];
-
-
--- NatHub.Templates.Code.UICorner
-NatHub["d0"] = Instance.new("UICorner", NatHub["cf"]);
-NatHub["d0"]["CornerRadius"] = UDim.new(0, 6);
-
-
--- NatHub.Templates.Code.UIStroke
-NatHub["d1"] = Instance.new("UIStroke", NatHub["cf"]);
-NatHub["d1"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
-NatHub["d1"]["Thickness"] = 1.5;
-NatHub["d1"]["Color"] = Color3.fromRGB(61, 61, 75);
-
-
--- NatHub.Templates.Code.Title
-NatHub["d2"] = Instance.new("TextLabel", NatHub["cf"]);
-NatHub["d2"]["TextWrapped"] = true;
-NatHub["d2"]["Interactable"] = false;
-NatHub["d2"]["BorderSizePixel"] = 0;
-NatHub["d2"]["TextSize"] = 16;
-NatHub["d2"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-NatHub["d2"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["d2"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
-NatHub["d2"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["d2"]["BackgroundTransparency"] = 1;
-NatHub["d2"]["Size"] = UDim2.new(1, 0, 0, 15);
-NatHub["d2"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["d2"]["Text"] = [[Title]];
-NatHub["d2"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["d2"]["Name"] = [[Title]];
-
-
--- NatHub.Templates.Code.UIPadding
-NatHub["d3"] = Instance.new("UIPadding", NatHub["cf"]);
-NatHub["d3"]["PaddingTop"] = UDim.new(0, 10);
-NatHub["d3"]["PaddingRight"] = UDim.new(0, 10);
-NatHub["d3"]["PaddingLeft"] = UDim.new(0, 10);
-NatHub["d3"]["PaddingBottom"] = UDim.new(0, 10);
-
-
--- NatHub.Templates.Code.UIListLayout
-NatHub["d4"] = Instance.new("UIListLayout", NatHub["cf"]);
-NatHub["d4"]["Padding"] = UDim.new(0, 5);
-NatHub["d4"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
-
-
--- NatHub.Templates.Code.Code
-NatHub["d5"] = Instance.new("TextBox", NatHub["cf"]);
-NatHub["d5"]["Name"] = [[Code]];
-NatHub["d5"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-NatHub["d5"]["BorderSizePixel"] = 0;
-NatHub["d5"]["TextEditable"] = false;
-NatHub["d5"]["TextWrapped"] = true;
-NatHub["d5"]["TextSize"] = 16;
-NatHub["d5"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["d5"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["d5"]["FontFace"] = Font.new([[rbxasset://fonts/families/Inconsolata.json]], Enum.FontWeight.Medium, Enum.FontStyle.Normal);
-NatHub["d5"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["d5"]["Selectable"] = false;
-NatHub["d5"]["MultiLine"] = true;
-NatHub["d5"]["ClearTextOnFocus"] = false;
-NatHub["d5"]["Size"] = UDim2.new(1, 0, 0, 15);
-NatHub["d5"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["d5"]["Text"] = [[print("Hello World!")]];
-NatHub["d5"]["LayoutOrder"] = 1;
-NatHub["d5"]["BackgroundTransparency"] = 1;
-
-
--- NatHub.Templates.Section
-NatHub["d6"] = Instance.new("Frame", NatHub["41"]);
-NatHub["d6"]["Visible"] = false;
-NatHub["d6"]["BorderSizePixel"] = 0;
-NatHub["d6"]["BackgroundColor3"] = Color3.fromRGB(43, 46, 53);
-NatHub["d6"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["d6"]["Size"] = UDim2.new(1, 0, 0, 35);
-NatHub["d6"]["Position"] = UDim2.new(0, 0, 0.43728, 0);
-NatHub["d6"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["d6"]["Name"] = [[Section]];
-NatHub["d6"]["BackgroundTransparency"] = 1;
+NovaHub["af"]["ImageColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["af"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
+NovaHub["af"]["Image"] = [[rbxassetid://6014261993]];
+NovaHub["af"]["Size"] = UDim2.new(1, 28, 1, 28);
+NovaHub["af"]["Visible"] = false;
+NovaHub["af"]["BackgroundTransparency"] = 1;
+NovaHub["af"]["Name"] = [[DropShadow]];
+NovaHub["af"]["Position"] = UDim2.new(0.5, 0, 0.5, 0);
+
+
+-- NovaHub.Templates.Dropdown.Title.BoxFrame.Trigger
+NovaHub["b0"] = Instance.new("ImageButton", NovaHub["ae"]);
+NovaHub["b0"]["BorderSizePixel"] = 0;
+NovaHub["b0"]["AutoButtonColor"] = false;
+NovaHub["b0"]["BackgroundColor3"] = Color3.fromRGB(43, 46, 53);
+NovaHub["b0"]["Selectable"] = false;
+NovaHub["b0"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
+NovaHub["b0"]["AutomaticSize"] = Enum.AutomaticSize.X;
+NovaHub["b0"]["Size"] = UDim2.new(0, 20, 0, 20);
+NovaHub["b0"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["b0"]["Name"] = [[Trigger]];
+NovaHub["b0"]["Position"] = UDim2.new(0.5, 0, 0.5, 0);
+
+
+-- NovaHub.Templates.Dropdown.Title.BoxFrame.Trigger.UICorner
+NovaHub["b1"] = Instance.new("UICorner", NovaHub["b0"]);
+NovaHub["b1"]["CornerRadius"] = UDim.new(0, 5);
+
+
+-- NovaHub.Templates.Dropdown.Title.BoxFrame.Trigger.UIStroke
+NovaHub["b2"] = Instance.new("UIStroke", NovaHub["b0"]);
+NovaHub["b2"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+NovaHub["b2"]["Thickness"] = 1.5;
+NovaHub["b2"]["Color"] = Color3.fromRGB(61, 61, 75);
+
+
+-- NovaHub.Templates.Dropdown.Title.BoxFrame.Trigger.UIListLayout
+NovaHub["b3"] = Instance.new("UIListLayout", NovaHub["b0"]);
+NovaHub["b3"]["Padding"] = UDim.new(0, 5);
+NovaHub["b3"]["VerticalAlignment"] = Enum.VerticalAlignment.Center;
+NovaHub["b3"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
+
+
+-- NovaHub.Templates.Dropdown.Title.BoxFrame.Trigger.Title
+NovaHub["b4"] = Instance.new("TextLabel", NovaHub["b0"]);
+NovaHub["b4"]["TextWrapped"] = true;
+NovaHub["b4"]["Interactable"] = false;
+NovaHub["b4"]["BorderSizePixel"] = 0;
+NovaHub["b4"]["TextSize"] = 16;
+NovaHub["b4"]["TextScaled"] = true;
+NovaHub["b4"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["b4"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Medium, Enum.FontStyle.Normal);
+NovaHub["b4"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["b4"]["BackgroundTransparency"] = 1;
+NovaHub["b4"]["AnchorPoint"] = Vector2.new(0, 0.5);
+NovaHub["b4"]["Size"] = UDim2.new(0, 15, 0, 14);
+NovaHub["b4"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["b4"]["Text"] = [[]];
+NovaHub["b4"]["AutomaticSize"] = Enum.AutomaticSize.X;
+NovaHub["b4"]["Name"] = [[Title]];
+NovaHub["b4"]["Position"] = UDim2.new(-0.00345, 0, 0.5, 0);
+
+
+-- NovaHub.Templates.Dropdown.Title.BoxFrame.Trigger.UIPadding
+NovaHub["b5"] = Instance.new("UIPadding", NovaHub["b0"]);
+NovaHub["b5"]["PaddingRight"] = UDim.new(0, 5);
+NovaHub["b5"]["PaddingLeft"] = UDim.new(0, 5);
+
+
+-- NovaHub.Templates.Dropdown.UIPadding
+NovaHub["b6"] = Instance.new("UIPadding", NovaHub["a9"]);
+NovaHub["b6"]["PaddingTop"] = UDim.new(0, 10);
+NovaHub["b6"]["PaddingRight"] = UDim.new(0, 10);
+NovaHub["b6"]["PaddingLeft"] = UDim.new(0, 10);
+NovaHub["b6"]["PaddingBottom"] = UDim.new(0, 10);
+
+
+-- NovaHub.Templates.Dropdown.UIListLayout
+NovaHub["b7"] = Instance.new("UIListLayout", NovaHub["a9"]);
+NovaHub["b7"]["Padding"] = UDim.new(0, 5);
+NovaHub["b7"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
+
+
+-- NovaHub.Templates.Dropdown.Description
+NovaHub["b8"] = Instance.new("TextLabel", NovaHub["a9"]);
+NovaHub["b8"]["TextWrapped"] = true;
+NovaHub["b8"]["Interactable"] = false;
+NovaHub["b8"]["BorderSizePixel"] = 0;
+NovaHub["b8"]["TextSize"] = 16;
+NovaHub["b8"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+NovaHub["b8"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["b8"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Medium, Enum.FontStyle.Normal);
+NovaHub["b8"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["b8"]["BackgroundTransparency"] = 1;
+NovaHub["b8"]["Size"] = UDim2.new(1, 0, 0, 15);
+NovaHub["b8"]["Visible"] = false;
+NovaHub["b8"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["b8"]["Text"] = [[Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus placerat lacus in enim congue, fermentum euismod leo ultricies. Nulla sodales. ]];
+NovaHub["b8"]["LayoutOrder"] = 1;
+NovaHub["b8"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["b8"]["Name"] = [[Description]];
+
+
+-- NovaHub.Templates.Dropdown.UIGradient
+NovaHub["b9"] = Instance.new("UIGradient", NovaHub["a9"]);
+NovaHub["b9"]["Enabled"] = false;
+NovaHub["b9"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.160, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.320, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.540, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.782, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 158, 255))};
+
+
+-- NovaHub.Templates.Dropdown.UIGradient
+NovaHub["ba"] = Instance.new("UIGradient", NovaHub["a9"]);
+NovaHub["ba"]["Enabled"] = false;
+NovaHub["ba"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.160, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.320, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.540, Color3.fromRGB(0, 235, 255)),ColorSequenceKeypoint.new(0.782, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 158, 255))};
+
+
+-- NovaHub.Templates.Dropdown.UIGradient
+NovaHub["bb"] = Instance.new("UIGradient", NovaHub["a9"]);
+NovaHub["bb"]["Enabled"] = false;
+NovaHub["bb"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.160, Color3.fromRGB(0, 235, 255)),ColorSequenceKeypoint.new(0.320, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.540, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.782, Color3.fromRGB(0, 235, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 158, 255))};
+
+
+-- NovaHub.Templates.DropdownList
+NovaHub["bc"] = Instance.new("Folder", NovaHub["41"]);
+NovaHub["bc"]["Name"] = [[DropdownList]];
+
+
+-- NovaHub.Templates.DropdownList.DropdownItems
+NovaHub["bd"] = Instance.new("ScrollingFrame", NovaHub["bc"]);
+NovaHub["bd"]["Visible"] = false;
+NovaHub["bd"]["Active"] = true;
+NovaHub["bd"]["ScrollingDirection"] = Enum.ScrollingDirection.Y;
+NovaHub["bd"]["BorderSizePixel"] = 0;
+NovaHub["bd"]["CanvasSize"] = UDim2.new(0, 0, 0, 0);
+NovaHub["bd"]["ElasticBehavior"] = Enum.ElasticBehavior.Never;
+NovaHub["bd"]["TopImage"] = [[rbxasset://textures/ui/Scroll/scroll-middle.png]];
+NovaHub["bd"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["bd"]["Name"] = [[DropdownItems]];
+NovaHub["bd"]["Selectable"] = false;
+NovaHub["bd"]["BottomImage"] = [[rbxasset://textures/ui/Scroll/scroll-middle.png]];
+NovaHub["bd"]["AutomaticCanvasSize"] = Enum.AutomaticSize.Y;
+NovaHub["bd"]["Size"] = UDim2.new(1, 0, 1, -50);
+NovaHub["bd"]["ScrollBarImageColor3"] = Color3.fromRGB(99, 106, 122);
+NovaHub["bd"]["Position"] = UDim2.new(0, 0, 0, 50);
+NovaHub["bd"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["bd"]["ScrollBarThickness"] = 5;
+NovaHub["bd"]["BackgroundTransparency"] = 1;
+
+
+-- NovaHub.Templates.DropdownList.DropdownItems.UIListLayout
+NovaHub["be"] = Instance.new("UIListLayout", NovaHub["bd"]);
+NovaHub["be"]["Padding"] = UDim.new(0, 15);
+NovaHub["be"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
+
+
+-- NovaHub.Templates.DropdownList.DropdownItems.UIPadding
+NovaHub["bf"] = Instance.new("UIPadding", NovaHub["bd"]);
+NovaHub["bf"]["PaddingTop"] = UDim.new(0, 2);
+NovaHub["bf"]["PaddingRight"] = UDim.new(0, 10);
+NovaHub["bf"]["PaddingLeft"] = UDim.new(0, 10);
+NovaHub["bf"]["PaddingBottom"] = UDim.new(0, 10);
+
+
+-- NovaHub.Templates.DropdownList.DropdownItemsSearch
+NovaHub["c0"] = Instance.new("ScrollingFrame", NovaHub["bc"]);
+NovaHub["c0"]["Visible"] = false;
+NovaHub["c0"]["Active"] = true;
+NovaHub["c0"]["ScrollingDirection"] = Enum.ScrollingDirection.Y;
+NovaHub["c0"]["BorderSizePixel"] = 0;
+NovaHub["c0"]["CanvasSize"] = UDim2.new(0, 0, 0, 0);
+NovaHub["c0"]["ElasticBehavior"] = Enum.ElasticBehavior.Never;
+NovaHub["c0"]["TopImage"] = [[rbxasset://textures/ui/Scroll/scroll-middle.png]];
+NovaHub["c0"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["c0"]["Name"] = [[DropdownItemsSearch]];
+NovaHub["c0"]["Selectable"] = false;
+NovaHub["c0"]["BottomImage"] = [[rbxasset://textures/ui/Scroll/scroll-middle.png]];
+NovaHub["c0"]["AutomaticCanvasSize"] = Enum.AutomaticSize.Y;
+NovaHub["c0"]["Size"] = UDim2.new(1, 0, 1, -50);
+NovaHub["c0"]["ScrollBarImageColor3"] = Color3.fromRGB(99, 106, 122);
+NovaHub["c0"]["Position"] = UDim2.new(0, 0, 0, 50);
+NovaHub["c0"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["c0"]["ScrollBarThickness"] = 5;
+NovaHub["c0"]["BackgroundTransparency"] = 1;
+
+
+-- NovaHub.Templates.DropdownList.DropdownItemsSearch.UIListLayout
+NovaHub["c1"] = Instance.new("UIListLayout", NovaHub["c0"]);
+NovaHub["c1"]["Padding"] = UDim.new(0, 15);
+NovaHub["c1"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
+
+
+-- NovaHub.Templates.DropdownList.DropdownItemsSearch.UIPadding
+NovaHub["c2"] = Instance.new("UIPadding", NovaHub["c0"]);
+NovaHub["c2"]["PaddingTop"] = UDim.new(0, 2);
+NovaHub["c2"]["PaddingRight"] = UDim.new(0, 10);
+NovaHub["c2"]["PaddingLeft"] = UDim.new(0, 10);
+NovaHub["c2"]["PaddingBottom"] = UDim.new(0, 10);
+
+
+-- NovaHub.Templates.DropdownButton
+NovaHub["c3"] = Instance.new("ImageButton", NovaHub["41"]);
+NovaHub["c3"]["BorderSizePixel"] = 0;
+NovaHub["c3"]["AutoButtonColor"] = false;
+NovaHub["c3"]["Visible"] = false;
+NovaHub["c3"]["BackgroundColor3"] = Color3.fromRGB(43, 46, 53);
+NovaHub["c3"]["Selectable"] = false;
+NovaHub["c3"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["c3"]["Size"] = UDim2.new(1, 0, 0, 35);
+NovaHub["c3"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["c3"]["Name"] = [[DropdownButton]];
+NovaHub["c3"]["Position"] = UDim2.new(0, 0, 0.384, 0);
+
+
+-- NovaHub.Templates.DropdownButton.UICorner
+NovaHub["c4"] = Instance.new("UICorner", NovaHub["c3"]);
+NovaHub["c4"]["CornerRadius"] = UDim.new(0, 6);
+
+
+-- NovaHub.Templates.DropdownButton.Frame
+NovaHub["c5"] = Instance.new("Frame", NovaHub["c3"]);
+NovaHub["c5"]["BorderSizePixel"] = 0;
+NovaHub["c5"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["c5"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["c5"]["Size"] = UDim2.new(1, 0, 0, 35);
+NovaHub["c5"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["c5"]["BackgroundTransparency"] = 1;
+
+
+-- NovaHub.Templates.DropdownButton.Frame.UIListLayout
+NovaHub["c6"] = Instance.new("UIListLayout", NovaHub["c5"]);
+NovaHub["c6"]["Padding"] = UDim.new(0, 5);
+NovaHub["c6"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
+
+
+-- NovaHub.Templates.DropdownButton.Frame.UIPadding
+NovaHub["c7"] = Instance.new("UIPadding", NovaHub["c5"]);
+NovaHub["c7"]["PaddingTop"] = UDim.new(0, 10);
+NovaHub["c7"]["PaddingRight"] = UDim.new(0, 10);
+NovaHub["c7"]["PaddingLeft"] = UDim.new(0, 10);
+NovaHub["c7"]["PaddingBottom"] = UDim.new(0, 10);
+
+
+-- NovaHub.Templates.DropdownButton.Frame.Title
+NovaHub["c8"] = Instance.new("TextLabel", NovaHub["c5"]);
+NovaHub["c8"]["TextWrapped"] = true;
+NovaHub["c8"]["Interactable"] = false;
+NovaHub["c8"]["BorderSizePixel"] = 0;
+NovaHub["c8"]["TextSize"] = 16;
+NovaHub["c8"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["c8"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+NovaHub["c8"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["c8"]["BackgroundTransparency"] = 1;
+NovaHub["c8"]["Size"] = UDim2.new(1, 0, 0, 15);
+NovaHub["c8"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["c8"]["Text"] = [[Button]];
+NovaHub["c8"]["Name"] = [[Title]];
+
+
+-- NovaHub.Templates.DropdownButton.Frame.Description
+NovaHub["c9"] = Instance.new("TextLabel", NovaHub["c5"]);
+NovaHub["c9"]["TextWrapped"] = true;
+NovaHub["c9"]["Interactable"] = false;
+NovaHub["c9"]["BorderSizePixel"] = 0;
+NovaHub["c9"]["TextSize"] = 16;
+NovaHub["c9"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+NovaHub["c9"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["c9"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Medium, Enum.FontStyle.Normal);
+NovaHub["c9"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["c9"]["BackgroundTransparency"] = 1;
+NovaHub["c9"]["Size"] = UDim2.new(1, 0, 0, 15);
+NovaHub["c9"]["Visible"] = false;
+NovaHub["c9"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["c9"]["Text"] = [[Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus placerat lacus in enim congue, fermentum euismod leo ultricies. Nulla sodales. ]];
+NovaHub["c9"]["LayoutOrder"] = 1;
+NovaHub["c9"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["c9"]["Name"] = [[Description]];
+
+
+-- NovaHub.Templates.DropdownButton.Frame.UIGradient
+NovaHub["ca"] = Instance.new("UIGradient", NovaHub["c5"]);
+NovaHub["ca"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.160, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.320, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.540, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.782, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 158, 255))};
+
+
+-- NovaHub.Templates.DropdownButton.Frame.UIGradient
+NovaHub["cb"] = Instance.new("UIGradient", NovaHub["c5"]);
+NovaHub["cb"]["Enabled"] = false;
+NovaHub["cb"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.160, Color3.fromRGB(0, 235, 255)),ColorSequenceKeypoint.new(0.320, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.540, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.782, Color3.fromRGB(0, 235, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 158, 255))};
+
+
+-- NovaHub.Templates.DropdownButton.Frame.UIGradient
+NovaHub["cc"] = Instance.new("UIGradient", NovaHub["c5"]);
+NovaHub["cc"]["Enabled"] = false;
+NovaHub["cc"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.160, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.320, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.540, Color3.fromRGB(0, 235, 255)),ColorSequenceKeypoint.new(0.782, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 158, 255))};
+
+
+-- NovaHub.Templates.DropdownButton.Frame.UICorner
+NovaHub["cd"] = Instance.new("UICorner", NovaHub["c5"]);
+NovaHub["cd"]["CornerRadius"] = UDim.new(0, 6);
+
+
+-- NovaHub.Templates.DropdownButton.UIStroke
+NovaHub["ce"] = Instance.new("UIStroke", NovaHub["c3"]);
+NovaHub["ce"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+NovaHub["ce"]["Thickness"] = 1.5;
+NovaHub["ce"]["Color"] = Color3.fromRGB(61, 61, 75);
+
+
+-- NovaHub.Templates.Code
+NovaHub["cf"] = Instance.new("Frame", NovaHub["41"]);
+NovaHub["cf"]["Visible"] = false;
+NovaHub["cf"]["BorderSizePixel"] = 0;
+NovaHub["cf"]["BackgroundColor3"] = Color3.fromRGB(43, 46, 53);
+NovaHub["cf"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["cf"]["Size"] = UDim2.new(1, 0, 0, 35);
+NovaHub["cf"]["Position"] = UDim2.new(-0.0375, 0, 0.38434, 0);
+NovaHub["cf"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["cf"]["Name"] = [[Code]];
+
+
+-- NovaHub.Templates.Code.UICorner
+NovaHub["d0"] = Instance.new("UICorner", NovaHub["cf"]);
+NovaHub["d0"]["CornerRadius"] = UDim.new(0, 6);
+
+
+-- NovaHub.Templates.Code.UIStroke
+NovaHub["d1"] = Instance.new("UIStroke", NovaHub["cf"]);
+NovaHub["d1"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+NovaHub["d1"]["Thickness"] = 1.5;
+NovaHub["d1"]["Color"] = Color3.fromRGB(61, 61, 75);
+
+
+-- NovaHub.Templates.Code.Title
+NovaHub["d2"] = Instance.new("TextLabel", NovaHub["cf"]);
+NovaHub["d2"]["TextWrapped"] = true;
+NovaHub["d2"]["Interactable"] = false;
+NovaHub["d2"]["BorderSizePixel"] = 0;
+NovaHub["d2"]["TextSize"] = 16;
+NovaHub["d2"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+NovaHub["d2"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["d2"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+NovaHub["d2"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["d2"]["BackgroundTransparency"] = 1;
+NovaHub["d2"]["Size"] = UDim2.new(1, 0, 0, 15);
+NovaHub["d2"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["d2"]["Text"] = [[Title]];
+NovaHub["d2"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["d2"]["Name"] = [[Title]];
+
+
+-- NovaHub.Templates.Code.UIPadding
+NovaHub["d3"] = Instance.new("UIPadding", NovaHub["cf"]);
+NovaHub["d3"]["PaddingTop"] = UDim.new(0, 10);
+NovaHub["d3"]["PaddingRight"] = UDim.new(0, 10);
+NovaHub["d3"]["PaddingLeft"] = UDim.new(0, 10);
+NovaHub["d3"]["PaddingBottom"] = UDim.new(0, 10);
+
+
+-- NovaHub.Templates.Code.UIListLayout
+NovaHub["d4"] = Instance.new("UIListLayout", NovaHub["cf"]);
+NovaHub["d4"]["Padding"] = UDim.new(0, 5);
+NovaHub["d4"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
+
+
+-- NovaHub.Templates.Code.Code
+NovaHub["d5"] = Instance.new("TextBox", NovaHub["cf"]);
+NovaHub["d5"]["Name"] = [[Code]];
+NovaHub["d5"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+NovaHub["d5"]["BorderSizePixel"] = 0;
+NovaHub["d5"]["TextEditable"] = false;
+NovaHub["d5"]["TextWrapped"] = true;
+NovaHub["d5"]["TextSize"] = 16;
+NovaHub["d5"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["d5"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["d5"]["FontFace"] = Font.new([[rbxasset://fonts/families/Inconsolata.json]], Enum.FontWeight.Medium, Enum.FontStyle.Normal);
+NovaHub["d5"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["d5"]["Selectable"] = false;
+NovaHub["d5"]["MultiLine"] = true;
+NovaHub["d5"]["ClearTextOnFocus"] = false;
+NovaHub["d5"]["Size"] = UDim2.new(1, 0, 0, 15);
+NovaHub["d5"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["d5"]["Text"] = [[print("Hello World!")]];
+NovaHub["d5"]["LayoutOrder"] = 1;
+NovaHub["d5"]["BackgroundTransparency"] = 1;
+
+
+-- NovaHub.Templates.Section
+NovaHub["d6"] = Instance.new("Frame", NovaHub["41"]);
+NovaHub["d6"]["Visible"] = false;
+NovaHub["d6"]["BorderSizePixel"] = 0;
+NovaHub["d6"]["BackgroundColor3"] = Color3.fromRGB(43, 46, 53);
+NovaHub["d6"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["d6"]["Size"] = UDim2.new(1, 0, 0, 35);
+NovaHub["d6"]["Position"] = UDim2.new(0, 0, 0.43728, 0);
+NovaHub["d6"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["d6"]["Name"] = [[Section]];
+NovaHub["d6"]["BackgroundTransparency"] = 1;
 -- [ERROR] cannot convert SelectionImageObject, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
 
 
--- NatHub.Templates.Section.Button
-NatHub["d7"] = Instance.new("ImageButton", NatHub["d6"]);
-NatHub["d7"]["BorderSizePixel"] = 0;
-NatHub["d7"]["AutoButtonColor"] = false;
-NatHub["d7"]["BackgroundColor3"] = Color3.fromRGB(43, 46, 53);
-NatHub["d7"]["Selectable"] = false;
-NatHub["d7"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["d7"]["Size"] = UDim2.new(1, 0, 0, 35);
-NatHub["d7"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["d7"]["Name"] = [[Button]];
+-- NovaHub.Templates.Section.Button
+NovaHub["d7"] = Instance.new("ImageButton", NovaHub["d6"]);
+NovaHub["d7"]["BorderSizePixel"] = 0;
+NovaHub["d7"]["AutoButtonColor"] = false;
+NovaHub["d7"]["BackgroundColor3"] = Color3.fromRGB(43, 46, 53);
+NovaHub["d7"]["Selectable"] = false;
+NovaHub["d7"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["d7"]["Size"] = UDim2.new(1, 0, 0, 35);
+NovaHub["d7"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["d7"]["Name"] = [[Button]];
 
 
--- NatHub.Templates.Section.Button.UICorner
-NatHub["d8"] = Instance.new("UICorner", NatHub["d7"]);
-NatHub["d8"]["CornerRadius"] = UDim.new(0, 6);
+-- NovaHub.Templates.Section.Button.UICorner
+NovaHub["d8"] = Instance.new("UICorner", NovaHub["d7"]);
+NovaHub["d8"]["CornerRadius"] = UDim.new(0, 6);
 
 
--- NatHub.Templates.Section.Button.UIStroke
-NatHub["d9"] = Instance.new("UIStroke", NatHub["d7"]);
-NatHub["d9"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
-NatHub["d9"]["Thickness"] = 1.5;
-NatHub["d9"]["Color"] = Color3.fromRGB(61, 61, 75);
+-- NovaHub.Templates.Section.Button.UIStroke
+NovaHub["d9"] = Instance.new("UIStroke", NovaHub["d7"]);
+NovaHub["d9"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+NovaHub["d9"]["Thickness"] = 1.5;
+NovaHub["d9"]["Color"] = Color3.fromRGB(61, 61, 75);
 
 
--- NatHub.Templates.Section.Button.Title
-NatHub["da"] = Instance.new("TextLabel", NatHub["d7"]);
-NatHub["da"]["TextWrapped"] = true;
-NatHub["da"]["Interactable"] = false;
-NatHub["da"]["BorderSizePixel"] = 0;
-NatHub["da"]["TextSize"] = 16;
-NatHub["da"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-NatHub["da"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["da"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-NatHub["da"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["da"]["BackgroundTransparency"] = 1;
-NatHub["da"]["Size"] = UDim2.new(1, 0, 0, 15);
-NatHub["da"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["da"]["Text"] = [[Section]];
-NatHub["da"]["Name"] = [[Title]];
+-- NovaHub.Templates.Section.Button.Title
+NovaHub["da"] = Instance.new("TextLabel", NovaHub["d7"]);
+NovaHub["da"]["TextWrapped"] = true;
+NovaHub["da"]["Interactable"] = false;
+NovaHub["da"]["BorderSizePixel"] = 0;
+NovaHub["da"]["TextSize"] = 16;
+NovaHub["da"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+NovaHub["da"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["da"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+NovaHub["da"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["da"]["BackgroundTransparency"] = 1;
+NovaHub["da"]["Size"] = UDim2.new(1, 0, 0, 15);
+NovaHub["da"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["da"]["Text"] = [[Section]];
+NovaHub["da"]["Name"] = [[Title]];
 
 
--- NatHub.Templates.Section.Button.Title.Arrow
-NatHub["db"] = Instance.new("ImageButton", NatHub["da"]);
-NatHub["db"]["BorderSizePixel"] = 0;
-NatHub["db"]["AutoButtonColor"] = false;
-NatHub["db"]["BackgroundTransparency"] = 1;
+-- NovaHub.Templates.Section.Button.Title.Arrow
+NovaHub["db"] = Instance.new("ImageButton", NovaHub["da"]);
+NovaHub["db"]["BorderSizePixel"] = 0;
+NovaHub["db"]["AutoButtonColor"] = false;
+NovaHub["db"]["BackgroundTransparency"] = 1;
 -- [ERROR] cannot convert ImageContent, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
-NatHub["db"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["db"]["ImageColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["db"]["AnchorPoint"] = Vector2.new(1, 0.5);
-NatHub["db"]["Image"] = [[rbxassetid://120292618616139]];
-NatHub["db"]["Size"] = UDim2.new(0, 23, 0, 23);
-NatHub["db"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["db"]["Name"] = [[Arrow]];
-NatHub["db"]["Position"] = UDim2.new(1, 0, 0.5, 0);
-
-
--- NatHub.Templates.Section.Button.UIPadding
-NatHub["dc"] = Instance.new("UIPadding", NatHub["d7"]);
-NatHub["dc"]["PaddingTop"] = UDim.new(0, 10);
-NatHub["dc"]["PaddingRight"] = UDim.new(0, 10);
-NatHub["dc"]["PaddingLeft"] = UDim.new(0, 10);
-NatHub["dc"]["PaddingBottom"] = UDim.new(0, 10);
-
-
--- NatHub.Templates.Section.Button.UIListLayout
-NatHub["dd"] = Instance.new("UIListLayout", NatHub["d7"]);
-NatHub["dd"]["Padding"] = UDim.new(0, 5);
-NatHub["dd"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
-
-
--- NatHub.Templates.Section.Button.Description
-NatHub["de"] = Instance.new("TextLabel", NatHub["d7"]);
-NatHub["de"]["TextWrapped"] = true;
-NatHub["de"]["Interactable"] = false;
-NatHub["de"]["BorderSizePixel"] = 0;
-NatHub["de"]["TextSize"] = 16;
-NatHub["de"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-NatHub["de"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["de"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Medium, Enum.FontStyle.Normal);
-NatHub["de"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["de"]["BackgroundTransparency"] = 1;
-NatHub["de"]["Size"] = UDim2.new(1, 0, 0, 15);
-NatHub["de"]["Visible"] = false;
-NatHub["de"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["de"]["Text"] = [[Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus placerat lacus in enim congue, fermentum euismod leo ultricies. Nulla sodales. ]];
-NatHub["de"]["LayoutOrder"] = 1;
-NatHub["de"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["de"]["Name"] = [[Description]];
-
-
--- NatHub.Templates.Section.Button.UIGradient
-NatHub["df"] = Instance.new("UIGradient", NatHub["d7"]);
-NatHub["df"]["Enabled"] = false;
-NatHub["df"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.160, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.320, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.540, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.782, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 158, 255))};
-
-
--- NatHub.Templates.Section.Button.UIGradient
-NatHub["e0"] = Instance.new("UIGradient", NatHub["d7"]);
-NatHub["e0"]["Enabled"] = false;
-NatHub["e0"]["Transparency"] = NumberSequence.new{NumberSequenceKeypoint.new(0.000, 1),NumberSequenceKeypoint.new(1.000, 1)};
-NatHub["e0"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.160, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.320, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.540, Color3.fromRGB(0, 235, 255)),ColorSequenceKeypoint.new(0.782, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 158, 255))};
-
-
--- NatHub.Templates.Section.Button.UIGradient
-NatHub["e1"] = Instance.new("UIGradient", NatHub["d7"]);
-NatHub["e1"]["Enabled"] = false;
-NatHub["e1"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.160, Color3.fromRGB(0, 235, 255)),ColorSequenceKeypoint.new(0.320, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.540, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.782, Color3.fromRGB(0, 235, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 158, 255))};
-
-
--- NatHub.Templates.Section.Button.UIStroke
-NatHub["e2"] = Instance.new("UIStroke", NatHub["d7"]);
-NatHub["e2"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
-NatHub["e2"]["Thickness"] = 1.5;
-NatHub["e2"]["Color"] = Color3.fromRGB(61, 61, 75);
-
-
--- NatHub.Templates.Section.Frame
-NatHub["e3"] = Instance.new("Frame", NatHub["d6"]);
-NatHub["e3"]["Visible"] = false;
-NatHub["e3"]["BorderSizePixel"] = 0;
-NatHub["e3"]["BackgroundColor3"] = Color3.fromRGB(207, 222, 255);
-NatHub["e3"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["e3"]["Size"] = UDim2.new(1, 0, 0, 30);
-NatHub["e3"]["Position"] = UDim2.new(0, 0, 0, 35);
-NatHub["e3"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["e3"]["BackgroundTransparency"] = 1;
-
-
--- NatHub.Templates.Section.Frame.UIListLayout
-NatHub["e4"] = Instance.new("UIListLayout", NatHub["e3"]);
-NatHub["e4"]["HorizontalAlignment"] = Enum.HorizontalAlignment.Center;
-NatHub["e4"]["Padding"] = UDim.new(0, 10);
-NatHub["e4"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
-
-
--- NatHub.Templates.Section.Frame.UIPadding
-NatHub["e5"] = Instance.new("UIPadding", NatHub["e3"]);
-NatHub["e5"]["PaddingTop"] = UDim.new(0, 10);
-NatHub["e5"]["PaddingRight"] = UDim.new(0, 8);
-NatHub["e5"]["PaddingLeft"] = UDim.new(0, 8);
-
-
--- NatHub.Templates.Section.Frame.Divider
-NatHub["e6"] = Instance.new("Frame", NatHub["e3"]);
-NatHub["e6"]["BorderSizePixel"] = 0;
-NatHub["e6"]["BackgroundColor3"] = Color3.fromRGB(61, 61, 75);
-NatHub["e6"]["Size"] = UDim2.new(1, 0, 0, 3);
-NatHub["e6"]["BorderColor3"] = Color3.fromRGB(61, 61, 75);
-NatHub["e6"]["Name"] = [[Divider]];
-
-
--- NatHub.Templates.DialogElements
-NatHub["e7"] = Instance.new("Folder", NatHub["41"]);
-NatHub["e7"]["Name"] = [[DialogElements]];
-
-
--- NatHub.Templates.DialogElements.DarkOverlayDialog
-NatHub["e8"] = Instance.new("Frame", NatHub["e7"]);
-NatHub["e8"]["Visible"] = false;
-NatHub["e8"]["BorderSizePixel"] = 0;
-NatHub["e8"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["e8"]["Size"] = UDim2.new(1, 0, 1, 0);
-NatHub["e8"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["e8"]["Name"] = [[DarkOverlayDialog]];
-NatHub["e8"]["BackgroundTransparency"] = 0.6;
-
-
--- NatHub.Templates.DialogElements.DarkOverlayDialog.UICorner
-NatHub["e9"] = Instance.new("UICorner", NatHub["e8"]);
-NatHub["e9"]["CornerRadius"] = UDim.new(0, 10);
-
-
--- NatHub.Templates.DialogElements.Dialog
-NatHub["ea"] = Instance.new("Frame", NatHub["e7"]);
-NatHub["ea"]["Visible"] = false;
-NatHub["ea"]["ZIndex"] = 4;
-NatHub["ea"]["BorderSizePixel"] = 0;
-NatHub["ea"]["BackgroundColor3"] = Color3.fromRGB(32, 35, 41);
-NatHub["ea"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
-NatHub["ea"]["ClipsDescendants"] = true;
-NatHub["ea"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["ea"]["Size"] = UDim2.new(0, 250, 0, 0);
-NatHub["ea"]["Position"] = UDim2.new(0.5, 0, 0.5, 0);
-NatHub["ea"]["BorderColor3"] = Color3.fromRGB(61, 61, 75);
-NatHub["ea"]["Name"] = [[Dialog]];
-
-
--- NatHub.Templates.DialogElements.Dialog.UICorner
-NatHub["eb"] = Instance.new("UICorner", NatHub["ea"]);
-NatHub["eb"]["CornerRadius"] = UDim.new(0, 6);
-
-
--- NatHub.Templates.DialogElements.Dialog.UIStroke
-NatHub["ec"] = Instance.new("UIStroke", NatHub["ea"]);
-NatHub["ec"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
-NatHub["ec"]["Thickness"] = 1.5;
-NatHub["ec"]["Color"] = Color3.fromRGB(61, 61, 75);
-
-
--- NatHub.Templates.DialogElements.Dialog.Title
-NatHub["ed"] = Instance.new("Frame", NatHub["ea"]);
-NatHub["ed"]["BorderSizePixel"] = 0;
-NatHub["ed"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["ed"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["ed"]["Size"] = UDim2.new(1, 0, 0, 25);
-NatHub["ed"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["ed"]["Name"] = [[Title]];
-NatHub["ed"]["BackgroundTransparency"] = 1;
-
-
--- NatHub.Templates.DialogElements.Dialog.Title.TextLabel
-NatHub["ee"] = Instance.new("TextLabel", NatHub["ed"]);
-NatHub["ee"]["Interactable"] = false;
-NatHub["ee"]["ZIndex"] = 0;
-NatHub["ee"]["BorderSizePixel"] = 0;
-NatHub["ee"]["TextSize"] = 20;
-NatHub["ee"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-NatHub["ee"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["ee"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-NatHub["ee"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["ee"]["BackgroundTransparency"] = 1;
-NatHub["ee"]["AnchorPoint"] = Vector2.new(0, 0.5);
-NatHub["ee"]["Size"] = UDim2.new(0, 0, 0, 20);
-NatHub["ee"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["ee"]["Text"] = [[]];
-NatHub["ee"]["LayoutOrder"] = 1;
-NatHub["ee"]["AutomaticSize"] = Enum.AutomaticSize.XY;
-NatHub["ee"]["Position"] = UDim2.new(-0.05455, 12, 0.5, 0);
-
-
--- NatHub.Templates.DialogElements.Dialog.Title.UIListLayout
-NatHub["ef"] = Instance.new("UIListLayout", NatHub["ed"]);
-NatHub["ef"]["Padding"] = UDim.new(0, 10);
-NatHub["ef"]["VerticalAlignment"] = Enum.VerticalAlignment.Center;
-NatHub["ef"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
-NatHub["ef"]["FillDirection"] = Enum.FillDirection.Horizontal;
-
-
--- NatHub.Templates.DialogElements.Dialog.Title.UIPadding
-NatHub["f0"] = Instance.new("UIPadding", NatHub["ed"]);
-NatHub["f0"]["PaddingTop"] = UDim.new(0, 5);
-NatHub["f0"]["PaddingRight"] = UDim.new(0, 15);
-NatHub["f0"]["PaddingLeft"] = UDim.new(0, 15);
-NatHub["f0"]["PaddingBottom"] = UDim.new(0, 5);
-
-
--- NatHub.Templates.DialogElements.Dialog.Title.Icon
-NatHub["f1"] = Instance.new("ImageButton", NatHub["ed"]);
-NatHub["f1"]["BorderSizePixel"] = 0;
-NatHub["f1"]["Visible"] = false;
-NatHub["f1"]["BackgroundTransparency"] = 1;
-NatHub["f1"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["f1"]["ImageColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["f1"]["Size"] = UDim2.new(0, 33, 0, 25);
-NatHub["f1"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["f1"]["Name"] = [[Icon]];
-NatHub["f1"]["Position"] = UDim2.new(0, 0, 0.2125, 0);
-
-
--- NatHub.Templates.DialogElements.Dialog.Title.Icon.UIAspectRatioConstraint
-NatHub["f2"] = Instance.new("UIAspectRatioConstraint", NatHub["f1"]);
-
-
-
--- NatHub.Templates.DialogElements.Dialog.UIListLayout
-NatHub["f3"] = Instance.new("UIListLayout", NatHub["ea"]);
-NatHub["f3"]["HorizontalAlignment"] = Enum.HorizontalAlignment.Center;
-NatHub["f3"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
-
-
--- NatHub.Templates.DialogElements.Dialog.Content
-NatHub["f4"] = Instance.new("Frame", NatHub["ea"]);
-NatHub["f4"]["Visible"] = false;
-NatHub["f4"]["ZIndex"] = 2;
-NatHub["f4"]["BorderSizePixel"] = 0;
-NatHub["f4"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["f4"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["f4"]["Size"] = UDim2.new(1, 0, 0, 0);
-NatHub["f4"]["Position"] = UDim2.new(0, 0, 0.21886, 0);
-NatHub["f4"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["f4"]["Name"] = [[Content]];
-NatHub["f4"]["BackgroundTransparency"] = 1;
-
-
--- NatHub.Templates.DialogElements.Dialog.Content.UIListLayout
-NatHub["f5"] = Instance.new("UIListLayout", NatHub["f4"]);
-NatHub["f5"]["VerticalAlignment"] = Enum.VerticalAlignment.Center;
-NatHub["f5"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
-
-
--- NatHub.Templates.DialogElements.Dialog.Content.UIPadding
-NatHub["f6"] = Instance.new("UIPadding", NatHub["f4"]);
-NatHub["f6"]["PaddingTop"] = UDim.new(0, 5);
-NatHub["f6"]["PaddingRight"] = UDim.new(0, 15);
-NatHub["f6"]["PaddingLeft"] = UDim.new(0, 15);
-NatHub["f6"]["PaddingBottom"] = UDim.new(0, 5);
-
-
--- NatHub.Templates.DialogElements.Dialog.Content.TextLabel
-NatHub["f7"] = Instance.new("TextLabel", NatHub["f4"]);
-NatHub["f7"]["TextWrapped"] = true;
-NatHub["f7"]["Interactable"] = false;
-NatHub["f7"]["BorderSizePixel"] = 0;
-NatHub["f7"]["TextSize"] = 15;
-NatHub["f7"]["TextXAlignment"] = Enum.TextXAlignment.Left;
-NatHub["f7"]["TextYAlignment"] = Enum.TextYAlignment.Top;
-NatHub["f7"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["f7"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-NatHub["f7"]["TextColor3"] = Color3.fromRGB(145, 154, 173);
-NatHub["f7"]["BackgroundTransparency"] = 1;
-NatHub["f7"]["Size"] = UDim2.new(1, 0, 0, 0);
-NatHub["f7"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["f7"]["Text"] = [[]];
-NatHub["f7"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["f7"]["Position"] = UDim2.new(0, 0, 0.125, 0);
-
-
--- NatHub.Templates.DialogElements.Dialog.UIPadding
-NatHub["f8"] = Instance.new("UIPadding", NatHub["ea"]);
-NatHub["f8"]["PaddingTop"] = UDim.new(0, 10);
-NatHub["f8"]["PaddingBottom"] = UDim.new(0, 10);
-
-
--- NatHub.Templates.DialogElements.Dialog.Buttons
-NatHub["f9"] = Instance.new("Frame", NatHub["ea"]);
-NatHub["f9"]["ZIndex"] = 3;
-NatHub["f9"]["BorderSizePixel"] = 0;
-NatHub["f9"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["f9"]["AutomaticSize"] = Enum.AutomaticSize.Y;
-NatHub["f9"]["Size"] = UDim2.new(1, 0, 0, 0);
-NatHub["f9"]["Position"] = UDim2.new(0, 0, 0.53017, 0);
-NatHub["f9"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["f9"]["Name"] = [[Buttons]];
-NatHub["f9"]["BackgroundTransparency"] = 1;
-
-
--- NatHub.Templates.DialogElements.Dialog.Buttons.UIListLayout
-NatHub["fa"] = Instance.new("UIListLayout", NatHub["f9"]);
-NatHub["fa"]["HorizontalAlignment"] = Enum.HorizontalAlignment.Center;
-NatHub["fa"]["Padding"] = UDim.new(0, 10);
-NatHub["fa"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
-
-
--- NatHub.Templates.DialogElements.Dialog.Buttons.UIPadding
-NatHub["fb"] = Instance.new("UIPadding", NatHub["f9"]);
-NatHub["fb"]["PaddingTop"] = UDim.new(0, 5);
-NatHub["fb"]["PaddingRight"] = UDim.new(0, 10);
-NatHub["fb"]["PaddingLeft"] = UDim.new(0, 10);
-
-
--- NatHub.Templates.DialogElements.DialogButton
-NatHub["fc"] = Instance.new("Frame", NatHub["e7"]);
-NatHub["fc"]["Visible"] = false;
-NatHub["fc"]["BorderSizePixel"] = 0;
-NatHub["fc"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["fc"]["AnchorPoint"] = Vector2.new(0.5, 1);
-NatHub["fc"]["Size"] = UDim2.new(1, 0, 0, 30);
-NatHub["fc"]["Position"] = UDim2.new(0.5, 0, 0.327, 0);
-NatHub["fc"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["fc"]["Name"] = [[DialogButton]];
-NatHub["fc"]["BackgroundTransparency"] = 1;
-
-
--- NatHub.Templates.DialogElements.DialogButton.Button
-NatHub["fd"] = Instance.new("TextButton", NatHub["fc"]);
-NatHub["fd"]["BorderSizePixel"] = 0;
-NatHub["fd"]["AutoButtonColor"] = false;
-NatHub["fd"]["BackgroundColor3"] = Color3.fromRGB(43, 46, 53);
-NatHub["fd"]["Selectable"] = false;
-NatHub["fd"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
-NatHub["fd"]["Size"] = UDim2.new(1, 0, 1, 0);
-NatHub["fd"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["fd"]["Name"] = [[Button]];
-NatHub["fd"]["Position"] = UDim2.new(0.5, 0, 0.5, 0);
-
-
--- NatHub.Templates.DialogElements.DialogButton.Button.UICorner
-NatHub["fe"] = Instance.new("UICorner", NatHub["fd"]);
-NatHub["fe"]["CornerRadius"] = UDim.new(0, 5);
-
-
--- NatHub.Templates.DialogElements.DialogButton.Button.UIStroke
-NatHub["ff"] = Instance.new("UIStroke", NatHub["fd"]);
-NatHub["ff"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
-NatHub["ff"]["Thickness"] = 1.5;
-NatHub["ff"]["Color"] = Color3.fromRGB(61, 61, 75);
-
-
--- NatHub.Templates.DialogElements.DialogButton.Button.UIListLayout
-NatHub["100"] = Instance.new("UIListLayout", NatHub["fd"]);
-NatHub["100"]["HorizontalAlignment"] = Enum.HorizontalAlignment.Center;
-NatHub["100"]["Padding"] = UDim.new(0, 5);
-NatHub["100"]["VerticalAlignment"] = Enum.VerticalAlignment.Center;
-NatHub["100"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
-
-
--- NatHub.Templates.DialogElements.DialogButton.Button.Label
-NatHub["101"] = Instance.new("TextLabel", NatHub["fd"]);
-NatHub["101"]["TextWrapped"] = true;
-NatHub["101"]["Interactable"] = false;
-NatHub["101"]["BorderSizePixel"] = 0;
-NatHub["101"]["TextSize"] = 14;
-NatHub["101"]["TextScaled"] = true;
-NatHub["101"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["101"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
-NatHub["101"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["101"]["BackgroundTransparency"] = 1;
-NatHub["101"]["Size"] = UDim2.new(1, 0, 0.45, 0);
-NatHub["101"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["101"]["Text"] = [[]];
-NatHub["101"]["Name"] = [[Label]];
-NatHub["101"]["Position"] = UDim2.new(0, 45, 0.083, 0);
-
-
--- NatHub.NotificationList
-NatHub["102"] = Instance.new("Frame", NatHub["1"]);
-NatHub["102"]["ZIndex"] = 10;
-NatHub["102"]["BorderSizePixel"] = 0;
-NatHub["102"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["102"]["AnchorPoint"] = Vector2.new(0.5, 0);
-NatHub["102"]["Size"] = UDim2.new(0, 630, 1, 0);
-NatHub["102"]["Position"] = UDim2.new(1, 0, 0, 0);
-NatHub["102"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["102"]["Name"] = [[NotificationList]];
-NatHub["102"]["BackgroundTransparency"] = 1;
-
-
--- NatHub.NotificationList.UIListLayout
-NatHub["103"] = Instance.new("UIListLayout", NatHub["102"]);
-NatHub["103"]["Padding"] = UDim.new(0, 12);
-NatHub["103"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
-
-
--- NatHub.NotificationList.UIPadding
-NatHub["104"] = Instance.new("UIPadding", NatHub["102"]);
-NatHub["104"]["PaddingTop"] = UDim.new(0, 10);
-NatHub["104"]["PaddingRight"] = UDim.new(0, 40);
-NatHub["104"]["PaddingLeft"] = UDim.new(0, 40);
-
-
--- NatHub.FloatIcon
-NatHub["105"] = Instance.new("Frame", NatHub["1"]);
-NatHub["105"]["Visible"] = false;
-NatHub["105"]["ZIndex"] = 0;
-NatHub["105"]["BorderSizePixel"] = 2;
-NatHub["105"]["BackgroundColor3"] = Color3.fromRGB(37, 40, 47);
-NatHub["105"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
-NatHub["105"]["ClipsDescendants"] = true;
-NatHub["105"]["AutomaticSize"] = Enum.AutomaticSize.X;
-NatHub["105"]["Size"] = UDim2.new(0, 85, 0, 45);
-NatHub["105"]["Position"] = UDim2.new(0.5, 0, 0, 45);
-NatHub["105"]["BorderColor3"] = Color3.fromRGB(61, 61, 75);
-NatHub["105"]["Name"] = [[FloatIcon]];
-
-
--- NatHub.FloatIcon.UICorner
-NatHub["106"] = Instance.new("UICorner", NatHub["105"]);
-NatHub["106"]["CornerRadius"] = UDim.new(0, 10);
-
-
--- NatHub.FloatIcon.UIStroke
-NatHub["107"] = Instance.new("UIStroke", NatHub["105"]);
-NatHub["107"]["Transparency"] = 0.5;
-NatHub["107"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
-NatHub["107"]["Thickness"] = 1.5;
-NatHub["107"]["Color"] = Color3.fromRGB(95, 95, 117);
-
-
--- NatHub.FloatIcon.UIPadding
-NatHub["108"] = Instance.new("UIPadding", NatHub["105"]);
-NatHub["108"]["PaddingTop"] = UDim.new(0, 8);
-NatHub["108"]["PaddingRight"] = UDim.new(0, 10);
-NatHub["108"]["PaddingLeft"] = UDim.new(0, 10);
-NatHub["108"]["PaddingBottom"] = UDim.new(0, 8);
-
-
--- NatHub.FloatIcon.UIListLayout
-NatHub["109"] = Instance.new("UIListLayout", NatHub["105"]);
-NatHub["109"]["Padding"] = UDim.new(0, 8);
-NatHub["109"]["VerticalAlignment"] = Enum.VerticalAlignment.Center;
-NatHub["109"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
-NatHub["109"]["FillDirection"] = Enum.FillDirection.Horizontal;
-
-
--- NatHub.FloatIcon.Icon
-NatHub["10a"] = Instance.new("ImageButton", NatHub["105"]);
-NatHub["10a"]["Active"] = false;
-NatHub["10a"]["Interactable"] = false;
-NatHub["10a"]["BorderSizePixel"] = 0;
-NatHub["10a"]["AutoButtonColor"] = false;
-NatHub["10a"]["BackgroundTransparency"] = 1;
+NovaHub["db"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["db"]["ImageColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["db"]["AnchorPoint"] = Vector2.new(1, 0.5);
+NovaHub["db"]["Image"] = [[rbxassetid://120292618616139]];
+NovaHub["db"]["Size"] = UDim2.new(0, 23, 0, 23);
+NovaHub["db"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["db"]["Name"] = [[Arrow]];
+NovaHub["db"]["Position"] = UDim2.new(1, 0, 0.5, 0);
+
+
+-- NovaHub.Templates.Section.Button.UIPadding
+NovaHub["dc"] = Instance.new("UIPadding", NovaHub["d7"]);
+NovaHub["dc"]["PaddingTop"] = UDim.new(0, 10);
+NovaHub["dc"]["PaddingRight"] = UDim.new(0, 10);
+NovaHub["dc"]["PaddingLeft"] = UDim.new(0, 10);
+NovaHub["dc"]["PaddingBottom"] = UDim.new(0, 10);
+
+
+-- NovaHub.Templates.Section.Button.UIListLayout
+NovaHub["dd"] = Instance.new("UIListLayout", NovaHub["d7"]);
+NovaHub["dd"]["Padding"] = UDim.new(0, 5);
+NovaHub["dd"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
+
+
+-- NovaHub.Templates.Section.Button.Description
+NovaHub["de"] = Instance.new("TextLabel", NovaHub["d7"]);
+NovaHub["de"]["TextWrapped"] = true;
+NovaHub["de"]["Interactable"] = false;
+NovaHub["de"]["BorderSizePixel"] = 0;
+NovaHub["de"]["TextSize"] = 16;
+NovaHub["de"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+NovaHub["de"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["de"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Medium, Enum.FontStyle.Normal);
+NovaHub["de"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["de"]["BackgroundTransparency"] = 1;
+NovaHub["de"]["Size"] = UDim2.new(1, 0, 0, 15);
+NovaHub["de"]["Visible"] = false;
+NovaHub["de"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["de"]["Text"] = [[Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus placerat lacus in enim congue, fermentum euismod leo ultricies. Nulla sodales. ]];
+NovaHub["de"]["LayoutOrder"] = 1;
+NovaHub["de"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["de"]["Name"] = [[Description]];
+
+
+-- NovaHub.Templates.Section.Button.UIGradient
+NovaHub["df"] = Instance.new("UIGradient", NovaHub["d7"]);
+NovaHub["df"]["Enabled"] = false;
+NovaHub["df"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.160, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.320, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.540, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.782, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 158, 255))};
+
+
+-- NovaHub.Templates.Section.Button.UIGradient
+NovaHub["e0"] = Instance.new("UIGradient", NovaHub["d7"]);
+NovaHub["e0"]["Enabled"] = false;
+NovaHub["e0"]["Transparency"] = NumberSequence.new{NumberSequenceKeypoint.new(0.000, 1),NumberSequenceKeypoint.new(1.000, 1)};
+NovaHub["e0"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.160, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.320, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.540, Color3.fromRGB(0, 235, 255)),ColorSequenceKeypoint.new(0.782, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 158, 255))};
+
+
+-- NovaHub.Templates.Section.Button.UIGradient
+NovaHub["e1"] = Instance.new("UIGradient", NovaHub["d7"]);
+NovaHub["e1"]["Enabled"] = false;
+NovaHub["e1"]["Color"] = ColorSequence.new{ColorSequenceKeypoint.new(0.000, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.160, Color3.fromRGB(0, 235, 255)),ColorSequenceKeypoint.new(0.320, Color3.fromRGB(0, 158, 255)),ColorSequenceKeypoint.new(0.540, Color3.fromRGB(0, 5, 255)),ColorSequenceKeypoint.new(0.782, Color3.fromRGB(0, 235, 255)),ColorSequenceKeypoint.new(1.000, Color3.fromRGB(0, 158, 255))};
+
+
+-- NovaHub.Templates.Section.Button.UIStroke
+NovaHub["e2"] = Instance.new("UIStroke", NovaHub["d7"]);
+NovaHub["e2"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+NovaHub["e2"]["Thickness"] = 1.5;
+NovaHub["e2"]["Color"] = Color3.fromRGB(61, 61, 75);
+
+
+-- NovaHub.Templates.Section.Frame
+NovaHub["e3"] = Instance.new("Frame", NovaHub["d6"]);
+NovaHub["e3"]["Visible"] = false;
+NovaHub["e3"]["BorderSizePixel"] = 0;
+NovaHub["e3"]["BackgroundColor3"] = Color3.fromRGB(207, 222, 255);
+NovaHub["e3"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["e3"]["Size"] = UDim2.new(1, 0, 0, 30);
+NovaHub["e3"]["Position"] = UDim2.new(0, 0, 0, 35);
+NovaHub["e3"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["e3"]["BackgroundTransparency"] = 1;
+
+
+-- NovaHub.Templates.Section.Frame.UIListLayout
+NovaHub["e4"] = Instance.new("UIListLayout", NovaHub["e3"]);
+NovaHub["e4"]["HorizontalAlignment"] = Enum.HorizontalAlignment.Center;
+NovaHub["e4"]["Padding"] = UDim.new(0, 10);
+NovaHub["e4"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
+
+
+-- NovaHub.Templates.Section.Frame.UIPadding
+NovaHub["e5"] = Instance.new("UIPadding", NovaHub["e3"]);
+NovaHub["e5"]["PaddingTop"] = UDim.new(0, 10);
+NovaHub["e5"]["PaddingRight"] = UDim.new(0, 8);
+NovaHub["e5"]["PaddingLeft"] = UDim.new(0, 8);
+
+
+-- NovaHub.Templates.Section.Frame.Divider
+NovaHub["e6"] = Instance.new("Frame", NovaHub["e3"]);
+NovaHub["e6"]["BorderSizePixel"] = 0;
+NovaHub["e6"]["BackgroundColor3"] = Color3.fromRGB(61, 61, 75);
+NovaHub["e6"]["Size"] = UDim2.new(1, 0, 0, 3);
+NovaHub["e6"]["BorderColor3"] = Color3.fromRGB(61, 61, 75);
+NovaHub["e6"]["Name"] = [[Divider]];
+
+
+-- NovaHub.Templates.DialogElements
+NovaHub["e7"] = Instance.new("Folder", NovaHub["41"]);
+NovaHub["e7"]["Name"] = [[DialogElements]];
+
+
+-- NovaHub.Templates.DialogElements.DarkOverlayDialog
+NovaHub["e8"] = Instance.new("Frame", NovaHub["e7"]);
+NovaHub["e8"]["Visible"] = false;
+NovaHub["e8"]["BorderSizePixel"] = 0;
+NovaHub["e8"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["e8"]["Size"] = UDim2.new(1, 0, 1, 0);
+NovaHub["e8"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["e8"]["Name"] = [[DarkOverlayDialog]];
+NovaHub["e8"]["BackgroundTransparency"] = 0.6;
+
+
+-- NovaHub.Templates.DialogElements.DarkOverlayDialog.UICorner
+NovaHub["e9"] = Instance.new("UICorner", NovaHub["e8"]);
+NovaHub["e9"]["CornerRadius"] = UDim.new(0, 10);
+
+
+-- NovaHub.Templates.DialogElements.Dialog
+NovaHub["ea"] = Instance.new("Frame", NovaHub["e7"]);
+NovaHub["ea"]["Visible"] = false;
+NovaHub["ea"]["ZIndex"] = 4;
+NovaHub["ea"]["BorderSizePixel"] = 0;
+NovaHub["ea"]["BackgroundColor3"] = Color3.fromRGB(32, 35, 41);
+NovaHub["ea"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
+NovaHub["ea"]["ClipsDescendants"] = true;
+NovaHub["ea"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["ea"]["Size"] = UDim2.new(0, 250, 0, 0);
+NovaHub["ea"]["Position"] = UDim2.new(0.5, 0, 0.5, 0);
+NovaHub["ea"]["BorderColor3"] = Color3.fromRGB(61, 61, 75);
+NovaHub["ea"]["Name"] = [[Dialog]];
+
+
+-- NovaHub.Templates.DialogElements.Dialog.UICorner
+NovaHub["eb"] = Instance.new("UICorner", NovaHub["ea"]);
+NovaHub["eb"]["CornerRadius"] = UDim.new(0, 6);
+
+
+-- NovaHub.Templates.DialogElements.Dialog.UIStroke
+NovaHub["ec"] = Instance.new("UIStroke", NovaHub["ea"]);
+NovaHub["ec"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+NovaHub["ec"]["Thickness"] = 1.5;
+NovaHub["ec"]["Color"] = Color3.fromRGB(61, 61, 75);
+
+
+-- NovaHub.Templates.DialogElements.Dialog.Title
+NovaHub["ed"] = Instance.new("Frame", NovaHub["ea"]);
+NovaHub["ed"]["BorderSizePixel"] = 0;
+NovaHub["ed"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["ed"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["ed"]["Size"] = UDim2.new(1, 0, 0, 25);
+NovaHub["ed"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["ed"]["Name"] = [[Title]];
+NovaHub["ed"]["BackgroundTransparency"] = 1;
+
+
+-- NovaHub.Templates.DialogElements.Dialog.Title.TextLabel
+NovaHub["ee"] = Instance.new("TextLabel", NovaHub["ed"]);
+NovaHub["ee"]["Interactable"] = false;
+NovaHub["ee"]["ZIndex"] = 0;
+NovaHub["ee"]["BorderSizePixel"] = 0;
+NovaHub["ee"]["TextSize"] = 20;
+NovaHub["ee"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+NovaHub["ee"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["ee"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+NovaHub["ee"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["ee"]["BackgroundTransparency"] = 1;
+NovaHub["ee"]["AnchorPoint"] = Vector2.new(0, 0.5);
+NovaHub["ee"]["Size"] = UDim2.new(0, 0, 0, 20);
+NovaHub["ee"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["ee"]["Text"] = [[]];
+NovaHub["ee"]["LayoutOrder"] = 1;
+NovaHub["ee"]["AutomaticSize"] = Enum.AutomaticSize.XY;
+NovaHub["ee"]["Position"] = UDim2.new(-0.05455, 12, 0.5, 0);
+
+
+-- NovaHub.Templates.DialogElements.Dialog.Title.UIListLayout
+NovaHub["ef"] = Instance.new("UIListLayout", NovaHub["ed"]);
+NovaHub["ef"]["Padding"] = UDim.new(0, 10);
+NovaHub["ef"]["VerticalAlignment"] = Enum.VerticalAlignment.Center;
+NovaHub["ef"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
+NovaHub["ef"]["FillDirection"] = Enum.FillDirection.Horizontal;
+
+
+-- NovaHub.Templates.DialogElements.Dialog.Title.UIPadding
+NovaHub["f0"] = Instance.new("UIPadding", NovaHub["ed"]);
+NovaHub["f0"]["PaddingTop"] = UDim.new(0, 5);
+NovaHub["f0"]["PaddingRight"] = UDim.new(0, 15);
+NovaHub["f0"]["PaddingLeft"] = UDim.new(0, 15);
+NovaHub["f0"]["PaddingBottom"] = UDim.new(0, 5);
+
+
+-- NovaHub.Templates.DialogElements.Dialog.Title.Icon
+NovaHub["f1"] = Instance.new("ImageButton", NovaHub["ed"]);
+NovaHub["f1"]["BorderSizePixel"] = 0;
+NovaHub["f1"]["Visible"] = false;
+NovaHub["f1"]["BackgroundTransparency"] = 1;
+NovaHub["f1"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["f1"]["ImageColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["f1"]["Size"] = UDim2.new(0, 33, 0, 25);
+NovaHub["f1"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["f1"]["Name"] = [[Icon]];
+NovaHub["f1"]["Position"] = UDim2.new(0, 0, 0.2125, 0);
+
+
+-- NovaHub.Templates.DialogElements.Dialog.Title.Icon.UIAspectRatioConstraint
+NovaHub["f2"] = Instance.new("UIAspectRatioConstraint", NovaHub["f1"]);
+
+
+
+-- NovaHub.Templates.DialogElements.Dialog.UIListLayout
+NovaHub["f3"] = Instance.new("UIListLayout", NovaHub["ea"]);
+NovaHub["f3"]["HorizontalAlignment"] = Enum.HorizontalAlignment.Center;
+NovaHub["f3"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
+
+
+-- NovaHub.Templates.DialogElements.Dialog.Content
+NovaHub["f4"] = Instance.new("Frame", NovaHub["ea"]);
+NovaHub["f4"]["Visible"] = false;
+NovaHub["f4"]["ZIndex"] = 2;
+NovaHub["f4"]["BorderSizePixel"] = 0;
+NovaHub["f4"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["f4"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["f4"]["Size"] = UDim2.new(1, 0, 0, 0);
+NovaHub["f4"]["Position"] = UDim2.new(0, 0, 0.21886, 0);
+NovaHub["f4"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["f4"]["Name"] = [[Content]];
+NovaHub["f4"]["BackgroundTransparency"] = 1;
+
+
+-- NovaHub.Templates.DialogElements.Dialog.Content.UIListLayout
+NovaHub["f5"] = Instance.new("UIListLayout", NovaHub["f4"]);
+NovaHub["f5"]["VerticalAlignment"] = Enum.VerticalAlignment.Center;
+NovaHub["f5"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
+
+
+-- NovaHub.Templates.DialogElements.Dialog.Content.UIPadding
+NovaHub["f6"] = Instance.new("UIPadding", NovaHub["f4"]);
+NovaHub["f6"]["PaddingTop"] = UDim.new(0, 5);
+NovaHub["f6"]["PaddingRight"] = UDim.new(0, 15);
+NovaHub["f6"]["PaddingLeft"] = UDim.new(0, 15);
+NovaHub["f6"]["PaddingBottom"] = UDim.new(0, 5);
+
+
+-- NovaHub.Templates.DialogElements.Dialog.Content.TextLabel
+NovaHub["f7"] = Instance.new("TextLabel", NovaHub["f4"]);
+NovaHub["f7"]["TextWrapped"] = true;
+NovaHub["f7"]["Interactable"] = false;
+NovaHub["f7"]["BorderSizePixel"] = 0;
+NovaHub["f7"]["TextSize"] = 15;
+NovaHub["f7"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+NovaHub["f7"]["TextYAlignment"] = Enum.TextYAlignment.Top;
+NovaHub["f7"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["f7"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+NovaHub["f7"]["TextColor3"] = Color3.fromRGB(145, 154, 173);
+NovaHub["f7"]["BackgroundTransparency"] = 1;
+NovaHub["f7"]["Size"] = UDim2.new(1, 0, 0, 0);
+NovaHub["f7"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["f7"]["Text"] = [[]];
+NovaHub["f7"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["f7"]["Position"] = UDim2.new(0, 0, 0.125, 0);
+
+
+-- NovaHub.Templates.DialogElements.Dialog.UIPadding
+NovaHub["f8"] = Instance.new("UIPadding", NovaHub["ea"]);
+NovaHub["f8"]["PaddingTop"] = UDim.new(0, 10);
+NovaHub["f8"]["PaddingBottom"] = UDim.new(0, 10);
+
+
+-- NovaHub.Templates.DialogElements.Dialog.Buttons
+NovaHub["f9"] = Instance.new("Frame", NovaHub["ea"]);
+NovaHub["f9"]["ZIndex"] = 3;
+NovaHub["f9"]["BorderSizePixel"] = 0;
+NovaHub["f9"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["f9"]["AutomaticSize"] = Enum.AutomaticSize.Y;
+NovaHub["f9"]["Size"] = UDim2.new(1, 0, 0, 0);
+NovaHub["f9"]["Position"] = UDim2.new(0, 0, 0.53017, 0);
+NovaHub["f9"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["f9"]["Name"] = [[Buttons]];
+NovaHub["f9"]["BackgroundTransparency"] = 1;
+
+
+-- NovaHub.Templates.DialogElements.Dialog.Buttons.UIListLayout
+NovaHub["fa"] = Instance.new("UIListLayout", NovaHub["f9"]);
+NovaHub["fa"]["HorizontalAlignment"] = Enum.HorizontalAlignment.Center;
+NovaHub["fa"]["Padding"] = UDim.new(0, 10);
+NovaHub["fa"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
+
+
+-- NovaHub.Templates.DialogElements.Dialog.Buttons.UIPadding
+NovaHub["fb"] = Instance.new("UIPadding", NovaHub["f9"]);
+NovaHub["fb"]["PaddingTop"] = UDim.new(0, 5);
+NovaHub["fb"]["PaddingRight"] = UDim.new(0, 10);
+NovaHub["fb"]["PaddingLeft"] = UDim.new(0, 10);
+
+
+-- NovaHub.Templates.DialogElements.DialogButton
+NovaHub["fc"] = Instance.new("Frame", NovaHub["e7"]);
+NovaHub["fc"]["Visible"] = false;
+NovaHub["fc"]["BorderSizePixel"] = 0;
+NovaHub["fc"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["fc"]["AnchorPoint"] = Vector2.new(0.5, 1);
+NovaHub["fc"]["Size"] = UDim2.new(1, 0, 0, 30);
+NovaHub["fc"]["Position"] = UDim2.new(0.5, 0, 0.327, 0);
+NovaHub["fc"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["fc"]["Name"] = [[DialogButton]];
+NovaHub["fc"]["BackgroundTransparency"] = 1;
+
+
+-- NovaHub.Templates.DialogElements.DialogButton.Button
+NovaHub["fd"] = Instance.new("TextButton", NovaHub["fc"]);
+NovaHub["fd"]["BorderSizePixel"] = 0;
+NovaHub["fd"]["AutoButtonColor"] = false;
+NovaHub["fd"]["BackgroundColor3"] = Color3.fromRGB(43, 46, 53);
+NovaHub["fd"]["Selectable"] = false;
+NovaHub["fd"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
+NovaHub["fd"]["Size"] = UDim2.new(1, 0, 1, 0);
+NovaHub["fd"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["fd"]["Name"] = [[Button]];
+NovaHub["fd"]["Position"] = UDim2.new(0.5, 0, 0.5, 0);
+
+
+-- NovaHub.Templates.DialogElements.DialogButton.Button.UICorner
+NovaHub["fe"] = Instance.new("UICorner", NovaHub["fd"]);
+NovaHub["fe"]["CornerRadius"] = UDim.new(0, 5);
+
+
+-- NovaHub.Templates.DialogElements.DialogButton.Button.UIStroke
+NovaHub["ff"] = Instance.new("UIStroke", NovaHub["fd"]);
+NovaHub["ff"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+NovaHub["ff"]["Thickness"] = 1.5;
+NovaHub["ff"]["Color"] = Color3.fromRGB(61, 61, 75);
+
+
+-- NovaHub.Templates.DialogElements.DialogButton.Button.UIListLayout
+NovaHub["100"] = Instance.new("UIListLayout", NovaHub["fd"]);
+NovaHub["100"]["HorizontalAlignment"] = Enum.HorizontalAlignment.Center;
+NovaHub["100"]["Padding"] = UDim.new(0, 5);
+NovaHub["100"]["VerticalAlignment"] = Enum.VerticalAlignment.Center;
+NovaHub["100"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
+
+
+-- NovaHub.Templates.DialogElements.DialogButton.Button.Label
+NovaHub["101"] = Instance.new("TextLabel", NovaHub["fd"]);
+NovaHub["101"]["TextWrapped"] = true;
+NovaHub["101"]["Interactable"] = false;
+NovaHub["101"]["BorderSizePixel"] = 0;
+NovaHub["101"]["TextSize"] = 14;
+NovaHub["101"]["TextScaled"] = true;
+NovaHub["101"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["101"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+NovaHub["101"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["101"]["BackgroundTransparency"] = 1;
+NovaHub["101"]["Size"] = UDim2.new(1, 0, 0.45, 0);
+NovaHub["101"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["101"]["Text"] = [[]];
+NovaHub["101"]["Name"] = [[Label]];
+NovaHub["101"]["Position"] = UDim2.new(0, 45, 0.083, 0);
+
+
+-- NovaHub.NotificationList
+NovaHub["102"] = Instance.new("Frame", NovaHub["1"]);
+NovaHub["102"]["ZIndex"] = 10;
+NovaHub["102"]["BorderSizePixel"] = 0;
+NovaHub["102"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["102"]["AnchorPoint"] = Vector2.new(0.5, 0);
+NovaHub["102"]["Size"] = UDim2.new(0, 630, 1, 0);
+NovaHub["102"]["Position"] = UDim2.new(1, 0, 0, 0);
+NovaHub["102"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["102"]["Name"] = [[NotificationList]];
+NovaHub["102"]["BackgroundTransparency"] = 1;
+
+
+-- NovaHub.NotificationList.UIListLayout
+NovaHub["103"] = Instance.new("UIListLayout", NovaHub["102"]);
+NovaHub["103"]["Padding"] = UDim.new(0, 12);
+NovaHub["103"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
+
+
+-- NovaHub.NotificationList.UIPadding
+NovaHub["104"] = Instance.new("UIPadding", NovaHub["102"]);
+NovaHub["104"]["PaddingTop"] = UDim.new(0, 10);
+NovaHub["104"]["PaddingRight"] = UDim.new(0, 40);
+NovaHub["104"]["PaddingLeft"] = UDim.new(0, 40);
+
+
+-- NovaHub.FloatIcon
+NovaHub["105"] = Instance.new("Frame", NovaHub["1"]);
+NovaHub["105"]["Visible"] = false;
+NovaHub["105"]["ZIndex"] = 0;
+NovaHub["105"]["BorderSizePixel"] = 2;
+NovaHub["105"]["BackgroundColor3"] = Color3.fromRGB(37, 40, 47);
+NovaHub["105"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
+NovaHub["105"]["ClipsDescendants"] = true;
+NovaHub["105"]["AutomaticSize"] = Enum.AutomaticSize.X;
+NovaHub["105"]["Size"] = UDim2.new(0, 85, 0, 45);
+NovaHub["105"]["Position"] = UDim2.new(0.5, 0, 0, 45);
+NovaHub["105"]["BorderColor3"] = Color3.fromRGB(61, 61, 75);
+NovaHub["105"]["Name"] = [[FloatIcon]];
+
+
+-- NovaHub.FloatIcon.UICorner
+NovaHub["106"] = Instance.new("UICorner", NovaHub["105"]);
+NovaHub["106"]["CornerRadius"] = UDim.new(0, 10);
+
+
+-- NovaHub.FloatIcon.UIStroke
+NovaHub["107"] = Instance.new("UIStroke", NovaHub["105"]);
+NovaHub["107"]["Transparency"] = 0.5;
+NovaHub["107"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+NovaHub["107"]["Thickness"] = 1.5;
+NovaHub["107"]["Color"] = Color3.fromRGB(95, 95, 117);
+
+
+-- NovaHub.FloatIcon.UIPadding
+NovaHub["108"] = Instance.new("UIPadding", NovaHub["105"]);
+NovaHub["108"]["PaddingTop"] = UDim.new(0, 8);
+NovaHub["108"]["PaddingRight"] = UDim.new(0, 10);
+NovaHub["108"]["PaddingLeft"] = UDim.new(0, 10);
+NovaHub["108"]["PaddingBottom"] = UDim.new(0, 8);
+
+
+-- NovaHub.FloatIcon.UIListLayout
+NovaHub["109"] = Instance.new("UIListLayout", NovaHub["105"]);
+NovaHub["109"]["Padding"] = UDim.new(0, 8);
+NovaHub["109"]["VerticalAlignment"] = Enum.VerticalAlignment.Center;
+NovaHub["109"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
+NovaHub["109"]["FillDirection"] = Enum.FillDirection.Horizontal;
+
+
+-- NovaHub.FloatIcon.Icon
+NovaHub["10a"] = Instance.new("ImageButton", NovaHub["105"]);
+NovaHub["10a"]["Active"] = false;
+NovaHub["10a"]["Interactable"] = false;
+NovaHub["10a"]["BorderSizePixel"] = 0;
+NovaHub["10a"]["AutoButtonColor"] = false;
+NovaHub["10a"]["BackgroundTransparency"] = 1;
 -- [ERROR] cannot convert ImageContent, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
-NatHub["10a"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["10a"]["AnchorPoint"] = Vector2.new(0, 0.5);
-NatHub["10a"]["Image"] = [[rbxassetid://113216930555884]];
-NatHub["10a"]["Size"] = UDim2.new(1, 0, 1, 0);
-NatHub["10a"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["10a"]["Name"] = [[Icon]];
-NatHub["10a"]["Position"] = UDim2.new(0, 10, 0.5, 0);
+NovaHub["10a"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["10a"]["AnchorPoint"] = Vector2.new(0, 0.5);
+NovaHub["10a"]["Image"] = [[rbxassetid://113216930555884]];
+NovaHub["10a"]["Size"] = UDim2.new(1, 0, 1, 0);
+NovaHub["10a"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["10a"]["Name"] = [[Icon]];
+NovaHub["10a"]["Position"] = UDim2.new(0, 10, 0.5, 0);
 
 
--- NatHub.FloatIcon.Icon.UIAspectRatioConstraint
-NatHub["10b"] = Instance.new("UIAspectRatioConstraint", NatHub["10a"]);
+-- NovaHub.FloatIcon.Icon.UIAspectRatioConstraint
+NovaHub["10b"] = Instance.new("UIAspectRatioConstraint", NovaHub["10a"]);
 
 
 
--- NatHub.FloatIcon.TextLabel
-NatHub["10c"] = Instance.new("TextLabel", NatHub["105"]);
-NatHub["10c"]["Interactable"] = false;
-NatHub["10c"]["BorderSizePixel"] = 0;
-NatHub["10c"]["TextSize"] = 16;
-NatHub["10c"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["10c"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-NatHub["10c"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["10c"]["BackgroundTransparency"] = 1;
-NatHub["10c"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
-NatHub["10c"]["Size"] = UDim2.new(0, 20, 0, 20);
-NatHub["10c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["10c"]["Text"] = [[NatHub]];
-NatHub["10c"]["AutomaticSize"] = Enum.AutomaticSize.X;
-NatHub["10c"]["Position"] = UDim2.new(0.38615, 0, 0.53448, -1);
+-- NovaHub.FloatIcon.TextLabel
+NovaHub["10c"] = Instance.new("TextLabel", NovaHub["105"]);
+NovaHub["10c"]["Interactable"] = false;
+NovaHub["10c"]["BorderSizePixel"] = 0;
+NovaHub["10c"]["TextSize"] = 16;
+NovaHub["10c"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["10c"]["FontFace"] = Font.new([[rbxassetid://11702779517]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+NovaHub["10c"]["TextColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["10c"]["BackgroundTransparency"] = 1;
+NovaHub["10c"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
+NovaHub["10c"]["Size"] = UDim2.new(0, 20, 0, 20);
+NovaHub["10c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["10c"]["Text"] = [[NovaHub]];
+NovaHub["10c"]["AutomaticSize"] = Enum.AutomaticSize.X;
+NovaHub["10c"]["Position"] = UDim2.new(0.38615, 0, 0.53448, -1);
 
 
--- NatHub.FloatIcon.Open
-NatHub["10d"] = Instance.new("ImageButton", NatHub["105"]);
-NatHub["10d"]["BorderSizePixel"] = 0;
-NatHub["10d"]["AutoButtonColor"] = false;
-NatHub["10d"]["BackgroundTransparency"] = 1;
+-- NovaHub.FloatIcon.Open
+NovaHub["10d"] = Instance.new("ImageButton", NovaHub["105"]);
+NovaHub["10d"]["BorderSizePixel"] = 0;
+NovaHub["10d"]["AutoButtonColor"] = false;
+NovaHub["10d"]["BackgroundTransparency"] = 1;
 -- [ERROR] cannot convert ImageContent, please report to "https://github.com/uniquadev/GuiToLuaConverter/issues"
-NatHub["10d"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
-NatHub["10d"]["ImageColor3"] = Color3.fromRGB(197, 204, 219);
-NatHub["10d"]["Selectable"] = false;
-NatHub["10d"]["AnchorPoint"] = Vector2.new(0, 0.5);
-NatHub["10d"]["Image"] = [[rbxassetid://122219713887461]];
-NatHub["10d"]["Size"] = UDim2.new(0, 20, 0, 20);
-NatHub["10d"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-NatHub["10d"]["Name"] = [[Open]];
-NatHub["10d"]["Position"] = UDim2.new(0, 128, 0.5, 0);
+NovaHub["10d"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+NovaHub["10d"]["ImageColor3"] = Color3.fromRGB(197, 204, 219);
+NovaHub["10d"]["Selectable"] = false;
+NovaHub["10d"]["AnchorPoint"] = Vector2.new(0, 0.5);
+NovaHub["10d"]["Image"] = [[rbxassetid://122219713887461]];
+NovaHub["10d"]["Size"] = UDim2.new(0, 20, 0, 20);
+NovaHub["10d"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+NovaHub["10d"]["Name"] = [[Open]];
+NovaHub["10d"]["Position"] = UDim2.new(0, 128, 0.5, 0);
 
 
--- NatHub.FloatIcon.Open.UIAspectRatioConstraint
-NatHub["10e"] = Instance.new("UIAspectRatioConstraint", NatHub["10d"]);
-
-
-
--- NatHub.FloatIcon.Open.UICorner
-NatHub["10f"] = Instance.new("UICorner", NatHub["10d"]);
+-- NovaHub.FloatIcon.Open.UIAspectRatioConstraint
+NovaHub["10e"] = Instance.new("UIAspectRatioConstraint", NovaHub["10d"]);
 
 
 
--- Require NatHub wrapper
-local NatHub_REQUIRE = require;
-local NatHub_MODULES = {};
+-- NovaHub.FloatIcon.Open.UICorner
+NovaHub["10f"] = Instance.new("UICorner", NovaHub["10d"]);
+
+
+
+-- Require NovaHub wrapper
+local NovaHub_REQUIRE = require;
+local NovaHub_MODULES = {};
 local function require(Module:ModuleScript)
-	local ModuleState = NatHub_MODULES[Module];
+	local ModuleState = NovaHub_MODULES[Module];
 	if ModuleState then
 		if not ModuleState.Required then
 			ModuleState.Required = true;
@@ -2806,12 +2806,12 @@ local function require(Module:ModuleScript)
 		end
 		return ModuleState.Value;
 	end;
-	return NatHub_REQUIRE(Module);
+	return NovaHub_REQUIRE(Module);
 end
 
-NatHub_MODULES[NatHub["3e"]] = {
+NovaHub_MODULES[NovaHub["3e"]] = {
 	Closure = function()
-		local script = NatHub["3e"];local LIB = {}
+		local script = NovaHub["3e"];local LIB = {}
 		local IconModule = require(script.IconModule)
 
 		local UIS = game:GetService("UserInputService")
@@ -5438,9 +5438,9 @@ NatHub_MODULES[NatHub["3e"]] = {
 
 	end;
 };
-NatHub_MODULES[NatHub["3f"]] = {
+NovaHub_MODULES[NovaHub["3f"]] = {
 	Closure = function()
-		local script = NatHub["3f"];
+		local script = NovaHub["3f"];
 		-- https://raw.githubusercontent.com/Footagesus/Icons/refs/heads/main/lucide/dist/Icons.lua
 
 		local Icons = {
@@ -5469,9 +5469,9 @@ NatHub_MODULES[NatHub["3f"]] = {
 
 	end;
 };
-NatHub_MODULES[NatHub["40"]] = {
+NovaHub_MODULES[NovaHub["40"]] = {
 	Closure = function()
-		local script = NatHub["40"];-- Generated by .ftgs 
+		local script = NovaHub["40"];-- Generated by .ftgs 
 		-- Github: https://github.com/Footagesus
 
 		return { Spritesheets = {
@@ -13237,4 +13237,4 @@ NatHub_MODULES[NatHub["40"]] = {
 	end;
 };
 
-return require(NatHub["3e"])
+return require(NovaHub["3e"])
