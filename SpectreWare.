@@ -279,9 +279,93 @@ local function showSplash()
     -- Overlay บางมาก — เห็นเกมด้านหลัง
     local bg = new("Frame",{Size=UDim2.new(1,0,1,0),
         BackgroundColor3=Color3.fromRGB(5,3,10),
-        BackgroundTransparency=0.55,BorderSizePixel=0,ZIndex=1}, sg)
+        BackgroundTransparency=0.55,BorderSizePixel=0,ZIndex=1,
+        ClipsDescendants=true}, sg)  -- กันเอฟเฟคออกนอกจอ
 
     local rng = Random.new()
+
+    -- ── Border glow รอบขอบจอ ─────────────────────────────────
+    -- outer glow frame (UIStroke ล้วนๆ ไม่มี fill)
+    local borderFrame = new("Frame",{
+        Size=UDim2.new(1,-4,1,-4),
+        AnchorPoint=Vector2.new(0.5,0.5),
+        Position=UDim2.new(0.5,0,0.5,0),
+        BackgroundTransparency=1,
+        BorderSizePixel=0,ZIndex=10
+    }, bg)
+    new("UICorner",{CornerRadius=UDim.new(0,0)}, borderFrame)
+    local borderStroke = new("UIStroke",{
+        Color=Color3.fromRGB(160,60,255),
+        Thickness=2.2,
+        Transparency=0.35
+    }, borderFrame)
+    -- pulse stroke
+    task.spawn(function()
+        while borderFrame and borderFrame.Parent do
+            TS:Create(borderStroke,TweenInfo.new(1.6,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),
+                {Transparency=0.72}):Play()
+            task.wait(1.6)
+            TS:Create(borderStroke,TweenInfo.new(1.6,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),
+                {Transparency=0.18}):Play()
+            task.wait(1.6)
+        end
+    end)
+
+    -- edge strips (แถบสีริมขอบจอ 4 ด้าน — gradient glow)
+    local edgeDefs = {
+        {s=UDim2.new(1,0,0,3),  p=UDim2.new(0,0,0,0),    col=Color3.fromRGB(180,70,255)},  -- top
+        {s=UDim2.new(1,0,0,3),  p=UDim2.new(0,0,1,-3),   col=Color3.fromRGB(180,70,255)},  -- bottom
+        {s=UDim2.new(0,3,1,0),  p=UDim2.new(0,0,0,0),    col=Color3.fromRGB(140,50,220)},  -- left
+        {s=UDim2.new(0,3,1,0),  p=UDim2.new(1,-3,0,0),   col=Color3.fromRGB(140,50,220)},  -- right
+    }
+    for _, def in ipairs(edgeDefs) do
+        local strip = new("Frame",{
+            Size=def.s, Position=def.p,
+            BackgroundColor3=def.col,
+            BackgroundTransparency=0.45,
+            BorderSizePixel=0,ZIndex=10
+        }, bg)
+        -- กะพริบ
+        task.spawn(function()
+            task.wait(rng:NextNumber(0,1))
+            while strip and strip.Parent do
+                TS:Create(strip,TweenInfo.new(2.2,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),
+                    {BackgroundTransparency=0.78}):Play()
+                task.wait(2.2)
+                TS:Create(strip,TweenInfo.new(2.2,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),
+                    {BackgroundTransparency=0.28}):Play()
+                task.wait(2.2)
+            end
+        end)
+    end
+
+    -- corner accents (สี่มุมจอ — เส้น L-shape สั้นๆ สีม่วงสว่าง)
+    local corners = {
+        {ax=0,   ay=0,   px=UDim2.new(0,0,0,0)},
+        {ax=1,   ay=0,   px=UDim2.new(1,0,0,0)},
+        {ax=0,   ay=1,   px=UDim2.new(0,0,1,0)},
+        {ax=1,   ay=1,   px=UDim2.new(1,0,1,0)},
+    }
+    for _, c in ipairs(corners) do
+        -- แนวนอน
+        new("Frame",{
+            AnchorPoint=Vector2.new(c.ax,c.ay),
+            Position=c.px,
+            Size=UDim2.new(0,40,0,3),
+            BackgroundColor3=Color3.fromRGB(220,130,255),
+            BackgroundTransparency=0.1,
+            BorderSizePixel=0,ZIndex=11
+        }, bg)
+        -- แนวตั้ง
+        new("Frame",{
+            AnchorPoint=Vector2.new(c.ax,c.ay),
+            Position=c.px,
+            Size=UDim2.new(0,3,0,40),
+            BackgroundColor3=Color3.fromRGB(220,130,255),
+            BackgroundTransparency=0.1,
+            BorderSizePixel=0,ZIndex=11
+        }, bg)
+    end
 
     -- ── Vignette (ขอบมืดรอบจอ) ───────────────────────────────
     local vig = new("ImageLabel",{
