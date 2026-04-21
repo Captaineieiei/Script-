@@ -2818,6 +2818,7 @@ NatHub_MODULES[NatHub["3e"]] = {
 
 		-- ============ THEME SYSTEM ============
 		LIB.Themes = {
+			-- ── Original Themes ──────────────────────────────────────────
 			Dark = {
 				Accent        = Color3.fromRGB(10,  135, 213),
 				BG            = Color3.fromRGB(37,  40,  47),
@@ -2877,6 +2878,248 @@ NatHub_MODULES[NatHub["3e"]] = {
 				StrokeDim     = Color3.fromRGB(22,  60,  68),
 				ToggleOn      = Color3.fromRGB(140, 230, 235),
 				ToggleOff     = Color3.fromRGB(32,  60,  66),
+			},
+
+			-- ── New Themes ────────────────────────────────────────────────
+
+			-- 🌸 Sakura — soft pink cherry blossom
+			Sakura = {
+				Accent        = Color3.fromRGB(255, 105, 155),
+				BG            = Color3.fromRGB(42,  30,  36),
+				ElementBG     = Color3.fromRGB(56,  38,  46),
+				ElementBGDark = Color3.fromRGB(34,  24,  29),
+				Stroke        = Color3.fromRGB(120, 55,  80),
+				StrokeDim     = Color3.fromRGB(80,  40,  58),
+				ToggleOn      = Color3.fromRGB(255, 175, 200),
+				ToggleOff     = Color3.fromRGB(70,  42,  55),
+			},
+
+			-- 🌌 Galaxy — deep space violet + star blue
+			Galaxy = {
+				Accent        = Color3.fromRGB(120, 80,  255),
+				BG            = Color3.fromRGB(18,  16,  32),
+				ElementBG     = Color3.fromRGB(26,  22,  46),
+				ElementBGDark = Color3.fromRGB(14,  12,  26),
+				Stroke        = Color3.fromRGB(60,  45,  120),
+				StrokeDim     = Color3.fromRGB(38,  30,  80),
+				ToggleOn      = Color3.fromRGB(170, 145, 255),
+				ToggleOff     = Color3.fromRGB(38,  32,  68),
+			},
+
+			-- 🌊 Ocean — deep navy blue wave
+			Ocean = {
+				Accent        = Color3.fromRGB(30,  160, 255),
+				BG            = Color3.fromRGB(16,  26,  46),
+				ElementBG     = Color3.fromRGB(22,  36,  62),
+				ElementBGDark = Color3.fromRGB(12,  20,  38),
+				Stroke        = Color3.fromRGB(30,  70,  130),
+				StrokeDim     = Color3.fromRGB(20,  48,  90),
+				ToggleOn      = Color3.fromRGB(120, 200, 255),
+				ToggleOff     = Color3.fromRGB(28,  52,  90),
+			},
+
+			-- 🍊 Amber — warm golden honey
+			Amber = {
+				Accent        = Color3.fromRGB(255, 180, 0),
+				BG            = Color3.fromRGB(38,  32,  18),
+				ElementBG     = Color3.fromRGB(52,  44,  24),
+				ElementBGDark = Color3.fromRGB(30,  25,  14),
+				Stroke        = Color3.fromRGB(110, 85,  20),
+				StrokeDim     = Color3.fromRGB(75,  58,  14),
+				ToggleOn      = Color3.fromRGB(255, 215, 100),
+				ToggleOff     = Color3.fromRGB(68,  54,  22),
+			},
+
+			-- 🌿 Mint — cool fresh green
+			Mint = {
+				Accent        = Color3.fromRGB(60,  220, 170),
+				BG            = Color3.fromRGB(20,  38,  34),
+				ElementBG     = Color3.fromRGB(28,  50,  44),
+				ElementBGDark = Color3.fromRGB(16,  30,  27),
+				Stroke        = Color3.fromRGB(30,  100, 80),
+				StrokeDim     = Color3.fromRGB(22,  68,  56),
+				ToggleOn      = Color3.fromRGB(130, 240, 200),
+				ToggleOff     = Color3.fromRGB(30,  62,  52),
+			},
+
+			-- 🔥 Lava — volcanic orange-red
+			Lava = {
+				Accent        = Color3.fromRGB(255, 60,  0),
+				BG            = Color3.fromRGB(30,  18,  14),
+				ElementBG     = Color3.fromRGB(44,  26,  18),
+				ElementBGDark = Color3.fromRGB(24,  14,  10),
+				Stroke        = Color3.fromRGB(120, 45,  20),
+				StrokeDim     = Color3.fromRGB(80,  30,  14),
+				ToggleOn      = Color3.fromRGB(255, 140, 80),
+				ToggleOff     = Color3.fromRGB(70,  32,  18),
+			},
+
+			-- 🤍 Frost — clean icy white-grey
+			Frost = {
+				Accent        = Color3.fromRGB(180, 220, 255),
+				BG            = Color3.fromRGB(28,  32,  40),
+				ElementBG     = Color3.fromRGB(36,  42,  52),
+				ElementBGDark = Color3.fromRGB(22,  26,  34),
+				Stroke        = Color3.fromRGB(70,  90,  120),
+				StrokeDim     = Color3.fromRGB(48,  62,  85),
+				ToggleOn      = Color3.fromRGB(200, 225, 255),
+				ToggleOff     = Color3.fromRGB(48,  58,  78),
+			},
+
+			-- 🌺 Rose Gold — trendy warm pink-gold
+			RoseGold = {
+				Accent        = Color3.fromRGB(220, 140, 110),
+				BG            = Color3.fromRGB(36,  26,  24),
+				ElementBG     = Color3.fromRGB(50,  36,  32),
+				ElementBGDark = Color3.fromRGB(28,  20,  18),
+				Stroke        = Color3.fromRGB(110, 65,  52),
+				StrokeDim     = Color3.fromRGB(75,  44,  36),
+				ToggleOn      = Color3.fromRGB(235, 185, 160),
+				ToggleOff     = Color3.fromRGB(68,  44,  38),
+			},
+
+			-- 🍇 Grape — rich dark purple
+			Grape = {
+				Accent        = Color3.fromRGB(180, 60,  200),
+				BG            = Color3.fromRGB(28,  18,  34),
+				ElementBG     = Color3.fromRGB(40,  26,  48),
+				ElementBGDark = Color3.fromRGB(22,  14,  27),
+				Stroke        = Color3.fromRGB(90,  40,  110),
+				StrokeDim     = Color3.fromRGB(60,  28,  74),
+				ToggleOn      = Color3.fromRGB(215, 145, 235),
+				ToggleOff     = Color3.fromRGB(56,  34,  68),
+			},
+
+			-- 🪸 Coral — vibrant tropical pink-orange
+			Coral = {
+				Accent        = Color3.fromRGB(255, 90,  90),
+				BG            = Color3.fromRGB(40,  24,  24),
+				ElementBG     = Color3.fromRGB(54,  32,  32),
+				ElementBGDark = Color3.fromRGB(32,  18,  18),
+				Stroke        = Color3.fromRGB(120, 50,  50),
+				StrokeDim     = Color3.fromRGB(82,  35,  35),
+				ToggleOn      = Color3.fromRGB(255, 170, 150),
+				ToggleOff     = Color3.fromRGB(70,  38,  38),
+			},
+
+			-- 🌙 Midnight — ultra-dark near-black blue
+			Midnight = {
+				Accent        = Color3.fromRGB(80,  120, 220),
+				BG            = Color3.fromRGB(12,  14,  20),
+				ElementBG     = Color3.fromRGB(18,  21,  30),
+				ElementBGDark = Color3.fromRGB(9,   11,  16),
+				Stroke        = Color3.fromRGB(35,  50,  90),
+				StrokeDim     = Color3.fromRGB(22,  32,  60),
+				ToggleOn      = Color3.fromRGB(140, 170, 240),
+				ToggleOff     = Color3.fromRGB(26,  35,  60),
+			},
+
+			-- 🌅 Peach — warm pastel sunrise
+			Peach = {
+				Accent        = Color3.fromRGB(255, 150, 80),
+				BG            = Color3.fromRGB(42,  28,  22),
+				ElementBG     = Color3.fromRGB(58,  38,  30),
+				ElementBGDark = Color3.fromRGB(34,  22,  17),
+				Stroke        = Color3.fromRGB(120, 68,  40),
+				StrokeDim     = Color3.fromRGB(82,  46,  28),
+				ToggleOn      = Color3.fromRGB(255, 195, 140),
+				ToggleOff     = Color3.fromRGB(72,  46,  32),
+			},
+
+			-- 🌲 Forest — earthy dark woodland green
+			Forest = {
+				Accent        = Color3.fromRGB(60,  170, 80),
+				BG            = Color3.fromRGB(18,  28,  20),
+				ElementBG     = Color3.fromRGB(26,  40,  28),
+				ElementBGDark = Color3.fromRGB(14,  22,  16),
+				Stroke        = Color3.fromRGB(34,  80,  42),
+				StrokeDim     = Color3.fromRGB(24,  55,  30),
+				ToggleOn      = Color3.fromRGB(120, 210, 130),
+				ToggleOff     = Color3.fromRGB(30,  56,  34),
+			},
+
+			-- 💎 Sapphire — rich jewel blue
+			Sapphire = {
+				Accent        = Color3.fromRGB(50,  100, 255),
+				BG            = Color3.fromRGB(16,  20,  40),
+				ElementBG     = Color3.fromRGB(22,  28,  56),
+				ElementBGDark = Color3.fromRGB(12,  16,  32),
+				Stroke        = Color3.fromRGB(38,  58,  130),
+				StrokeDim     = Color3.fromRGB(26,  40,  90),
+				ToggleOn      = Color3.fromRGB(130, 165, 255),
+				ToggleOff     = Color3.fromRGB(28,  40,  88),
+			},
+
+			-- 🌸 Lavender — soft dreamy purple-pink
+			Lavender = {
+				Accent        = Color3.fromRGB(180, 130, 255),
+				BG            = Color3.fromRGB(30,  24,  44),
+				ElementBG     = Color3.fromRGB(42,  34,  60),
+				ElementBGDark = Color3.fromRGB(24,  18,  36),
+				Stroke        = Color3.fromRGB(80,  60,  130),
+				StrokeDim     = Color3.fromRGB(55,  42,  90),
+				ToggleOn      = Color3.fromRGB(210, 180, 255),
+				ToggleOff     = Color3.fromRGB(54,  42,  82),
+			},
+
+			-- ☁️ Slate — cool professional dark grey
+			Slate = {
+				Accent        = Color3.fromRGB(130, 180, 200),
+				BG            = Color3.fromRGB(22,  26,  30),
+				ElementBG     = Color3.fromRGB(30,  36,  42),
+				ElementBGDark = Color3.fromRGB(17,  20,  24),
+				Stroke        = Color3.fromRGB(55,  70,  85),
+				StrokeDim     = Color3.fromRGB(38,  48,  58),
+				ToggleOn      = Color3.fromRGB(170, 205, 220),
+				ToggleOff     = Color3.fromRGB(42,  54,  65),
+			},
+
+			-- 🍋 Lemon — sharp electric yellow-green
+			Lemon = {
+				Accent        = Color3.fromRGB(200, 240, 40),
+				BG            = Color3.fromRGB(26,  32,  16),
+				ElementBG     = Color3.fromRGB(36,  44,  22),
+				ElementBGDark = Color3.fromRGB(20,  25,  12),
+				Stroke        = Color3.fromRGB(80,  100, 28),
+				StrokeDim     = Color3.fromRGB(55,  70,  18),
+				ToggleOn      = Color3.fromRGB(220, 248, 120),
+				ToggleOff     = Color3.fromRGB(50,  62,  24),
+			},
+
+			-- 🩶 Carbon — ultra-sleek near-black
+			Carbon = {
+				Accent        = Color3.fromRGB(200, 200, 210),
+				BG            = Color3.fromRGB(15,  15,  17),
+				ElementBG     = Color3.fromRGB(22,  22,  25),
+				ElementBGDark = Color3.fromRGB(10,  10,  12),
+				Stroke        = Color3.fromRGB(45,  45,  52),
+				StrokeDim     = Color3.fromRGB(30,  30,  36),
+				ToggleOn      = Color3.fromRGB(210, 212, 220),
+				ToggleOff     = Color3.fromRGB(38,  38,  44),
+			},
+
+			-- 🌈 Aurora — northern lights teal-violet
+			Aurora = {
+				Accent        = Color3.fromRGB(80,  230, 200),
+				BG            = Color3.fromRGB(16,  22,  32),
+				ElementBG     = Color3.fromRGB(22,  32,  46),
+				ElementBGDark = Color3.fromRGB(12,  17,  26),
+				Stroke        = Color3.fromRGB(30,  90,  100),
+				StrokeDim     = Color3.fromRGB(20,  60,  70),
+				ToggleOn      = Color3.fromRGB(150, 240, 220),
+				ToggleOff     = Color3.fromRGB(26,  56,  62),
+			},
+
+			-- 🍓 Berry — dark mixed berry purple-red
+			Berry = {
+				Accent        = Color3.fromRGB(200, 60,  130),
+				BG            = Color3.fromRGB(32,  18,  28),
+				ElementBG     = Color3.fromRGB(45,  25,  38),
+				ElementBGDark = Color3.fromRGB(25,  14,  22),
+				Stroke        = Color3.fromRGB(100, 38,  72),
+				StrokeDim     = Color3.fromRGB(68,  26,  50),
+				ToggleOn      = Color3.fromRGB(235, 140, 185),
+				ToggleOff     = Color3.fromRGB(62,  30,  50),
 			},
 		}
 
