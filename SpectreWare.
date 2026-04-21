@@ -1,5 +1,5 @@
 -- ══════════════════════════════════════════
---   SpectreWare Loader v2  •  Config Zonennn
+--   SpectreWare Loader v2  •  Config Zone
 -- ══════════════════════════════════════════
 local CFG = {
     API     = "http://fi10.bot-hosting.net:20745",
@@ -242,6 +242,7 @@ local function showAnnounce(msg, imageId)
         BorderSizePixel=0,ZIndex=12,ClipsDescendants=true}, card)
     new("UICorner",{CornerRadius=UDim.new(1,0)}, timerBg)
     local timerBar = new("Frame",{Size=UDim2.new(1,0,1,0),
+        AnchorPoint=Vector2.new(1,0), Position=UDim2.new(1,0,0,0),
         BackgroundColor3=Color3.fromRGB(155,160,150),BackgroundTransparency=0,
         BorderSizePixel=0,ZIndex=13}, timerBg)
     new("UICorner",{CornerRadius=UDim.new(1,0)}, timerBar)
