@@ -2816,6 +2816,108 @@ NatHub_MODULES[NatHub["3e"]] = {
 
 		local UIS = game:GetService("UserInputService")
 
+		-- ============ THEME SYSTEM ============
+		LIB.Themes = {
+			Dark = {
+				Accent        = Color3.fromRGB(10,  135, 213),
+				BG            = Color3.fromRGB(37,  40,  47),
+				ElementBG     = Color3.fromRGB(42,  45,  52),
+				ElementBGDark = Color3.fromRGB(32,  35,  41),
+				Stroke        = Color3.fromRGB(60,  60,  74),
+				StrokeDim     = Color3.fromRGB(47,  47,  58),
+				ToggleOn      = Color3.fromRGB(192, 209, 199),
+				ToggleOff     = Color3.fromRGB(53,  56,  62),
+			},
+			Crimson = {
+				Accent        = Color3.fromRGB(220, 50,  50),
+				BG            = Color3.fromRGB(36,  28,  28),
+				ElementBG     = Color3.fromRGB(48,  36,  36),
+				ElementBGDark = Color3.fromRGB(30,  24,  24),
+				Stroke        = Color3.fromRGB(90,  50,  50),
+				StrokeDim     = Color3.fromRGB(60,  38,  38),
+				ToggleOn      = Color3.fromRGB(220, 150, 150),
+				ToggleOff     = Color3.fromRGB(65,  45,  45),
+			},
+			Purple = {
+				Accent        = Color3.fromRGB(150, 60,  230),
+				BG            = Color3.fromRGB(33,  28,  45),
+				ElementBG     = Color3.fromRGB(44,  36,  58),
+				ElementBGDark = Color3.fromRGB(28,  23,  40),
+				Stroke        = Color3.fromRGB(80,  55,  110),
+				StrokeDim     = Color3.fromRGB(55,  40,  75),
+				ToggleOn      = Color3.fromRGB(200, 155, 240),
+				ToggleOff     = Color3.fromRGB(58,  46,  75),
+			},
+			Emerald = {
+				Accent        = Color3.fromRGB(30,  200, 100),
+				BG            = Color3.fromRGB(26,  38,  32),
+				ElementBG     = Color3.fromRGB(34,  50,  42),
+				ElementBGDark = Color3.fromRGB(22,  33,  27),
+				Stroke        = Color3.fromRGB(40,  90,  60),
+				StrokeDim     = Color3.fromRGB(30,  60,  42),
+				ToggleOn      = Color3.fromRGB(140, 230, 175),
+				ToggleOff     = Color3.fromRGB(38,  62,  48),
+			},
+			Sunset = {
+				Accent        = Color3.fromRGB(255, 110, 30),
+				BG            = Color3.fromRGB(40,  33,  26),
+				ElementBG     = Color3.fromRGB(52,  42,  32),
+				ElementBGDark = Color3.fromRGB(34,  27,  20),
+				Stroke        = Color3.fromRGB(90,  65,  35),
+				StrokeDim     = Color3.fromRGB(62,  45,  26),
+				ToggleOn      = Color3.fromRGB(255, 185, 120),
+				ToggleOff     = Color3.fromRGB(68,  50,  35),
+			},
+			Cyan = {
+				Accent        = Color3.fromRGB(0,   210, 220),
+				BG            = Color3.fromRGB(24,  37,  42),
+				ElementBG     = Color3.fromRGB(32,  48,  55),
+				ElementBGDark = Color3.fromRGB(20,  31,  36),
+				Stroke        = Color3.fromRGB(30,  90,  100),
+				StrokeDim     = Color3.fromRGB(22,  60,  68),
+				ToggleOn      = Color3.fromRGB(140, 230, 235),
+				ToggleOff     = Color3.fromRGB(32,  60,  66),
+			},
+		}
+
+		-- Active theme shorthand
+		local T = LIB.Themes.Dark
+
+		-- Registry: live instances to recolor on SetTheme
+		local _themeReg = {
+			windowBGs     = {},
+			elementBGs    = {},
+			elementBGDs   = {},
+			strokes       = {},
+			strokeDims    = {},
+			toggleOnFills = {},
+			toggleOffFills= {},
+		}
+		local function _TR(tbl, inst)
+			if inst then table.insert(tbl, inst) end
+		end
+
+		function LIB:SetTheme(name)
+			local theme = LIB.Themes[name]
+			if not theme then return end
+			T = theme
+			local TweenService = game:GetService("TweenService")
+			local ti = TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+			local function tw(inst, props)
+				if inst and inst.Parent then
+					pcall(function() TweenService:Create(inst, ti, props):Play() end)
+				end
+			end
+			for _, inst in ipairs(_themeReg.windowBGs)      do tw(inst, {BackgroundColor3 = T.BG}) end
+			for _, inst in ipairs(_themeReg.elementBGs)     do tw(inst, {BackgroundColor3 = T.ElementBG}) end
+			for _, inst in ipairs(_themeReg.elementBGDs)    do tw(inst, {BackgroundColor3 = T.ElementBGDark}) end
+			for _, inst in ipairs(_themeReg.strokes)        do tw(inst, {Color = T.Stroke}) end
+			for _, inst in ipairs(_themeReg.strokeDims)     do tw(inst, {Color = T.StrokeDim}) end
+			for _, inst in ipairs(_themeReg.toggleOnFills)  do tw(inst, {BackgroundColor3 = T.ToggleOn}) end
+			for _, inst in ipairs(_themeReg.toggleOffFills) do tw(inst, {BackgroundColor3 = T.ToggleOff}) end
+		end
+		-- ======================================
+
 		local Gui = script.Parent
 		local Templates = script.Parent.Templates
 		local oldWindow = script.Parent.Window
@@ -2953,7 +3055,7 @@ NatHub_MODULES[NatHub["3e"]] = {
                 if success then
                     CONFIGLOADED = true
                 elseif not success then
-                    warn("Attempted to load 'workspace/".. Window.FileSaveName "', but an error occured.\nERROR: "..result)
+                    warn("Attempted to load 'workspace/".. Window.FileSaveName .."', but an error occured.\nERROR: "..result)
                 end
             end
 
@@ -2987,6 +3089,10 @@ NatHub_MODULES[NatHub["3e"]] = {
 			local Tabs = mainFrame.Tabs
 
 			newWindow.Name = Window.Title
+			-- Register window-level elements for theme system
+			_TR(_themeReg.windowBGs,  newWindow)
+			_TR(_themeReg.windowBGs,  TabButtons)
+			_TR(_themeReg.strokes,    newWindow.UIStroke)
 			TopFrame.TextLabel.Text = Window.Title.." - "..Window.Version
 			if not Window.Icon:find("rbxassetid") then
 				TopFrame.Icon.Image = IconModule.Icon(Window.Icon)[1] or Window.Icon or ""
@@ -3265,7 +3371,7 @@ NatHub_MODULES[NatHub["3e"]] = {
 				function Tab:Section(data)
 					local Section = {
 						Title = data.Title,
-						State = data.Default or false,
+						State = data.Default or data.Opened or false,
 						TextXAlignment = data.TextXAlignment or "Left",
 					}
 
@@ -3276,6 +3382,15 @@ NatHub_MODULES[NatHub["3e"]] = {
 
 					newSection.Visible = true
 					newSection.Parent = newTab
+
+					-- Apply initial open/close state
+					if Section.State then
+						newSection.Frame.Visible = true
+						newSection.Button.Title.Arrow.Rotation = 90
+					else
+						newSection.Frame.Visible = false
+						newSection.Button.Title.Arrow.Rotation = 0
+					end
 
 					newSection.Button.MouseButton1Click:Connect(function()
 						if Section.State == true then
@@ -3318,6 +3433,8 @@ NatHub_MODULES[NatHub["3e"]] = {
 					local newButton = Templates.Button:Clone()
 					newButton.Name = ButtonData.Title
 					newButton.Parent = parentElement
+					_TR(_themeReg.elementBGs,  newButton)
+					_TR(_themeReg.strokes,     newButton.UIStroke)
 
 					newButton.Frame.Title.Text = ButtonData.Title
 
@@ -3328,8 +3445,8 @@ NatHub_MODULES[NatHub["3e"]] = {
 
 					if ButtonData.Locked then
 						-- greyed out
-						newButton.UIStroke.Color = Color3.fromRGB(47, 47, 58)
-						newButton.BackgroundColor3 = Color3.fromRGB(32, 35, 40)
+						newButton.UIStroke.Color = T.StrokeDim
+						newButton.BackgroundColor3 = T.ElementBGDark
 
 						newButton.Frame.Title.TextColor3 = Color3.fromRGB(75, 77, 83)
 						newButton.Frame.Title.ClickIcon.ImageColor3 = Color3.fromRGB(75, 77, 83)
@@ -3356,14 +3473,14 @@ NatHub_MODULES[NatHub["3e"]] = {
 
 					newButton.MouseEnter:Connect(function()
 						if not ButtonData.Locked then
-							Tween(newButton.UIStroke, {Color = Color3.fromRGB(10, 135, 213)}, TweenConfigs.Global)
+							Tween(newButton.UIStroke, {Color = T.Accent}, TweenConfigs.Global)
 						end
 					end)
 
 					newButton.MouseLeave:Connect(function()
 						if not ButtonData.Locked then
-							Tween(newButton.UIStroke, {Color = Color3.fromRGB(60, 60, 74)}, TweenConfigs.Global)
-							newButton.BackgroundColor3 = Color3.fromRGB(42, 45, 52)
+							Tween(newButton.UIStroke, {Color = T.Stroke}, TweenConfigs.Global)
+							newButton.BackgroundColor3 = T.ElementBG
 							Tween(newButton.Frame.Title, {TextColor3 = Color3.fromRGB(196, 203, 218)}, TweenConfigs.Global)
 							Tween(newButton.Frame.Description, {TextColor3 = Color3.fromRGB(196, 203, 218)}, TweenConfigs.Global)
 						end
@@ -3431,8 +3548,8 @@ NatHub_MODULES[NatHub["3e"]] = {
 
 					function Button:Lock()
 						ButtonData.Locked = true
-						Tween(newButton, {BackgroundColor3 = Color3.fromRGB(32, 35, 40)}, TweenConfigs.Global)
-						Tween(newButton.UIStroke, {Color = Color3.fromRGB(47, 47, 58)}, TweenConfigs.Global)
+						Tween(newButton, {BackgroundColor3 = T.ElementBGDark}, TweenConfigs.Global)
+						Tween(newButton.UIStroke, {Color = T.StrokeDim}, TweenConfigs.Global)
 						Tween(newButton.Frame.Title, {TextColor3 = Color3.fromRGB(75, 77, 83)}, TweenConfigs.Global)
 						Tween(newButton.Frame.Title.ClickIcon, {ImageColor3 = Color3.fromRGB(75, 77, 83)}, TweenConfigs.Global)
 						Tween(newButton.Frame.Description, {TextColor3 = Color3.fromRGB(75, 77, 83)}, TweenConfigs.Global)
@@ -3440,8 +3557,8 @@ NatHub_MODULES[NatHub["3e"]] = {
 
 					function Button:Unlock()
 						ButtonData.Locked = false
-						Tween(newButton, {BackgroundColor3 = Color3.fromRGB(42, 45, 52)}, TweenConfigs.Global)
-						Tween(newButton.UIStroke, {Color = Color3.fromRGB(60, 60, 74)}, TweenConfigs.Global)
+						Tween(newButton, {BackgroundColor3 = T.ElementBG}, TweenConfigs.Global)
+						Tween(newButton.UIStroke, {Color = T.Stroke}, TweenConfigs.Global)
 						Tween(newButton.Frame.Title, {TextColor3 = Color3.fromRGB(196, 203, 218)}, TweenConfigs.Global)
 						Tween(newButton.Frame.Title.ClickIcon, {ImageColor3 = Color3.fromRGB(196, 203, 218)}, TweenConfigs.Global)
 						Tween(newButton.Frame.Description, {TextColor3 = Color3.fromRGB(196, 203, 218)}, TweenConfigs.Global)
@@ -3559,6 +3676,8 @@ NatHub_MODULES[NatHub["3e"]] = {
 					local newToggle = Templates.Toggle:Clone()
 					newToggle.Name = Toggle.Title
 					newToggle.Parent = parentElement
+					_TR(_themeReg.elementBGs, newToggle)
+					_TR(_themeReg.strokes,    newToggle.UIStroke)
 					newToggle.Title.Text = Toggle.Title
 
 					if Toggle.Icon then
@@ -3578,18 +3697,20 @@ NatHub_MODULES[NatHub["3e"]] = {
 
 					if Toggle.State == true then
 						newToggle.Title.Fill.Ball.Position = UDim2.new(0.5, 0,0.5, 0)
-						newToggle.Title.Fill.BackgroundColor3 = Color3.fromRGB(192, 209, 199)
+						newToggle.Title.Fill.BackgroundColor3 = T.ToggleOn
 						newToggle.Title.Fill.Ball.Icon.ImageTransparency = 0
+						_TR(_themeReg.toggleOnFills,  newToggle.Title.Fill)
 					else
 						newToggle.Title.Fill.Ball.Position = UDim2.new(0, 0,0.5, 0)
-						newToggle.Title.Fill.BackgroundColor3 = Color3.fromRGB(53, 56, 62)
+						newToggle.Title.Fill.BackgroundColor3 = T.ToggleOff
 						newToggle.Title.Fill.Ball.Icon.ImageTransparency = 1
+						_TR(_themeReg.toggleOffFills, newToggle.Title.Fill)
 					end
 
 					if Toggle.Locked then
 						-- greyed out
-						newToggle.UIStroke.Color = Color3.fromRGB(47, 47, 58)
-						newToggle.BackgroundColor3 = Color3.fromRGB(32, 35, 40)
+						newToggle.UIStroke.Color = T.StrokeDim
+						newToggle.BackgroundColor3 = T.ElementBGDark
 
 						newToggle.Title.TextColor3 = Color3.fromRGB(75, 77, 83)
 						--newToggle.Title.ClickIcon.ImageColor3 = Color3.fromRGB(75, 77, 83)
@@ -3604,15 +3725,15 @@ NatHub_MODULES[NatHub["3e"]] = {
 
 					newToggle.Title.Fill.MouseEnter:Connect(function()
 						if not Toggle.Locked then
-							Tween(newToggle.UIStroke, {Color = Color3.fromRGB(10, 135, 213)}, TweenConfigs.Global)
+							Tween(newToggle.UIStroke, {Color = T.Accent}, TweenConfigs.Global)
 						end
 					end)
 
 					newToggle.Title.Fill.MouseLeave:Connect(function()
 						if not Toggle.Locked then
-							Tween(newToggle.UIStroke, {Color = Color3.fromRGB(60, 60, 74)}, TweenConfigs.Global)
+							Tween(newToggle.UIStroke, {Color = T.Stroke}, TweenConfigs.Global)
 
-							newToggle.BackgroundColor3 = Color3.fromRGB(42, 45, 52)
+							newToggle.BackgroundColor3 = T.ElementBG
 							Tween(newToggle.Title, {TextColor3 = Color3.fromRGB(196, 203, 218)}, TweenConfigs.Global)
 							Tween(newToggle.Description, {TextColor3 = Color3.fromRGB(196, 203, 218)}, TweenConfigs.Global)
 						end
@@ -3621,12 +3742,12 @@ NatHub_MODULES[NatHub["3e"]] = {
 					local function AnimateSwitch(targetState)
 						if targetState == true then
 							Tween(newToggle.Title.Fill.Ball, {Position = UDim2.new(0.5, 0,0.5, 0)}, TweenConfigs.Global)
-							Tween(newToggle.Title.Fill, {BackgroundColor3 = Color3.fromRGB(192, 209, 199)}, TweenConfigs.Global)
+							Tween(newToggle.Title.Fill, {BackgroundColor3 = T.ToggleOn}, TweenConfigs.Global)
 
 							Tween(newToggle.Title.Fill.Ball.Icon, {ImageTransparency = 0}, TweenConfigs.Global)
 						elseif targetState == false then
 							Tween(newToggle.Title.Fill.Ball, {Position = UDim2.new(0, 0,0.5, 0)}, TweenConfigs.Global)
-							Tween(newToggle.Title.Fill, {BackgroundColor3 = Color3.fromRGB(53, 56, 62)}, TweenConfigs.Global)
+							Tween(newToggle.Title.Fill, {BackgroundColor3 = T.ToggleOff}, TweenConfigs.Global)
 
 							Tween(newToggle.Title.Fill.Ball.Icon, {ImageTransparency = 1}, TweenConfigs.Global)
 						end
@@ -3670,8 +3791,8 @@ NatHub_MODULES[NatHub["3e"]] = {
 
 					function Toggle:Lock()
 						Toggle.Locked = true
-						Tween(newToggle, {BackgroundColor3 = Color3.fromRGB(32, 35, 40)}, TweenConfigs.Global)
-						Tween(newToggle.UIStroke, {Color = Color3.fromRGB(47, 47, 58)}, TweenConfigs.Global)
+						Tween(newToggle, {BackgroundColor3 = T.ElementBGDark}, TweenConfigs.Global)
+						Tween(newToggle.UIStroke, {Color = T.StrokeDim}, TweenConfigs.Global)
 						Tween(newToggle.Title, {TextColor3 = Color3.fromRGB(75, 77, 83)}, TweenConfigs.Global)
 						Tween(newToggle.Description, {TextColor3 = Color3.fromRGB(75, 77, 83)}, TweenConfigs.Global)
 
@@ -3681,8 +3802,8 @@ NatHub_MODULES[NatHub["3e"]] = {
 
 					function Toggle:Unlock()
 						Toggle.Locked = false
-						Tween(newToggle, {BackgroundColor3 = Color3.fromRGB(42, 45, 52)}, TweenConfigs.Global)
-						Tween(newToggle.UIStroke, {Color = Color3.fromRGB(60, 60, 74)}, TweenConfigs.Global)
+						Tween(newToggle, {BackgroundColor3 = T.ElementBG}, TweenConfigs.Global)
+						Tween(newToggle.UIStroke, {Color = T.Stroke}, TweenConfigs.Global)
 						Tween(newToggle.Title, {TextColor3 = Color3.fromRGB(196, 203, 218)}, TweenConfigs.Global)
 						Tween(newToggle.Description, {TextColor3 = Color3.fromRGB(196, 203, 218)}, TweenConfigs.Global)
 
@@ -3734,6 +3855,8 @@ NatHub_MODULES[NatHub["3e"]] = {
 					local newSlider = Templates.Slider:Clone()
 					newSlider.Parent = parentElement
 					newSlider.Name = Slider.Title
+					_TR(_themeReg.elementBGs, newSlider)
+					_TR(_themeReg.strokes,    newSlider.UIStroke)
 					newSlider.Title.Text = Slider.Title
 					if Slider.Desc and Slider.Desc ~= "" then
 						newSlider.Description.Visible = true
@@ -3776,13 +3899,13 @@ NatHub_MODULES[NatHub["3e"]] = {
 
 					if Slider.Locked then
 						-- greyed out
-						newSlider.UIStroke.Color = Color3.fromRGB(47, 47, 58)
-						newSlider.BackgroundColor3 = Color3.fromRGB(32, 35, 40)
+						newSlider.UIStroke.Color = T.StrokeDim
+						newSlider.BackgroundColor3 = T.ElementBGDark
 
 						newSlider.Title.TextColor3 = Color3.fromRGB(75, 77, 83)
 						newSlider.Description.TextColor3 = Color3.fromRGB(75, 77, 83)
 
-						newSlider.SliderFrame.Frame.Slider.UIStroke.Color = Color3.fromRGB(47, 47, 58)
+						newSlider.SliderFrame.Frame.Slider.UIStroke.Color = T.StrokeDim
 						newSlider.SliderFrame.Frame.Slider.BackgroundTransparency = 0.5
 						newSlider.SliderFrame.Frame.Slider.Fill.UIStroke.Transparency = 0.5
 						newSlider.SliderFrame.Frame.Slider.Fill.BackgroundGradient.BackgroundTransparency = 0.5
@@ -3851,7 +3974,7 @@ NatHub_MODULES[NatHub["3e"]] = {
 						until MouseDown == false or Slider.Locked == true
 
 						if not Hovering then
-							Tween(newSlider.UIStroke, {Color = Color3.fromRGB(60, 60, 74)}, TweenConfigs.Global)
+							Tween(newSlider.UIStroke, {Color = T.Stroke}, TweenConfigs.Global)
 						end
 					end
 
@@ -3877,14 +4000,14 @@ NatHub_MODULES[NatHub["3e"]] = {
 					Trigger.MouseEnter:Connect(function()
 						Hovering = true
 						if not Slider.Locked then
-							Tween(newSlider.UIStroke, {Color = Color3.fromRGB(10, 135, 213)}, TweenConfigs.Global)
+							Tween(newSlider.UIStroke, {Color = T.Accent}, TweenConfigs.Global)
 						end
 					end)
 
 					Trigger.MouseLeave:Connect(function()
 						Hovering = false
 						if not Slider.Locked and not MouseDown then
-							Tween(newSlider.UIStroke, {Color = Color3.fromRGB(60, 60, 74)}, TweenConfigs.Global)
+							Tween(newSlider.UIStroke, {Color = T.Stroke}, TweenConfigs.Global)
 						end
 					end)
 
@@ -3922,12 +4045,12 @@ NatHub_MODULES[NatHub["3e"]] = {
 
 					function Slider:Lock()
 						Slider.Locked = true
-						Tween(newSlider, {BackgroundColor3 = Color3.fromRGB(32, 35, 40)}, TweenConfigs.Global)
-						Tween(newSlider.UIStroke, {Color = Color3.fromRGB(47, 47, 58)}, TweenConfigs.Global)
+						Tween(newSlider, {BackgroundColor3 = T.ElementBGDark}, TweenConfigs.Global)
+						Tween(newSlider.UIStroke, {Color = T.StrokeDim}, TweenConfigs.Global)
 						Tween(newSlider.Title, {TextColor3 = Color3.fromRGB(75, 77, 83)}, TweenConfigs.Global)
 						Tween(newSlider.Description, {TextColor3 = Color3.fromRGB(75, 77, 83)}, TweenConfigs.Global)
 
-						Tween(newSlider.SliderFrame.Frame.Slider.UIStroke, {Color = Color3.fromRGB(47, 47, 58)}, TweenConfigs.Global)
+						Tween(newSlider.SliderFrame.Frame.Slider.UIStroke, {Color = T.StrokeDim}, TweenConfigs.Global)
 						Tween(newSlider.SliderFrame.Frame.Slider, {BackgroundTransparency = 0.5}, TweenConfigs.Global)
 						Tween(newSlider.SliderFrame.Frame.Slider.Fill.UIStroke, {Transparency = 0.5}, TweenConfigs.Global)
 						Tween(newSlider.SliderFrame.Frame.Slider.Fill.BackgroundGradient, {BackgroundTransparency = 0.5}, TweenConfigs.Global)
@@ -3937,12 +4060,12 @@ NatHub_MODULES[NatHub["3e"]] = {
 					function Slider:Unlock()
 						Slider.Locked = false
 
-						Tween(newSlider, {BackgroundColor3 = Color3.fromRGB(42, 45, 52)}, TweenConfigs.Global)
-						Tween(newSlider.UIStroke, {Color = Color3.fromRGB(60, 60, 74)}, TweenConfigs.Global)
+						Tween(newSlider, {BackgroundColor3 = T.ElementBG}, TweenConfigs.Global)
+						Tween(newSlider.UIStroke, {Color = T.Stroke}, TweenConfigs.Global)
 						Tween(newSlider.Title, {TextColor3 = Color3.fromRGB(196, 203, 218)}, TweenConfigs.Global)
 						Tween(newSlider.Description, {TextColor3 = Color3.fromRGB(196, 203, 218)}, TweenConfigs.Global)
 
-						Tween(newSlider.SliderFrame.Frame.Slider.UIStroke, {Color = Color3.fromRGB(60, 60, 74)}, TweenConfigs.Global)
+						Tween(newSlider.SliderFrame.Frame.Slider.UIStroke, {Color = T.Stroke}, TweenConfigs.Global)
 						Tween(newSlider.SliderFrame.Frame.Slider, {BackgroundTransparency = 0}, TweenConfigs.Global)
 						Tween(newSlider.SliderFrame.Frame.Slider.Fill.UIStroke, {Transparency = 0}, TweenConfigs.Global)
 						Tween(newSlider.SliderFrame.Frame.Slider.Fill.BackgroundGradient, {BackgroundTransparency = 0}, TweenConfigs.Global)
@@ -3981,6 +4104,10 @@ NatHub_MODULES[NatHub["3e"]] = {
 					local newInput = Templates.TextBox:Clone()
 					newInput.Name = Input.Title
 					newInput.Parent = parentElement
+					_TR(_themeReg.elementBGs,   newInput)
+					_TR(_themeReg.strokes,      newInput.UIStroke)
+					_TR(_themeReg.elementBGDs,  newInput.BoxFrame.Frame)
+					_TR(_themeReg.strokes,      newInput.BoxFrame.Frame.UIStroke)
 					newInput.Title.Text = Input.Title
 					if Input.Desc and Input.Desc ~= "" then
 						newInput.Description.Text = Input.Desc
@@ -3991,14 +4118,14 @@ NatHub_MODULES[NatHub["3e"]] = {
 
 					if Input.Locked then
 						-- greyed out
-						newInput.UIStroke.Color = Color3.fromRGB(47, 47, 58)
-						newInput.BackgroundColor3 = Color3.fromRGB(32, 35, 40)
+						newInput.UIStroke.Color = T.StrokeDim
+						newInput.BackgroundColor3 = T.ElementBGDark
 
 						newInput.Title.TextColor3 = Color3.fromRGB(75, 77, 83)
 						newInput.Description.TextColor3 = Color3.fromRGB(75, 77, 83)
 
-						newInput.BoxFrame.Frame.BackgroundColor3 = Color3.fromRGB(32, 35, 40)
-						newInput.BoxFrame.Frame.UIStroke.Color = Color3.fromRGB(47, 47, 58)
+						newInput.BoxFrame.Frame.BackgroundColor3 = T.ElementBGDark
+						newInput.BoxFrame.Frame.UIStroke.Color = T.StrokeDim
 						newInput.BoxFrame.Frame.TextBox.TextColor3 = Color3.fromRGB(75, 77, 83)
 						newInput.BoxFrame.Frame.TextBox.PlaceholderColor3 = Color3.fromRGB(75, 77, 83)
 
@@ -4023,26 +4150,26 @@ NatHub_MODULES[NatHub["3e"]] = {
 
 					newInput.BoxFrame.Frame.TextBox.MouseEnter:Connect(function()
 						if not Input.Locked then
-							Tween(newInput.UIStroke, {Color = Color3.fromRGB(10, 135, 213)}, TweenConfigs.Global)
+							Tween(newInput.UIStroke, {Color = T.Accent}, TweenConfigs.Global)
 						end
 					end)
 
 					newInput.BoxFrame.Frame.TextBox.MouseLeave:Connect(function()
 						if not Input.Locked then
-							Tween(newInput.UIStroke, {Color = Color3.fromRGB(60, 60, 74)}, TweenConfigs.Global)
+							Tween(newInput.UIStroke, {Color = T.Stroke}, TweenConfigs.Global)
 						end
 					end)
 
 					newInput.BoxFrame.Frame.TextBox.Focused:Connect(function()
 						if not Input.Locked then
-							Tween(newInput.UIStroke, {Color = Color3.fromRGB(60, 60, 74)}, TweenConfigs.Global)
-							Tween(newInput.BoxFrame.Frame.UIStroke, {Color = Color3.fromRGB(10, 135, 213)}, TweenConfigs.Global)
+							Tween(newInput.UIStroke, {Color = T.Stroke}, TweenConfigs.Global)
+							Tween(newInput.BoxFrame.Frame.UIStroke, {Color = T.Accent}, TweenConfigs.Global)
 						end
 					end)
 
 					newInput.BoxFrame.Frame.TextBox.FocusLost:Connect(function()
 						if not Input.Locked then
-							Tween(newInput.BoxFrame.Frame.UIStroke, {Color = Color3.fromRGB(60, 60, 74)}, TweenConfigs.Global)
+							Tween(newInput.BoxFrame.Frame.UIStroke, {Color = T.Stroke}, TweenConfigs.Global)
 							Input.Text = newInput.BoxFrame.Frame.TextBox.Text
 							Input.Callback(Input.Text)
                             CONFIG[NAMETAB][name] = Input.Text
@@ -4077,14 +4204,14 @@ NatHub_MODULES[NatHub["3e"]] = {
 					function Input:Lock()
 						Input.Locked = true
 
-						Tween(newInput.UIStroke, {Color = Color3.fromRGB(47, 47, 58)}, TweenConfigs.Global)
-						Tween(newInput, {BackgroundColor3 = Color3.fromRGB(32, 35, 40)}, TweenConfigs.Global)
+						Tween(newInput.UIStroke, {Color = T.StrokeDim}, TweenConfigs.Global)
+						Tween(newInput, {BackgroundColor3 = T.ElementBGDark}, TweenConfigs.Global)
 
 						Tween(newInput.Title, {TextColor3 = Color3.fromRGB(75, 77, 83)}, TweenConfigs.Global)
 						Tween(newInput.Description, {TextColor3 = Color3.fromRGB(75, 77, 83)}, TweenConfigs.Global)
 
-						Tween(newInput.BoxFrame.Frame, {BackgroundColor3 = Color3.fromRGB(32, 35, 40)}, TweenConfigs.Global)
-						Tween(newInput.BoxFrame.Frame.UIStroke, {Color = Color3.fromRGB(47, 47, 58)}, TweenConfigs.Global)
+						Tween(newInput.BoxFrame.Frame, {BackgroundColor3 = T.ElementBGDark}, TweenConfigs.Global)
+						Tween(newInput.BoxFrame.Frame.UIStroke, {Color = T.StrokeDim}, TweenConfigs.Global)
 
 						Tween(newInput.BoxFrame.Frame.TextBox, {
 							TextColor3 = Color3.fromRGB(75, 77, 83),
@@ -4099,14 +4226,14 @@ NatHub_MODULES[NatHub["3e"]] = {
 					function Input:Unlock()
 						Input.Locked = false
 
-						Tween(newInput.UIStroke, {Color = Color3.fromRGB(60, 60, 74)}, TweenConfigs.Global)
-						Tween(newInput, {BackgroundColor3 = Color3.fromRGB(42, 45, 52)}, TweenConfigs.Global)
+						Tween(newInput.UIStroke, {Color = T.Stroke}, TweenConfigs.Global)
+						Tween(newInput, {BackgroundColor3 = T.ElementBG}, TweenConfigs.Global)
 
 						Tween(newInput.Title, {TextColor3 = Color3.fromRGB(196, 203, 218)}, TweenConfigs.Global)
 						Tween(newInput.Description, {TextColor3 = Color3.fromRGB(196, 203, 218)}, TweenConfigs.Global)
 
-						Tween(newInput.BoxFrame.Frame, {BackgroundColor3 = Color3.fromRGB(42, 45, 52)}, TweenConfigs.Global)
-						Tween(newInput.BoxFrame.Frame.UIStroke, {Color = Color3.fromRGB(60, 60, 74)}, TweenConfigs.Global)
+						Tween(newInput.BoxFrame.Frame, {BackgroundColor3 = T.ElementBG}, TweenConfigs.Global)
+						Tween(newInput.BoxFrame.Frame.UIStroke, {Color = T.Stroke}, TweenConfigs.Global)
 
 						Tween(newInput.BoxFrame.Frame.TextBox, {
 							TextColor3 = Color3.fromRGB(196, 203, 218),
@@ -4194,6 +4321,8 @@ NatHub_MODULES[NatHub["3e"]] = {
 					newDropdown.Parent = parentElement
 					newDropdown.Name = Dropdown.Title
 					newDropdown.Title.Text = Dropdown.Title
+					_TR(_themeReg.elementBGs, newDropdown)
+					_TR(_themeReg.strokes,    newDropdown.UIStroke)
 
 					if Dropdown.Desc and Dropdown.Desc ~= "" then
 						newDropdown.Description.Visible = true
@@ -4204,15 +4333,15 @@ NatHub_MODULES[NatHub["3e"]] = {
 
 					if Dropdown.Locked then
 						-- greyed out
-						newDropdown.UIStroke.Color = Color3.fromRGB(47, 47, 58)
-						newDropdown.BackgroundColor3 = Color3.fromRGB(32, 35, 40)
+						newDropdown.UIStroke.Color = T.StrokeDim
+						newDropdown.BackgroundColor3 = T.ElementBGDark
 
 						newDropdown.Title.TextColor3 = Color3.fromRGB(75, 77, 83)
 						newDropdown.Description.TextColor3 = Color3.fromRGB(75, 77, 83)
 						newDropdown.Title.ClickIcon.ImageColor3 = Color3.fromRGB(75, 77, 83)
 
-						newDropdown.Title.BoxFrame.Trigger.BackgroundColor3 = Color3.fromRGB(32, 35, 40)
-						newDropdown.Title.BoxFrame.Trigger.UIStroke.Color = Color3.fromRGB(47, 47, 58)
+						newDropdown.Title.BoxFrame.Trigger.BackgroundColor3 = T.ElementBGDark
+						newDropdown.Title.BoxFrame.Trigger.UIStroke.Color = T.StrokeDim
 						newDropdown.Title.BoxFrame.Trigger.Title.TextColor3 = Color3.fromRGB(75, 77, 83)
 
 						newDropdown.Active = false
@@ -4235,7 +4364,7 @@ NatHub_MODULES[NatHub["3e"]] = {
 									Tween(otherButton.Frame.Title, {TextColor3 = Color3.fromRGB(196, 203, 218)}, TweenConfigs.Global)
 									Tween(otherButton.Frame.Description, {TextColor3 = Color3.fromRGB(196, 203, 218)}, TweenConfigs.Global)
 									Tween(otherButton.Frame, {BackgroundTransparency = 1}, TweenConfigs.Global)
-									Tween(otherButton.UIStroke, {Color = Color3.fromRGB(60, 60, 74)}, TweenConfigs.Global)
+									Tween(otherButton.UIStroke, {Color = T.Stroke}, TweenConfigs.Global)
 								end
 							end
 							for _,otherButton in dropdownFolder.DropdownItemsSearch:GetChildren() do
@@ -4243,18 +4372,18 @@ NatHub_MODULES[NatHub["3e"]] = {
 									Tween(otherButton.Frame.Title, {TextColor3 = Color3.fromRGB(196, 203, 218)}, TweenConfigs.Global)
 									Tween(otherButton.Frame.Description, {TextColor3 = Color3.fromRGB(196, 203, 218)}, TweenConfigs.Global)
 									Tween(otherButton.Frame, {BackgroundTransparency = 1}, TweenConfigs.Global)
-									Tween(otherButton.UIStroke, {Color = Color3.fromRGB(60, 60, 74)}, TweenConfigs.Global)
+									Tween(otherButton.UIStroke, {Color = T.Stroke}, TweenConfigs.Global)
 								end
 							end
 
 							Tween(targetButton.Frame.Title, {TextColor3 = Color3.fromRGB(255,255,255)}, TweenConfigs.Global)
 							Tween(targetButton.Frame.Description, {TextColor3 = Color3.fromRGB(255,255,255)}, TweenConfigs.Global)
-							Tween(targetButton.UIStroke, {Color = Color3.fromRGB(10, 135, 213)}, TweenConfigs.Global)
+							Tween(targetButton.UIStroke, {Color = T.Accent}, TweenConfigs.Global)
 							Tween(targetButton.Frame, {BackgroundTransparency = 0}, TweenConfigs.Global)
 
 							Tween(targetbuttonSearch.Frame.Title, {TextColor3 = Color3.fromRGB(255,255,255)}, TweenConfigs.Global)
 							Tween(targetbuttonSearch.Frame.Description, {TextColor3 = Color3.fromRGB(255,255,255)}, TweenConfigs.Global)
-							Tween(targetbuttonSearch.UIStroke, {Color = Color3.fromRGB(10, 135, 213)}, TweenConfigs.Global)
+							Tween(targetbuttonSearch.UIStroke, {Color = T.Accent}, TweenConfigs.Global)
 							Tween(targetbuttonSearch.Frame, {BackgroundTransparency = 0}, TweenConfigs.Global)
                             if selected == "None" then return "" end
 							return selected	
@@ -4272,13 +4401,13 @@ NatHub_MODULES[NatHub["3e"]] = {
 									table.remove(selected, idx)
 
 									Tween(targetButton.Frame.Title, {TextColor3 = Color3.fromRGB(196, 203, 218)}, TweenConfigs.Global)
-									Tween(targetButton.Frame.Description, {TextColor3 = Color3.fromRGB(196, 203, 2185)}, TweenConfigs.Global)
-									Tween(targetButton.UIStroke, {Color = Color3.fromRGB(60, 60, 74)}, TweenConfigs.Global)
+									Tween(targetButton.Frame.Description, {TextColor3 = Color3.fromRGB(196, 203, 218)}, TweenConfigs.Global)
+									Tween(targetButton.UIStroke, {Color = T.Stroke}, TweenConfigs.Global)
 									Tween(targetButton.Frame, {BackgroundTransparency = 1}, TweenConfigs.Global)
 
 									Tween(targetbuttonSearch.Frame.Title, {TextColor3 = Color3.fromRGB(196, 203, 218)}, TweenConfigs.Global)
-									Tween(targetbuttonSearch.Frame.Description, {TextColor3 = Color3.fromRGB(196, 203, 2185)}, TweenConfigs.Global)
-									Tween(targetbuttonSearch.UIStroke, {Color = Color3.fromRGB(60, 60, 74)}, TweenConfigs.Global)
+									Tween(targetbuttonSearch.Frame.Description, {TextColor3 = Color3.fromRGB(196, 203, 218)}, TweenConfigs.Global)
+									Tween(targetbuttonSearch.UIStroke, {Color = T.Stroke}, TweenConfigs.Global)
 									Tween(targetbuttonSearch.Frame, {BackgroundTransparency = 1}, TweenConfigs.Global)
 								else
 									-- select
@@ -4286,12 +4415,12 @@ NatHub_MODULES[NatHub["3e"]] = {
 
 									Tween(targetButton.Frame.Title, {TextColor3 = Color3.fromRGB(255,255,255)}, TweenConfigs.Global)
 									Tween(targetButton.Frame.Description, {TextColor3 = Color3.fromRGB(255,255,255)}, TweenConfigs.Global)
-									Tween(targetButton.UIStroke, {Color = Color3.fromRGB(10, 135, 213)}, TweenConfigs.Global)
+									Tween(targetButton.UIStroke, {Color = T.Accent}, TweenConfigs.Global)
 									Tween(targetButton.Frame, {BackgroundTransparency = 0}, TweenConfigs.Global)
 
 									Tween(targetbuttonSearch.Frame.Title, {TextColor3 = Color3.fromRGB(255,255,255)}, TweenConfigs.Global)
 									Tween(targetbuttonSearch.Frame.Description, {TextColor3 = Color3.fromRGB(255,255,255)}, TweenConfigs.Global)
-									Tween(targetbuttonSearch.UIStroke, {Color = Color3.fromRGB(10, 135, 213)}, TweenConfigs.Global)
+									Tween(targetbuttonSearch.UIStroke, {Color = T.Accent}, TweenConfigs.Global)
 									Tween(targetbuttonSearch.Frame, {BackgroundTransparency = 0}, TweenConfigs.Global)
 								end
 							end
@@ -4350,13 +4479,13 @@ NatHub_MODULES[NatHub["3e"]] = {
 								if selected == buttonName then
 									newDropdownButton.Frame.Title.TextColor3 = Color3.fromRGB(255,255,255)
 									newDropdownButton.Frame.Description.TextColor3 = Color3.fromRGB(255,255,255)
-									newDropdownButton.UIStroke.Color = Color3.fromRGB(10, 135, 213)
+									newDropdownButton.UIStroke.Color = T.Accent
 									newDropdownButton.Frame.BackgroundTransparency = 0
 									newDropdownButton.Frame.Title.TextColor3 = Color3.fromRGB(255,255,255)
 
 									newDropdownButtonSearch.Frame.Title.TextColor3 = Color3.fromRGB(255,255,255)
 									newDropdownButtonSearch.Frame.Description.TextColor3 = Color3.fromRGB(255,255,255)
-									newDropdownButtonSearch.UIStroke.Color = Color3.fromRGB(10, 135, 213)
+									newDropdownButtonSearch.UIStroke.Color = T.Accent
 									newDropdownButtonSearch.Frame.BackgroundTransparency = 0
 									newDropdownButtonSearch.Frame.Title.TextColor3 = Color3.fromRGB(255,255,255)
 								end
@@ -4403,13 +4532,13 @@ NatHub_MODULES[NatHub["3e"]] = {
 								if table.find(selected, buttonName) then
 									newDropdownButton.Frame.Title.TextColor3 = Color3.fromRGB(255,255,255)
 									newDropdownButton.Frame.Description.TextColor3 = Color3.fromRGB(255,255,255)
-									newDropdownButton.UIStroke.Color = Color3.fromRGB(10, 135, 213)
+									newDropdownButton.UIStroke.Color = T.Accent
 									newDropdownButton.Frame.BackgroundTransparency = 0
 									newDropdownButton.Frame.Title.TextColor3 = Color3.fromRGB(255,255,255)
 
 									newDropdownButtonSearch.Frame.Title.TextColor3 = Color3.fromRGB(255,255,255)
 									newDropdownButtonSearch.Frame.Description.TextColor3 = Color3.fromRGB(255,255,255)
-									newDropdownButtonSearch.UIStroke.Color = Color3.fromRGB(10, 135, 213)
+									newDropdownButtonSearch.UIStroke.Color = T.Accent
 									newDropdownButtonSearch.Frame.BackgroundTransparency = 0
 									newDropdownButtonSearch.Frame.Title.TextColor3 = Color3.fromRGB(255,255,255)
 								end
@@ -4477,7 +4606,8 @@ NatHub_MODULES[NatHub["3e"]] = {
 						end
 					end
 
-					function Dropdown:Refresh(newvals)
+					function Dropdown:Refresh(newvals, preSelected)
+						if preSelected ~= nil then selected = preSelected end
 						AddButtons(newvals, true)
 					end
 
@@ -4489,15 +4619,15 @@ NatHub_MODULES[NatHub["3e"]] = {
 
 					function Dropdown:Lock()
 						Dropdown.Locked = true
-						Tween(newDropdown.UIStroke, {Color = Color3.fromRGB(47, 47, 58)}, TweenConfigs.Global)
-						Tween(newDropdown, {BackgroundColor3 = Color3.fromRGB(32, 35, 40)}, TweenConfigs.Global)
+						Tween(newDropdown.UIStroke, {Color = T.StrokeDim}, TweenConfigs.Global)
+						Tween(newDropdown, {BackgroundColor3 = T.ElementBGDark}, TweenConfigs.Global)
 
 						Tween(newDropdown.Title, {TextColor3 = Color3.fromRGB(75, 77, 83)}, TweenConfigs.Global)
 						Tween(newDropdown.Description, {TextColor3 = Color3.fromRGB(75, 77, 83)}, TweenConfigs.Global)
 						Tween(newDropdown.Title.ClickIcon, {ImageColor3 = Color3.fromRGB(75, 77, 83)}, TweenConfigs.Global)
 
-						Tween(newDropdown.Title.BoxFrame.Trigger, {BackgroundColor3 = Color3.fromRGB(32, 35, 40)}, TweenConfigs.Global)
-						Tween(newDropdown.Title.BoxFrame.Trigger.UIStroke, {Color = Color3.fromRGB(47, 47, 58)}, TweenConfigs.Global)
+						Tween(newDropdown.Title.BoxFrame.Trigger, {BackgroundColor3 = T.ElementBGDark}, TweenConfigs.Global)
+						Tween(newDropdown.Title.BoxFrame.Trigger.UIStroke, {Color = T.StrokeDim}, TweenConfigs.Global)
 						Tween(newDropdown.Title.BoxFrame.Trigger.Title, {TextColor3 = Color3.fromRGB(75, 77, 83)}, TweenConfigs.Global)
 
 						newDropdown.Active = false
@@ -4506,15 +4636,15 @@ NatHub_MODULES[NatHub["3e"]] = {
 
 					function Dropdown:Unlock()
 						Dropdown.Locked = false
-						Tween(newDropdown.UIStroke, {Color = Color3.fromRGB(60, 60, 74)}, TweenConfigs.Global)
-						Tween(newDropdown, {BackgroundColor3 = Color3.fromRGB(42, 45, 52)}, TweenConfigs.Global)
+						Tween(newDropdown.UIStroke, {Color = T.Stroke}, TweenConfigs.Global)
+						Tween(newDropdown, {BackgroundColor3 = T.ElementBG}, TweenConfigs.Global)
 
 						Tween(newDropdown.Title, {TextColor3 = Color3.fromRGB(196, 203, 218)}, TweenConfigs.Global)
 						Tween(newDropdown.Description, {TextColor3 = Color3.fromRGB(196, 203, 218)}, TweenConfigs.Global)
 						Tween(newDropdown.Title.ClickIcon, {ImageColor3 = Color3.fromRGB(196, 203, 218)}, TweenConfigs.Global)
 
-						Tween(newDropdown.Title.BoxFrame.Trigger, {BackgroundColor3 = Color3.fromRGB(42, 45, 52)}, TweenConfigs.Global)
-						Tween(newDropdown.Title.BoxFrame.Trigger.UIStroke, {Color = Color3.fromRGB(60, 60, 74)}, TweenConfigs.Global)
+						Tween(newDropdown.Title.BoxFrame.Trigger, {BackgroundColor3 = T.ElementBG}, TweenConfigs.Global)
+						Tween(newDropdown.Title.BoxFrame.Trigger.UIStroke, {Color = T.Stroke}, TweenConfigs.Global)
 						Tween(newDropdown.Title.BoxFrame.Trigger.Title, {TextColor3 = Color3.fromRGB(196, 203, 218)}, TweenConfigs.Global)
 
 						newDropdown.Active = true
@@ -4553,7 +4683,7 @@ NatHub_MODULES[NatHub["3e"]] = {
 					-- Container frame (styled same as other elements)
 					local frame = Instance.new("Frame")
 					frame.Name = Keybind.Title
-					frame.BackgroundColor3 = Color3.fromRGB(42, 45, 52)
+					frame.BackgroundColor3 = T.ElementBG
 					frame.BorderSizePixel  = 0
 					frame.Size             = UDim2.new(1, 0, 0, 50)
 					frame.AutomaticSize    = Enum.AutomaticSize.Y
@@ -4565,7 +4695,7 @@ NatHub_MODULES[NatHub["3e"]] = {
 					local uiStroke = Instance.new("UIStroke", frame)
 					uiStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 					uiStroke.Thickness       = 1.5
-					uiStroke.Color           = Color3.fromRGB(60, 60, 74)
+					uiStroke.Color           = T.Stroke
 
 					local uiPadding = Instance.new("UIPadding", frame)
 					uiPadding.PaddingLeft   = UDim.new(0, 12)
@@ -4603,7 +4733,7 @@ NatHub_MODULES[NatHub["3e"]] = {
 					-- Key display button
 					local keyBtn = Instance.new("TextButton", frame)
 					keyBtn.Name              = "KeyButton"
-					keyBtn.BackgroundColor3  = Color3.fromRGB(32, 35, 41)
+					keyBtn.BackgroundColor3  = T.ElementBGDark
 					keyBtn.BorderSizePixel   = 0
 					keyBtn.AnchorPoint       = Vector2.new(1, 0.5)
 					keyBtn.Size              = UDim2.new(0, 90, 0, 28)
@@ -4619,17 +4749,17 @@ NatHub_MODULES[NatHub["3e"]] = {
 					local keyStroke = Instance.new("UIStroke", keyBtn)
 					keyStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 					keyStroke.Thickness       = 1.5
-					keyStroke.Color           = Color3.fromRGB(61, 61, 75)
+					keyStroke.Color           = T.Stroke
 
 					frame.Visible = true
 
 					-- Locked state appearance
 					if Keybind.Locked then
-						uiStroke.Color          = Color3.fromRGB(47, 47, 58)
-						frame.BackgroundColor3  = Color3.fromRGB(32, 35, 40)
+						uiStroke.Color          = T.StrokeDim
+						frame.BackgroundColor3  = T.ElementBGDark
 						titleLabel.TextColor3   = Color3.fromRGB(75, 77, 83)
 						descLabel.TextColor3    = Color3.fromRGB(75, 77, 83)
-						keyBtn.BackgroundColor3 = Color3.fromRGB(32, 35, 40)
+						keyBtn.BackgroundColor3 = T.ElementBGDark
 						keyBtn.TextColor3       = Color3.fromRGB(75, 77, 83)
 					end
 
@@ -4648,7 +4778,7 @@ NatHub_MODULES[NatHub["3e"]] = {
 						if Keybind.Locked or listening then return end
 						listening    = true
 						keyBtn.Text  = "..."
-						Tween(uiStroke, {Color = Color3.fromRGB(10, 135, 213)}, TweenConfigs.Global)
+						Tween(uiStroke, {Color = T.Accent}, TweenConfigs.Global)
 						local conn
 						conn = game:GetService("UserInputService").InputBegan:Connect(function(input, gp)
 							if gp then return end
@@ -4656,20 +4786,20 @@ NatHub_MODULES[NatHub["3e"]] = {
 								conn:Disconnect()
 								listening = false
 								setKey(input.KeyCode.Name)
-								Tween(uiStroke, {Color = Color3.fromRGB(60, 60, 74)}, TweenConfigs.Global)
+								Tween(uiStroke, {Color = T.Stroke}, TweenConfigs.Global)
 							end
 						end)
 					end)
 
 					frame.MouseEnter:Connect(function()
 						if not Keybind.Locked then
-							Tween(uiStroke, {Color = Color3.fromRGB(10, 135, 213)}, TweenConfigs.Global)
+							Tween(uiStroke, {Color = T.Accent}, TweenConfigs.Global)
 						end
 					end)
 
 					frame.MouseLeave:Connect(function()
 						if not Keybind.Locked and not listening then
-							Tween(uiStroke, {Color = Color3.fromRGB(60, 60, 74)}, TweenConfigs.Global)
+							Tween(uiStroke, {Color = T.Stroke}, TweenConfigs.Global)
 						end
 					end)
 
@@ -4680,16 +4810,16 @@ NatHub_MODULES[NatHub["3e"]] = {
 
 					function Keybind:Lock()
 						Keybind.Locked = true
-						Tween(frame,      {BackgroundColor3 = Color3.fromRGB(32, 35, 40)},  TweenConfigs.Global)
-						Tween(uiStroke,   {Color = Color3.fromRGB(47, 47, 58)},             TweenConfigs.Global)
+						Tween(frame,      {BackgroundColor3 = T.ElementBGDark},  TweenConfigs.Global)
+						Tween(uiStroke,   {Color = T.StrokeDim},             TweenConfigs.Global)
 						Tween(titleLabel, {TextColor3 = Color3.fromRGB(75, 77, 83)},        TweenConfigs.Global)
 						Tween(descLabel,  {TextColor3 = Color3.fromRGB(75, 77, 83)},        TweenConfigs.Global)
 					end
 
 					function Keybind:Unlock()
 						Keybind.Locked = false
-						Tween(frame,      {BackgroundColor3 = Color3.fromRGB(42, 45, 52)},  TweenConfigs.Global)
-						Tween(uiStroke,   {Color = Color3.fromRGB(60, 60, 74)},             TweenConfigs.Global)
+						Tween(frame,      {BackgroundColor3 = T.ElementBG},  TweenConfigs.Global)
+						Tween(uiStroke,   {Color = T.Stroke},             TweenConfigs.Global)
 						Tween(titleLabel, {TextColor3 = Color3.fromRGB(196, 203, 218)},     TweenConfigs.Global)
 						Tween(descLabel,  {TextColor3 = Color3.fromRGB(130, 137, 155)},     TweenConfigs.Global)
 					end
