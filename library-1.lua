@@ -3097,14 +3097,14 @@ NatHub_MODULES[NatHub["3e"]] = {
 						tab.TabObject.Visible = false
 						-- Close
 						Tween(tab.TabButton.TextLabel, {Position = UDim2.new(0, 42,0.5, 0), Size = UDim2.new(0, 103,0, 16), TextTransparency = 0.5}, TweenConfigs.Global)
-						Tween(tab.TabButton.ImageButton, {Position = UDim2.new(0,12,0,18), ImageTransparency = 0.5}, TweenConfigs.Global)
+						Tween(tab.TabButton.ImageButton, {Position = UDim2.new(0,12,0,18), ImageTransparency = 0.5, Size = UDim2.new(0, iconSize, 0, iconSize)}, TweenConfigs.Global)
 						Tween(tab.TabButton.Bar, {Size = UDim2.new(0, 5,0, 0), BackgroundTransparency = 1}, TweenConfigs.Global)
 					elseif tablistname == tabName then
 						selected = tabName
 						tab.TabObject.Visible = true
 						-- open
 						Tween(tab.TabButton.TextLabel, {Position = UDim2.new(0, 57,0.5, 0), Size = UDim2.new(0, 88,0, 16), TextTransparency = 0}, TweenConfigs.Global)
-						Tween(tab.TabButton.ImageButton, {Position = UDim2.new(0,25,0,18), ImageTransparency = 0}, TweenConfigs.Global)
+						Tween(tab.TabButton.ImageButton, {Position = UDim2.new(0,25,0,18), ImageTransparency = 0, Size = UDim2.new(0, iconSize + 10, 0, iconSize + 10)}, TweenConfigs.Global)
 						Tween(tab.TabButton.Bar, {Size = UDim2.new(0, 5,0, 25), BackgroundTransparency = 0}, TweenConfigs.Global)
 
 						local objectCount = 0
@@ -3224,6 +3224,7 @@ NatHub_MODULES[NatHub["3e"]] = {
 					-- icon
 					newTabButton.ImageButton.Position = UDim2.new(0,25,0,18)
 					newTabButton.ImageButton.ImageTransparency = 0
+					newTabButton.ImageButton.Size = UDim2.new(0, iconSize + 10, 0, iconSize + 10)
 
 					-- Bar
 					newTabButton.Bar.Size = UDim2.new(0, 5,0, 25)
