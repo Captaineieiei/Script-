@@ -2937,6 +2937,8 @@ NatHub_MODULES[NatHub["3e"]] = {
                 AutoSave = data.AutoSave or true,
                 FileSaveName = data.FileSaveName or "Configo.json", -- wajib ada .json
 			}
+			local iconSize    = data.IconSize or 20  -- default tab icon size
+			local tabIconRefs = {}                   -- track all tab icon ImageButtons
             local CONFIG = {}
             local CONFIGLOADED = false
 
@@ -3194,6 +3196,8 @@ NatHub_MODULES[NatHub["3e"]] = {
 				newTabButton.ImageButton.Image = (IconModule.Icon(TabData.Icon) and IconModule.Icon(TabData.Icon)[1]) or TabData.Icon or ""
 				newTabButton.ImageButton.ImageRectOffset = (IconModule.Icon(TabData.Icon) and IconModule.Icon(TabData.Icon)[2].ImageRectPosition) or Vector2.new(0,0)
 				newTabButton.ImageButton.ImageRectSize = (IconModule.Icon(TabData.Icon) and IconModule.Icon(TabData.Icon)[2].ImageRectSize) or Vector2.new(0,0)
+				newTabButton.ImageButton.Size = UDim2.new(0, iconSize, 0, iconSize)
+				table.insert(tabIconRefs, newTabButton.ImageButton)
 
 
 
@@ -4725,6 +4729,15 @@ NatHub_MODULES[NatHub["3e"]] = {
 
 			function Window:EditOpenButton()
 
+			end
+
+			function Window:SetIconSize(size)
+				iconSize = size
+				for _, imgBtn in ipairs(tabIconRefs) do
+					pcall(function()
+						imgBtn.Size = UDim2.new(0, size, 0, size)
+					end)
+				end
 			end
 
 			function Window:Dialog(data)
