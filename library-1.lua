@@ -10,7 +10,7 @@
     Github: https://github.com/Footagesus/WindUI
 
 	Developed by: .chill.z. (Chillz)
-	Owned Zzz zzz
+	Owned Zzz
 
 	This User Interface is open source and for public usage.
 ]]
@@ -3324,6 +3324,28 @@ NovaHub_MODULES[NovaHub["3e"]] = {
 			else
 				newFloatingIcon.Icon.Image = Window.Icon
 			end
+
+			-- === วงกลม logo button (Mobile only) ===
+			-- แปลง FloatIcon จาก bar ยาว → วงกลมขนาด 55x55
+			newFloatingIcon.AutomaticSize      = Enum.AutomaticSize.None
+			newFloatingIcon.Size               = UDim2.fromOffset(55, 55)
+			newFloatingIcon.ClipsDescendants   = false
+			newFloatingIcon.UICorner.CornerRadius = UDim.new(1, 0)   -- เต็มวงกลม
+			newFloatingIcon.UIPadding.PaddingTop    = UDim.new(0, 0)
+			newFloatingIcon.UIPadding.PaddingBottom = UDim.new(0, 0)
+			newFloatingIcon.UIPadding.PaddingLeft   = UDim.new(0, 0)
+			newFloatingIcon.UIPadding.PaddingRight  = UDim.new(0, 0)
+			newFloatingIcon.UIListLayout.Padding    = UDim.new(0, 0)
+			-- ซ่อน TextLabel และ Open icon
+			newFloatingIcon.TextLabel.Visible = false
+			newFloatingIcon.Open.ImageTransparency = 1   -- ซ่อนลูกศร แต่ยังคลิกได้
+			newFloatingIcon.Open.Size          = UDim2.new(1, 0, 1, 0)
+			newFloatingIcon.Open.AnchorPoint   = Vector2.new(0.5, 0.5)
+			newFloatingIcon.Open.Position      = UDim2.new(0.5, 0, 0.5, 0)
+			-- จัด Icon ให้อยู่กลางวงกลม
+			newFloatingIcon.Icon.Size          = UDim2.fromOffset(32, 32)
+			newFloatingIcon.Icon.AnchorPoint   = Vector2.new(0.5, 0.5)
+			newFloatingIcon.Icon.Position      = UDim2.new(0.5, 0, 0.5, 0)
 
 			local newWindow = oldWindow:Clone()
 			local mainFrame = newWindow
