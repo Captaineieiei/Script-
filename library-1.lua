@@ -3760,6 +3760,25 @@ NatHub_MODULES[NatHub["3e"]] = {
 
                         AnimateSwitch(newState)
 
+						-- Fix: update theme registry so SetTheme applies correct color
+						if newState == true then
+							for i, v in ipairs(_themeReg.toggleOffFills) do
+								if v == newToggle.Title.Fill then
+									table.remove(_themeReg.toggleOffFills, i)
+									break
+								end
+							end
+							_TR(_themeReg.toggleOnFills, newToggle.Title.Fill)
+						else
+							for i, v in ipairs(_themeReg.toggleOnFills) do
+								if v == newToggle.Title.Fill then
+									table.remove(_themeReg.toggleOnFills, i)
+									break
+								end
+							end
+							_TR(_themeReg.toggleOffFills, newToggle.Title.Fill)
+						end
+
 						Toggle.State = newState
 						Toggle.Callback(Toggle.State)
                         CONFIG[NAMETAB][name] = Toggle.State
