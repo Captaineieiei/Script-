@@ -10,7 +10,7 @@
     Github: https://github.com/Footagesus/WindUI
 
 	Developed by: .chill.z. (Chillz)
-	Owned Zzz
+	Owned ZzzŹZZZZ
 
 	This User Interface is open source and for public usage.
 ]]
