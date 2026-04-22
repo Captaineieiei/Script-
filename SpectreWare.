@@ -1,5 +1,5 @@
 -- ══════════════════════════════════════════
---   SpectreWare Loader v2  •  Config Zonezzz
+--   SpectreWare Loader v2  •  Config Zone
 -- ══════════════════════════════════════════
 local CFG = {
     API     = "http://fi10.bot-hosting.net:20745",
