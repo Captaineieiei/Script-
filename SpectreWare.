@@ -229,7 +229,7 @@ local _mainOk,_mainErr=xpcall(function()
     if KEY=="" then log("No key — set getgenv().KEY before running","error"); getgenv()._SpectreRunning=nil; return end
 
     log("Reading key...","loading"); task.wait(1)
-    local hwid=getHWID()
+    hwid=getHWID()
     log("HWID: "..tostring(hwid):sub(1,28).."...","info"); task.wait(CFG.waitBetweenLogs)
 
     local callOk,raw
@@ -308,7 +308,7 @@ end,function(err)
 end)
 if not _mainOk then return end
 
-local _lastSeq,_lastId,_sessionActive=0,0,true
+local _lastSeq,_lastId,_sessionActive,hwid=0,0,true,""
 task.spawn(function()
     while _sessionActive do
         pcall(function()
