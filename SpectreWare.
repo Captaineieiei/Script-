@@ -13,9 +13,6 @@ local CFG = {
     sessionCheckEvery   = 10,
 }
 
-print("\n    ✦  SpectreWare  Loader  v2  ✦")
-print("   --------------------------------\n")
-
 local KEY = getgenv().KEY or ""
 if getgenv()._SpectreRunning then warn("SpectreWare: already running"); return end
 getgenv()._SpectreRunning = true
