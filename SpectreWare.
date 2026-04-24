@@ -6,19 +6,15 @@ local CFG = {
         ["139434492338574"] = "https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/Never",
     },
     splashImageId       = "71815202801684",
-    splashDuration      = 3.5,
-    splashTitle         = "SpectreWare",
-    splashSubtitle      = "Loading...",
     announceDisplayTime = 5,
     announceSound       = "6518811702",
-    cloverColor1        = Color3.fromRGB(82,196,106),
-    cloverColor2        = Color3.fromRGB(55,165,78),
     waitOnStart         = 0.8,
     waitBetweenLogs     = 0.8,
     sessionCheckEvery   = 10,
 }
 
-print("[ SpectreWare Loader v2 ]")
+print("\n    ✦  SpectreWare  Loader  v2  ✦")
+print("   --------------------------------\n")
 
 local KEY = getgenv().KEY or ""
 if getgenv()._SpectreRunning then warn("SpectreWare: already running"); return end
@@ -228,193 +224,9 @@ local function showAnnounce(msg,imageId)
     end)
 end
 
-local function pulse(obj,stroke,t1,t2,v1,v2)
-    task.spawn(function()
-        while obj and obj.Parent do
-            TS:Create(stroke,TweenInfo.new(t1,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),{Transparency=v1}):Play(); task.wait(t1)
-            TS:Create(stroke,TweenInfo.new(t2,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),{Transparency=v2}):Play(); task.wait(t2)
-        end
-    end)
-end
-local function pulseBg(obj,k,t1,v1,v2)
-    task.spawn(function()
-        while obj and obj.Parent do
-            TS:Create(obj,TweenInfo.new(t1,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),{[k]=v1}):Play(); task.wait(t1)
-            TS:Create(obj,TweenInfo.new(t1,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),{[k]=v2}):Play(); task.wait(t1)
-        end
-    end)
-end
-
-local function showSplash()
-    local playerGui=PL:FindFirstChildOfClass("PlayerGui"); if not playerGui then return end
-    local sg=new("ScreenGui",{Name="SpectreSplash",ResetOnSpawn=false,IgnoreGuiInset=true,
-        ZIndexBehavior=Enum.ZIndexBehavior.Sibling,DisplayOrder=9999},playerGui)
-    local blur=Instance.new("BlurEffect"); blur.Size=22; blur.Parent=game:GetService("Lighting")
-    local bg=new("Frame",{Size=UDim2.new(1,0,1,0),BackgroundColor3=Color3.fromRGB(5,3,10),
-        BackgroundTransparency=0.55,BorderSizePixel=0,ZIndex=1,ClipsDescendants=true},sg)
-    local rng=Random.new()
-
-
-
-    local vig=new("ImageLabel",{Size=UDim2.new(1,0,1,0),BackgroundTransparency=1,
-        Image="rbxassetid://1316045217",ImageColor3=Color3.fromRGB(0,0,0),
-        ImageTransparency=0.18,ScaleType=Enum.ScaleType.Stretch,ZIndex=3},sg)
-
-    local aurColors={Color3.fromRGB(100,20,200),Color3.fromRGB(160,30,255),Color3.fromRGB(60,10,140),Color3.fromRGB(200,60,255)}
-    for _ = 1,5 do
-        local sz=rng:NextInteger(180,320); local xp=rng:NextNumber(0.05,0.95); local yp=rng:NextNumber(0.05,0.90)
-        local orb=new("Frame",{AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.new(xp,0,yp,0),
-            Size=UDim2.new(0,sz,0,sz),BackgroundColor3=aurColors[rng:NextInteger(1,#aurColors)],
-            BackgroundTransparency=0.82,BorderSizePixel=0,ZIndex=1},sg)
-        new("UICorner",{CornerRadius=UDim.new(1,0)},orb)
-        task.spawn(function()
-            task.wait(rng:NextNumber(0,2.5))
-            while orb and orb.Parent do
-                local tx=xp+rng:NextNumber(-0.12,0.12); local ty=yp+rng:NextNumber(-0.10,0.10); local ts=rng:NextNumber(3.5,6.0)
-                TS:Create(orb,TweenInfo.new(ts,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),{
-                    Position=UDim2.new(math.clamp(tx,0.05,0.95),0,math.clamp(ty,0.05,0.90),0),
-                    BackgroundTransparency=rng:NextNumber(0.76,0.90)}):Play()
-                task.wait(ts)
-            end
-        end)
-    end
-
-    local scanLine=new("Frame",{Size=UDim2.new(1,0,0,2),Position=UDim2.new(0,0,-0.01,0),
-        BackgroundColor3=Color3.fromRGB(200,120,255),BackgroundTransparency=0.72,BorderSizePixel=0,ZIndex=3},sg)
-    task.spawn(function()
-        while scanLine and scanLine.Parent do
-            scanLine.Position=UDim2.new(0,0,-0.01,0)
-            TS:Create(scanLine,TweenInfo.new(3.2,Enum.EasingStyle.Linear),{Position=UDim2.new(0,0,1.02,0)}):Play()
-            task.wait(3.4)
-        end
-    end)
-
-    local gridImg=new("ImageLabel",{Size=UDim2.new(1,0,1,0),BackgroundTransparency=1,
-        Image="rbxassetid://4868076052",ImageColor3=Color3.fromRGB(160,80,255),
-        ImageTransparency=0.91,ScaleType=Enum.ScaleType.Tile,TileSize=UDim2.new(0,48,0,48),ZIndex=2},sg)
-
-    local stars={}
-    for _ = 1,90 do
-        local sz=rng:NextInteger(2,6); local xp=rng:NextNumber(0.02,0.98); local yp=rng:NextNumber(0.02,0.98)
-        if yp<0.38 or yp>0.65 or xp<0.08 or xp>0.92 then
-            local col=(rng:NextInteger(0,2)==0) and Color3.fromRGB(210,150,255) or Color3.fromRGB(170,100,255)
-            local star=new("Frame",{AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.new(xp,0,yp,0),
-                Size=UDim2.new(0,sz,0,sz),BackgroundColor3=col,
-                BackgroundTransparency=rng:NextNumber(0.2,0.6),BorderSizePixel=0,ZIndex=2},sg)
-            new("UICorner",{CornerRadius=UDim.new(1,0)},star); stars[#stars+1]=star
-            task.spawn(function()
-                task.wait(rng:NextNumber(0,2))
-                while star and star.Parent do
-                    local t=rng:NextNumber(0.6,2.0)
-                    TS:Create(star,TweenInfo.new(t,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),{BackgroundTransparency=rng:NextNumber(0.6,0.95)}):Play(); task.wait(t)
-                    TS:Create(star,TweenInfo.new(t,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),{BackgroundTransparency=rng:NextNumber(0.05,0.4)}):Play(); task.wait(t)
-                end
-            end)
-        end
-    end
-
-    local snowList={}
-    local function spawnSnowflake(immediate)
-        if not sg or not sg.Parent then return end
-        local sz=rng:NextNumber(3,8); local xp=rng:NextNumber(0,1)
-        local startY=immediate and rng:NextNumber(-0.05,1.0) or -0.04
-        local speed=rng:NextNumber(4.5,10.0); local drift=rng:NextNumber(-0.08,0.08); local alpha=rng:NextNumber(0.15,0.55)
-        local flake=new("Frame",{AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.new(xp,0,startY,0),
-            Size=UDim2.new(0,sz,0,sz),BackgroundColor3=Color3.fromRGB(220,210,255),
-            BackgroundTransparency=alpha,BorderSizePixel=0,ZIndex=3},sg)
-        new("UICorner",{CornerRadius=UDim.new(1,0)},flake); snowList[#snowList+1]=flake
-        local endX=math.clamp(xp+drift,0,1); local actualSpeed=speed*((1-startY)/1)
-        TS:Create(flake,TweenInfo.new(actualSpeed,Enum.EasingStyle.Linear),{Position=UDim2.new(endX,0,1.08,0)}):Play()
-        task.spawn(function()
-            while flake and flake.Parent do
-                task.wait(rng:NextNumber(0.8,2.0)); if not flake or not flake.Parent then break end
-                TS:Create(flake,TweenInfo.new(0.3,Enum.EasingStyle.Sine),{BackgroundTransparency=math.min(alpha+0.3,0.85)}):Play(); task.wait(0.3)
-                if not flake or not flake.Parent then break end
-                TS:Create(flake,TweenInfo.new(0.3,Enum.EasingStyle.Sine),{BackgroundTransparency=alpha}):Play()
-            end
-        end)
-        task.delay(actualSpeed+0.1,function()
-            pcall(function() flake:Destroy() end)
-            for i,v in ipairs(snowList) do if v==flake then table.remove(snowList,i); break end end
-            if sg and sg.Parent then spawnSnowflake(false) end
-        end)
-    end
-    for _ = 1,55 do task.spawn(function() task.wait(rng:NextNumber(0,0.5)); spawnSnowflake(true) end) end
-
-    local titleBg=new("Frame",{AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.new(0.5,0,0.5,0),
-        Size=UDim2.new(0.72,0,0,118),BackgroundColor3=Color3.fromRGB(8,4,18),
-        BackgroundTransparency=1,BorderSizePixel=0,ZIndex=4},sg)
-    new("UICorner",{CornerRadius=UDim.new(1,0)},titleBg)
-    pulse(titleBg,new("UIStroke",{Color=Color3.fromRGB(160,70,255),Thickness=2.2,Transparency=0.3},titleBg),1.8,1.8,0.75,0.15)
-
-    local leftFull=CFG.splashTitle:sub(1,math.floor(#CFG.splashTitle/2))
-    local rightFull=CFG.splashTitle:sub(math.floor(#CFG.splashTitle/2)+1)
-    local titleLeft=new("TextLabel",{AnchorPoint=Vector2.new(1,0.5),Position=UDim2.new(0.5,-1,0.5,0),
-        Size=UDim2.new(0.5,-8,1,-8),BackgroundTransparency=1,Text="",
-        TextColor3=Color3.fromRGB(140,55,235),Font=Enum.Font.GothamBold,TextSize=86,
-        TextXAlignment=Enum.TextXAlignment.Right,TextScaled=false,TextTransparency=0,ZIndex=5},titleBg)
-    local titleRight=new("TextLabel",{AnchorPoint=Vector2.new(0,0.5),Position=UDim2.new(0.5,1,0.5,0),
-        Size=UDim2.new(0.5,-8,1,-8),BackgroundTransparency=1,Text="",
-        TextColor3=Color3.fromRGB(210,85,255),Font=Enum.Font.GothamBold,TextSize=86,
-        TextXAlignment=Enum.TextXAlignment.Left,TextScaled=false,TextTransparency=0,ZIndex=5},titleBg)
-    local cursor=new("Frame",{AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.new(0.5,0,0.5,0),
-        Size=UDim2.new(0,3,0.85,0),BackgroundColor3=Color3.fromRGB(240,200,255),
-        BackgroundTransparency=0.1,BorderSizePixel=0,ZIndex=6},titleBg)
-
-    local _floating=false
-    task.spawn(function()
-        task.wait(0.35)
-        TS:Create(titleBg,TweenInfo.new(0.3,Enum.EasingStyle.Quad),{BackgroundTransparency=0.3}):Play(); task.wait(0.25)
-        for i=1,#leftFull do
-            titleLeft.Text=leftFull:sub(1,i); titleLeft.TextTransparency=0.55
-            TS:Create(titleLeft,TweenInfo.new(0.09,Enum.EasingStyle.Linear),{TextTransparency=0}):Play(); task.wait(0.072)
-        end
-        task.wait(0.04)
-        for i=1,#rightFull do
-            titleRight.Text=rightFull:sub(1,i); titleRight.TextTransparency=0.55
-            TS:Create(titleRight,TweenInfo.new(0.09,Enum.EasingStyle.Linear),{TextTransparency=0}):Play(); task.wait(0.072)
-        end
-        _floating=true
-    end)
-    task.spawn(function()
-        repeat task.wait(0.1) until _floating
-        while _floating and titleBg and titleBg.Parent do
-            TS:Create(titleBg,TweenInfo.new(1.8,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),{Position=UDim2.new(0.5,0,0.5,-10)}):Play(); task.wait(1.8)
-            if not _floating then break end
-            TS:Create(titleBg,TweenInfo.new(1.8,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut),{Position=UDim2.new(0.5,0,0.5,10)}):Play(); task.wait(1.8)
-        end
-    end)
-    task.spawn(function()
-        while cursor and cursor.Parent do
-            TS:Create(cursor,TweenInfo.new(0.5,Enum.EasingStyle.Linear),{BackgroundTransparency=1}):Play(); task.wait(0.55)
-            TS:Create(cursor,TweenInfo.new(0.5,Enum.EasingStyle.Linear),{BackgroundTransparency=0.1}):Play(); task.wait(0.55)
-        end
-    end)
-
-    local _closed=false
-    return function()
-        if _closed then return end; _closed=true; _floating=false
-        for _,obj in ipairs({titleLeft,titleRight}) do
-            TS:Create(obj,TweenInfo.new(0.4,Enum.EasingStyle.Quad),{TextTransparency=1}):Play()
-        end
-        TS:Create(titleBg,TweenInfo.new(0.4,Enum.EasingStyle.Quad),{BackgroundTransparency=1}):Play()
-        TS:Create(scanLine,TweenInfo.new(0.2,Enum.EasingStyle.Quad),{BackgroundTransparency=1}):Play()
-        TS:Create(gridImg,TweenInfo.new(0.3,Enum.EasingStyle.Quad),{ImageTransparency=1}):Play()
-        TS:Create(vig,TweenInfo.new(0.3,Enum.EasingStyle.Quad),{ImageTransparency=1}):Play()
-        for _,s in ipairs(stars) do TS:Create(s,TweenInfo.new(0.35,Enum.EasingStyle.Quad),{BackgroundTransparency=1}):Play() end
-        for _,f in ipairs(snowList) do pcall(function() TS:Create(f,TweenInfo.new(0.3,Enum.EasingStyle.Quad),{BackgroundTransparency=1}):Play() end) end
-        TS:Create(cursor,TweenInfo.new(0.25,Enum.EasingStyle.Quad),{BackgroundTransparency=1}):Play()
-        local fadeOut=TS:Create(bg,TweenInfo.new(0.65,Enum.EasingStyle.Quad),{BackgroundTransparency=1})
-        TS:Create(blur,TweenInfo.new(0.65,Enum.EasingStyle.Quad),{Size=0}):Play(); fadeOut:Play()
-        task.delay(0.7,function() pcall(function() blur:Destroy() end) end)
-        fadeOut.Completed:Connect(function() pcall(function() sg:Destroy() end) end)
-    end
-end
-
-local closeSplash=showSplash() or function() end
 local _mainOk,_mainErr=xpcall(function()
     task.wait(CFG.waitOnStart)
-    if KEY=="" then log("No key — set getgenv().KEY before running","error"); closeSplash(); getgenv()._SpectreRunning=nil; return end
+    if KEY=="" then log("No key — set getgenv().KEY before running","error"); getgenv()._SpectreRunning=nil; return end
 
     log("Reading key...","loading"); task.wait(1)
     local hwid=getHWID()
@@ -429,28 +241,28 @@ local _mainOk,_mainErr=xpcall(function()
     end
     if not callOk or not raw or raw=="" then
         log("Cannot reach API — enable HTTP Requests or server is down","error")
-        closeSplash(); getgenv()._SpectreRunning=nil; return
+        getgenv()._SpectreRunning=nil; return
     end
 
     log("API response received ✓","info"); task.wait(0.6)
     local ok2,result=pcall(HS.JSONDecode,HS,raw)
-    if not ok2 or type(result)~="table" then log("Invalid API response (parse error)","error"); closeSplash(); getgenv()._SpectreRunning=nil; return end
+    if not ok2 or type(result)~="table" then log("Invalid API response (parse error)","error"); getgenv()._SpectreRunning=nil; return end
 
     log("Verifying key...","loading"); task.wait(1.2)
     if result.success~=true and result.success~="true" then
-        log(parseApiError(result.message),"error"); closeSplash()
+        log(parseApiError(result.message),"error")
         if tostring(result.message or""):lower():find("expired") then
             task.spawn(function() sendWebhook("expired",{key=KEY,hwid=hwid,timeLeft="EXPIRED"}) end)
             task.wait(2); PL:Kick("[ SpectreWare ]  Your key has expired.\nPlease redeem a new key in Discord.")
         end
         getgenv()._SpectreRunning=nil; return
     end
-    if type(result.data)~="table" then log("Incomplete data from API","error"); closeSplash(); getgenv()._SpectreRunning=nil; return end
+    if type(result.data)~="table" then log("Incomplete data from API","error"); getgenv()._SpectreRunning=nil; return end
 
     local data=result.data
     log("Verifying HWID...","loading"); task.wait(1)
     if type(data.hwid)=="string" and data.hwid~="" and data.hwid~=hwid then
-        log("HWID mismatch — key is bound to another device","error"); closeSplash()
+        log("HWID mismatch — key is bound to another device","error")
         task.spawn(function() sendWebhook("mismatch",{key=KEY,hwid=hwid,timeLeft="BLOCKED"}) end)
         getgenv()._SpectreRunning=nil; task.wait(2)
         PL:Kick("[ SpectreWare ]  HWID Mismatch.\nKey นี้ผูกกับอุปกรณ์อื่น — ติดต่อ Discord."); return
@@ -461,36 +273,38 @@ local _mainOk,_mainErr=xpcall(function()
     local expiresAt=data.expiresAt
     if expiresAt~=nil and expiresAt~=-1 then
         local diff=math.floor((expiresAt-os.time()*1000)/1000)
-        if diff<=0 then log("Key has already expired","error"); closeSplash(); getgenv()._SpectreRunning=nil; return end
+        if diff<=0 then log("Key has already expired","error"); getgenv()._SpectreRunning=nil; return end
         timeLeft=fmtTime(diff)
     end
 
     log("Expiry verified ✓","success"); task.wait(0.6)
-    print("\n  ✅  KEY VERIFIED  ·  SpectreWare v2\n")
-    print("      👤  "..PL.Name)
-    print("      🔑  "..tostring(hwid):sub(1,26).."...")
-    print("      ⏳  "..timeLeft)
-    print("      🎮  "..tostring(game.PlaceId).."\n")
+    print("\n    ✅  KEY VERIFIED  —  SpectreWare v2")
+    print("   --------------------------------")
+    print("    👤  "..PL.Name)
+    print("    🔑  "..tostring(hwid):sub(1,24).."...")
+    print("    ⏳  "..timeLeft)
+    print("    🎮  "..tostring(game.PlaceId))
+    print("   --------------------------------\n")
     task.wait(1)
 
     task.spawn(function() sendWebhook("login",{key=KEY,hwid=hwid,timeLeft=timeLeft,expiresAt=expiresAt}) end)
 
     local SCRIPT=CFG.scripts[tostring(game.PlaceId)]
-    if not SCRIPT then log("PlaceId "..tostring(game.PlaceId).." is not supported","error"); closeSplash(); getgenv()._SpectreRunning=nil; return end
+    if not SCRIPT then log("PlaceId "..tostring(game.PlaceId).." is not supported","error"); getgenv()._SpectreRunning=nil; return end
 
     log("Loading script...","loading"); task.wait(1.2)
     local scriptOk,scriptSrc=safeGetTimeout(SCRIPT,15)
     if not scriptOk or not scriptSrc or scriptSrc=="" then
-        log("Failed to fetch script — check URL or network","error"); closeSplash(); getgenv()._SpectreRunning=nil; return
+        log("Failed to fetch script — check URL or network","error"); getgenv()._SpectreRunning=nil; return
     end
     local fn,compErr=loadstring(scriptSrc)
-    if not fn then log("Script compile error: "..tostring(compErr),"error"); closeSplash(); getgenv()._SpectreRunning=nil; return end
-    task.spawn(fn); task.wait(0.4); closeSplash()
+    if not fn then log("Script compile error: "..tostring(compErr),"error"); getgenv()._SpectreRunning=nil; return end
+    task.spawn(fn)
     log("Script loaded 🚀","success")
 
 end,function(err)
     warn("SpectreWare: unexpected error — "..tostring(err))
-    pcall(function() closeSplash() end); getgenv()._SpectreRunning=nil
+    getgenv()._SpectreRunning=nil
 end)
 if not _mainOk then return end
 
@@ -509,7 +323,6 @@ task.spawn(function()
         task.wait(3)
     end
 end)
-log("Announce listener ready 📢","success")
 
 local _conn
 _conn=game:GetService("Players").PlayerRemoving:Connect(function(p)
