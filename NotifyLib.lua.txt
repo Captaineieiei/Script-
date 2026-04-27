@@ -1,226 +1,103 @@
--- NotifyLib by SpectreWare
--- API: Send, Success, Error, Warning, Info, ClearAll
+-- NotifyLib v2 by SpectreWare (compact)
+local TS, Players = game:GetService("TweenService"), game:GetService("Players")
+local PGui = Players.LocalPlayer:WaitForChild("PlayerGui")
 
-local TweenService = game:GetService("TweenService")
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
+local SGui = Instance.new("ScreenGui")
+SGui.Name, SGui.ResetOnSpawn, SGui.ZIndexBehavior = "NotifyLib_v2", false, Enum.ZIndexBehavior.Sibling
+SGui.DisplayOrder, SGui.IgnoreGuiInset = 9999, true
+if not pcall(function() SGui.Parent = game:GetService("CoreGui") end) then SGui.Parent = PGui end
 
-local LocalPlayer = Players.LocalPlayer
-local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local Container = Instance.new("Frame")
+Container.Name, Container.BackgroundTransparency = "NotifyContainer", 1
+Container.Size, Container.Position = UDim2.new(0, 292, 1, -20), UDim2.new(1, -304, 0, 10)
+Container.Parent = SGui
 
--- ============================================================
--- Setup ScreenGui
--- ============================================================
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "NotifyLib_GUI"
-ScreenGui.ResetOnSpawn = false
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-ScreenGui.DisplayOrder = 999
-ScreenGui.IgnoreGuiInset = true
+local Layout = Instance.new("UIListLayout")
+Layout.SortOrder, Layout.Padding = Enum.SortOrder.LayoutOrder, UDim.new(0, 7)
+Layout.VerticalAlignment, Layout.HorizontalAlignment = Enum.VerticalAlignment.Top, Enum.HorizontalAlignment.Center
+Layout.Parent = Container
 
--- หา parent ที่เหมาะสม (executor / CoreGui fallback)
-local ok = pcall(function()
-	ScreenGui.Parent = game:GetService("CoreGui")
-end)
-if not ok then
-	ScreenGui.Parent = PlayerGui
+local CARD_H, MAX = 74, 5
+local ACCENT = { success=Color3.fromRGB(46,213,115), error=Color3.fromRGB(255,71,87), warning=Color3.fromRGB(255,171,0), info=Color3.fromRGB(85,150,255) }
+local ICON   = { success="✓", error="✕", warning="!", info="i" }
+
+local function mkCorner(r, p) local c = Instance.new("UICorner") c.CornerRadius = UDim.new(0,r) c.Parent = p end
+local function mkFrame(props, parent)
+	local f = Instance.new("Frame")
+	for k,v in pairs(props) do f[k] = v end
+	f.Parent = parent return f
+end
+local function mkLabel(props, parent)
+	local l = Instance.new("TextLabel")
+	for k,v in pairs(props) do l[k] = v end
+	l.Parent = parent return l
 end
 
--- Container วาง notify ที่มุมขวาบน
-local Container = Instance.new("Frame")
-Container.Name = "Container"
-Container.BackgroundTransparency = 1
-Container.Size = UDim2.new(0, 280, 1, 0)
-Container.Position = UDim2.new(1, -295, 0, 0)
-Container.Parent = ScreenGui
+local NotifyLib, active, order = {}, {}, 0
 
-local ListLayout = Instance.new("UIListLayout")
-ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-ListLayout.Padding = UDim.new(0, 8)
-ListLayout.VerticalAlignment = Enum.VerticalAlignment.Top
-ListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-ListLayout.Parent = Container
+function NotifyLib:Send(title, message, nType, duration)
+	nType    = (nType or "info"):lower()
+	duration = math.clamp(tonumber(duration) or 5, 1, 30)
+	local col, ico = ACCENT[nType] or ACCENT.info, ICON[nType] or "i"
 
-local ContainerPadding = Instance.new("UIPadding")
-ContainerPadding.PaddingTop = UDim.new(0, 12)
-ContainerPadding.Parent = Container
+	if #active >= MAX then
+		local old = table.remove(active, 1)
+		if old?.wrapper?.Parent then old.wrapper:Destroy() end
+	end
 
--- ============================================================
--- สี ตาม type
--- ============================================================
-local COLORS = {
-	success = Color3.fromRGB(39, 174, 96),
-	error   = Color3.fromRGB(231, 76, 60),
-	warning = Color3.fromRGB(243, 156, 18),
-	info    = Color3.fromRGB(52, 152, 219),
-}
+	order += 1
+	local Wrapper = mkFrame({ Name="NW_"..order, Size=UDim2.new(1,0,0,CARD_H), BackgroundTransparency=1, BorderSizePixel=0, ClipsDescendants=true, LayoutOrder=order }, Container)
+	local Card    = mkFrame({ Size=UDim2.new(1,0,1,0), Position=UDim2.new(1,10,0,0), BackgroundColor3=Color3.fromRGB(16,16,24), BorderSizePixel=0 }, Wrapper)
+	mkCorner(10, Card)
 
-local ICONS = {
-	success = "✔",
-	error   = "✘",
-	warning = "⚠",
-	info    = "ℹ",
-}
+	local s = Instance.new("UIStroke") s.Color, s.Thickness, s.Transparency, s.Parent = Color3.fromRGB(55,55,80), 1, 0.4, Card
 
--- ============================================================
--- NotifyLib
--- ============================================================
-local NotifyLib = {}
-local activeNotifs = {}
-local layoutOrder = 0
+	mkCorner(4, mkFrame({ Size=UDim2.new(0,3,0.6,0), Position=UDim2.new(0,0,0.2,0), BackgroundColor3=col, BorderSizePixel=0, ZIndex=3 }, Card))
 
-function NotifyLib:Send(title, message, notifType, duration)
-	notifType = (notifType or "info"):lower()
-	duration  = duration or 5
+	local IconBg = mkFrame({ Size=UDim2.new(0,36,0,36), Position=UDim2.new(0,14,0.5,-18), BackgroundColor3=col, BackgroundTransparency=0.78, BorderSizePixel=0, ZIndex=3 }, Card)
+	mkCorner(18, IconBg)
+	local is = Instance.new("UIStroke") is.Color, is.Thickness, is.Transparency, is.Parent = col, 1.2, 0.5, IconBg
+	mkLabel({ Size=UDim2.new(1,0,1,0), BackgroundTransparency=1, Text=ico, TextColor3=col, TextSize=16, Font=Enum.Font.GothamBold, TextXAlignment=Enum.TextXAlignment.Center, TextYAlignment=Enum.TextYAlignment.Center, ZIndex=4 }, IconBg)
 
-	local accentColor = COLORS[notifType] or COLORS.info
-	local icon        = ICONS[notifType]  or "ℹ"
+	mkLabel({ Size=UDim2.new(1,-66,0,22), Position=UDim2.new(0,60,0,12), BackgroundTransparency=1, Text=tostring(title), TextColor3=Color3.fromRGB(245,245,255), TextSize=13, Font=Enum.Font.GothamBold, TextXAlignment=Enum.TextXAlignment.Left, TextTruncate=Enum.TextTruncate.AtEnd, ZIndex=3 }, Card)
+	mkLabel({ Size=UDim2.new(1,-66,0,18), Position=UDim2.new(0,60,0,36), BackgroundTransparency=1, Text=tostring(message), TextColor3=Color3.fromRGB(145,145,172), TextSize=11, Font=Enum.Font.Gotham, TextXAlignment=Enum.TextXAlignment.Left, TextTruncate=Enum.TextTruncate.AtEnd, ZIndex=3 }, Card)
 
-	layoutOrder = layoutOrder + 1
+	local ProgBG = mkFrame({ Size=UDim2.new(1,-16,0,2), Position=UDim2.new(0,8,1,-5), BackgroundColor3=Color3.fromRGB(35,35,52), BorderSizePixel=0, ZIndex=3 }, Card) mkCorner(2, ProgBG)
+	local ProgFill = mkFrame({ Size=UDim2.new(1,0,1,0), BackgroundColor3=col, BorderSizePixel=0, ZIndex=4 }, ProgBG) mkCorner(2, ProgFill)
 
-	-- ── Frame หลัก ──────────────────────────────────────────
-	local Card = Instance.new("Frame")
-	Card.Name = "Notify_" .. layoutOrder
-	Card.Size = UDim2.new(1, 0, 0, 64)
-	Card.BackgroundColor3 = Color3.fromRGB(22, 22, 30)
-	Card.BorderSizePixel = 0
-	Card.ClipsDescendants = true
-	Card.LayoutOrder = layoutOrder
-	Card.Position = UDim2.new(1.2, 0, 0, 0) -- เริ่มนอกจอ
-	Card.Parent = Container
+	local tweens, dismissed = {}, false
+	local function cancelTweens() for _,t in ipairs(tweens) do pcall(t.Cancel,t) end table.clear(tweens) end
 
-	local CardCorner = Instance.new("UICorner")
-	CardCorner.CornerRadius = UDim.new(0, 8)
-	CardCorner.Parent = Card
+	local function removeCard()
+		if dismissed then return end dismissed = true cancelTweens()
+		if not (Wrapper and Wrapper.Parent) then return end
+		local t = TS:Create(Card, TweenInfo.new(0.28,Enum.EasingStyle.Quint,Enum.EasingDirection.In), { Position=UDim2.new(1,10,0,0) })
+		table.insert(tweens,t) t:Play()
+		task.delay(0.29, function() if Wrapper and Wrapper.Parent then Wrapper:Destroy() end end)
+		for i,v in ipairs(active) do if v.wrapper==Wrapper then table.remove(active,i) break end end
+	end
 
-	-- เส้นซ้าย (accent)
-	local Accent = Instance.new("Frame")
-	Accent.Size = UDim2.new(0, 4, 1, 0)
-	Accent.Position = UDim2.new(0, 0, 0, 0)
-	Accent.BackgroundColor3 = accentColor
-	Accent.BorderSizePixel = 0
-	Accent.Parent = Card
+	local tin = TS:Create(Card, TweenInfo.new(0.42,Enum.EasingStyle.Quint,Enum.EasingDirection.Out), { Position=UDim2.new(0,0,0,0) })
+	table.insert(tweens,tin) tin:Play()
 
-	local AccentCorner = Instance.new("UICorner")
-	AccentCorner.CornerRadius = UDim.new(0, 8)
-	AccentCorner.Parent = Accent
-
-	-- icon
-	local IconLabel = Instance.new("TextLabel")
-	IconLabel.Size = UDim2.new(0, 30, 1, 0)
-	IconLabel.Position = UDim2.new(0, 10, 0, 0)
-	IconLabel.BackgroundTransparency = 1
-	IconLabel.Text = icon
-	IconLabel.TextColor3 = accentColor
-	IconLabel.TextSize = 20
-	IconLabel.Font = Enum.Font.GothamBold
-	IconLabel.TextXAlignment = Enum.TextXAlignment.Center
-	IconLabel.Parent = Card
-
-	-- title
-	local TitleLabel = Instance.new("TextLabel")
-	TitleLabel.Size = UDim2.new(1, -50, 0, 22)
-	TitleLabel.Position = UDim2.new(0, 46, 0, 8)
-	TitleLabel.BackgroundTransparency = 1
-	TitleLabel.Text = tostring(title)
-	TitleLabel.TextColor3 = Color3.fromRGB(240, 240, 240)
-	TitleLabel.TextSize = 14
-	TitleLabel.Font = Enum.Font.GothamBold
-	TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-	TitleLabel.TextTruncate = Enum.TextTruncate.AtEnd
-	TitleLabel.Parent = Card
-
-	-- message
-	local MsgLabel = Instance.new("TextLabel")
-	MsgLabel.Size = UDim2.new(1, -50, 0, 20)
-	MsgLabel.Position = UDim2.new(0, 46, 0, 32)
-	MsgLabel.BackgroundTransparency = 1
-	MsgLabel.Text = tostring(message)
-	MsgLabel.TextColor3 = Color3.fromRGB(170, 170, 190)
-	MsgLabel.TextSize = 12
-	MsgLabel.Font = Enum.Font.Gotham
-	MsgLabel.TextXAlignment = Enum.TextXAlignment.Left
-	MsgLabel.TextTruncate = Enum.TextTruncate.AtEnd
-	MsgLabel.Parent = Card
-
-	-- progress bar
-	local ProgressBG = Instance.new("Frame")
-	ProgressBG.Size = UDim2.new(1, 0, 0, 3)
-	ProgressBG.Position = UDim2.new(0, 0, 1, -3)
-	ProgressBG.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
-	ProgressBG.BorderSizePixel = 0
-	ProgressBG.Parent = Card
-
-	local ProgressBar = Instance.new("Frame")
-	ProgressBar.Size = UDim2.new(1, 0, 1, 0)
-	ProgressBar.BackgroundColor3 = accentColor
-	ProgressBar.BorderSizePixel = 0
-	ProgressBar.Parent = ProgressBG
-
-	-- ── Slide-in ────────────────────────────────────────────
-	local tweenIn = TweenService:Create(Card,
-		TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
-		{ Position = UDim2.new(0, 0, 0, 0) }
-	)
-	tweenIn:Play()
-
-	-- progress bar shrink
-	local tweenProg = TweenService:Create(ProgressBar,
-		TweenInfo.new(duration, Enum.EasingStyle.Linear),
-		{ Size = UDim2.new(0, 0, 1, 0) }
-	)
-	tweenIn.Completed:Connect(function()
-		tweenProg:Play()
+	task.delay(0.42, function()
+		if dismissed then return end
+		local tp = TS:Create(ProgFill, TweenInfo.new(duration,Enum.EasingStyle.Linear), { Size=UDim2.new(0,0,1,0) })
+		table.insert(tweens,tp) tp:Play()
 	end)
 
-	-- ── Remove ──────────────────────────────────────────────
-	local function removeCard()
-		if not Card or not Card.Parent then return end
-		local tweenOut = TweenService:Create(Card,
-			TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.In),
-			{ Position = UDim2.new(1.2, 0, 0, 0) }
-		)
-		tweenOut:Play()
-		tweenOut.Completed:Connect(function()
-			Card:Destroy()
-		end)
-		-- ลบออกจาก activeNotifs
-		for i, v in ipairs(activeNotifs) do
-			if v == Card then table.remove(activeNotifs, i) break end
-		end
-	end
-
-	tweenProg.Completed:Connect(removeCard)
-	table.insert(activeNotifs, Card)
-
-	return removeCard -- คืน function สำหรับ dismiss manual
+	task.delay(0.42+duration, removeCard)
+	table.insert(active, { wrapper=Wrapper, tweens=tweens })
+	return removeCard
 end
 
--- ── Shorthand ────────────────────────────────────────────────
-function NotifyLib:Success(title, message, duration)
-	return self:Send(title, message, "success", duration)
-end
-
-function NotifyLib:Error(title, message, duration)
-	return self:Send(title, message, "error", duration)
-end
-
-function NotifyLib:Warning(title, message, duration)
-	return self:Send(title, message, "warning", duration)
-end
-
-function NotifyLib:Info(title, message, duration)
-	return self:Send(title, message, "info", duration)
-end
-
--- ── ClearAll ─────────────────────────────────────────────────
+function NotifyLib:Success(t,m,d) return self:Send(t,m,"success",d) end
+function NotifyLib:Error(t,m,d)   return self:Send(t,m,"error",d)   end
+function NotifyLib:Warning(t,m,d) return self:Send(t,m,"warning",d) end
+function NotifyLib:Info(t,m,d)    return self:Send(t,m,"info",d)    end
 function NotifyLib:ClearAll()
-	for _, card in ipairs(activeNotifs) do
-		if card and card.Parent then
-			card:Destroy()
-		end
-	end
-	activeNotifs = {}
+	for _,v in ipairs(active) do if v.wrapper and v.wrapper.Parent then v.wrapper:Destroy() end end
+	table.clear(active)
 end
 
 return NotifyLib
