@@ -42,7 +42,7 @@ function NotifyLib:Send(title, message, nType, duration)
 
 	if #active >= MAX then
 		local old = table.remove(active, 1)
-		if old?.wrapper?.Parent then old.wrapper:Destroy() end
+		if old and old.wrapper and old.wrapper.Parent then old.wrapper:Destroy() end
 	end
 
 	order += 1
