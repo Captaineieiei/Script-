@@ -1,7 +1,7 @@
 -- NotifyLib v2 by SpectreWare
 local TS   = game:GetService("TweenService")
 local PGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
-local Icons = require(script.Parent.IconLib)   -- ← adjust path if needed
+local Icons = loadstring(game:HttpGet("https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/icons"))()
 
 local function new(cls, props, parent)
 	local i = Instance.new(cls)
