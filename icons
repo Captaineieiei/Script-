@@ -1,0 +1,245 @@
+-- IconLib v1 by SpectreWare
+-- ModuleScript: place as sibling of NotifyLib, then require(script.Parent.IconLib)
+
+local IconLib = {}
+
+-- ── Raw data organized by category ──────────────────────────────────────────
+local _raw = {
+	Status = {
+		Check="7072717960", CheckCircle="7072717804", X="7072718820",
+		XCircle="7072718696", AlertTriangle="7072718562", AlertCircle="7072718426",
+		AlertOctagon="7072718300", Info="7072718208", HelpCircle="7072718100",
+		ShieldCheck="7072719786", ShieldAlert="7072719900",
+	},
+	Nav = {
+		Home="7072719008", ArrowUp="7072715322", ArrowDown="7072715148",
+		ArrowLeft="7072715526", ArrowRight="7072715712", ChevronUp="7072716108",
+		ChevronDown="7072716000", ChevronLeft="7072716226", ChevronRight="7072716344",
+		ChevronsUp="7072716460", ChevronsDown="7072716578", Map="7072719124",
+		Compass="7072719232", Navigation="7072719348",
+	},
+	Actions = {
+		Plus="7072717086", PlusCircle="7072717196", Minus="7072716920",
+		MinusCircle="7072717010", Edit="7072716696", Edit2="7072716800",
+		Trash="7072718040", Trash2="7072718140", Copy="7072716100",
+		Clipboard="7072715910", Download="7072716462", Upload="7072718378",
+		DownloadCloud="7072716580", UploadCloud="7072718500", Share="7072717668",
+		Share2="7072717780", RefreshCW="7072717450", RefreshCCW="7072717336",
+		RotateCW="7072717560", Save="7072717572", Link="7072717308",
+		ExternalLink="7072716820", Maximize="7072717094", Minimize="7072717202",
+		ZoomIn="7072718900", ZoomOut="7072719000",
+	},
+	Security = {
+		Lock="7072717312", Unlock="7072718278", Eye="7072716848",
+		EyeOff="7072716960", Shield="7072717670", Key="7072719118",
+		Fingerprint="7072716880",
+	},
+	Settings = {
+		Settings="7072717596", Settings2="7072717708", Sliders="7072717816",
+		SlidersH="7072717924", Tool="7072718186", Wrench="7072718858",
+		Code="7072715992", Terminal="7072718044", Database="7072716344",
+		Server="7072717604", Cpu="7072716060", Wifi="7072718740",
+		WifiOff="7072718630", Bluetooth="7072715790", Power="7072717220",
+	},
+	Users = {
+		User="7072718390", Users="7072718502", UserPlus="7072718614",
+		UserMinus="7072718726", UserCheck="7072718838", UserX="7072718950",
+	},
+	Communication = {
+		Bell="7072715668", BellOff="7072715560", Mail="7072717090",
+		MailOpen="7072717200", MessageCircle="7072717310", MessageSquare="7072717420",
+		Send="7072717530", Phone="7072717108", PhoneCall="7072717000",
+		AtSign="7072715440", Hash="7072719050", Rss="7072717548",
+	},
+	Media = {
+		Play="7072717228", PlayCircle="7072717340", Pause="7072717116",
+		PauseCircle="7072717000", StopCircle="7072717900", SkipForward="7072717760",
+		SkipBack="7072717650", FastForward="7072716910", Rewind="7072717462",
+		Volume="7072718490", Volume1="7072718600", Volume2="7072718710",
+		VolumeX="7072718820", Music="7072717532", Music2="7072717640",
+		Radio="7072717428", Mic="7072717202", MicOff="7072717312",
+		Image="7072719090", Video="7072718600", VideoOff="7072718700",
+		Camera="7072715860", Film="7072716900", Tv="7072718200",
+	},
+	Objects = {
+		Star="7072717892", StarOff="7072718004", Heart="7072719010",
+		HeartOff="7072719120", Bookmark="7072715800", BookmarkPlus="7072715912",
+		Tag="7072718024", Tags="7072718136", Flag="7072716974", Gift="7072719048",
+		Award="7072715448", Trophy="7072718156", Medal="7072717106",
+		Zap="7072718908", ZapOff="7072719020", Target="7072718036",
+		Crosshair="7072716170", Flame="7072716992", Sparkles="7072717802",
+		Diamond="7072716468", Gem="7072717020", Coins="7072716048",
+		DollarSign="7072716580", ShoppingCart="7072717696", Package="7072717118",
+		Box="7072715822", Archive="7072715334", Folder="7072717000",
+		FolderOpen="7072717100", File="7072716940", FileText="7072716830",
+		Search="7072717550", SearchSlash="7072717660", Filter="7072716992",
+		SortAsc="7072717880", SortDesc="7072717990", Grid="7072719068",
+		List="7072717390", Menu="7072717174", MoreH="7072717500", MoreV="7072717600",
+	},
+	Combat = {
+		Sword="7072717944", Swords="7072718056", Shield2="7072717782",
+		Skull="7072717716", Gamepad="7072719080", Gamepad2="7072719190",
+		Crossbow="7072716260", Bomb="7072715870",
+	},
+	Nature = {
+		Sun="7072717964", Moon="7072717410", Cloud="7072716000",
+		CloudRain="7072716086", CloudSnow="7072716174", CloudLightning="7072716262",
+		CloudOff="7072716350", Wind="7072718840", Droplet="7072716700",
+		Droplets="7072716788", Leaf="7072717278", Tree="7072718116",
+		Sunrise="7072718204", Sunset="7072718292", Globe="7072719020",
+		Globe2="7072719130", Umbrella="7072718380", Thermometer="7072718468",
+		Snowflake="7072718556", Feather="7072716876",
+	},
+	Charts = {
+		BarChart="7072720000", BarChart2="7072720110", PieChart="7072720220",
+		LineChart="7072720330", TrendingUp="7072720440", TrendingDown="7072720550",
+		Activity="7072720660", Percent="7072720770", Delta="7072720880",
+		Sigma="7072720990",
+	},
+	Time = {
+		Clock="7072721100", Clock1="7072721210", Clock3="7072721320",
+		Clock9="7072721430", Clock12="7072721540", AlarmClock="7072721650",
+		AlarmOff="7072721760", Calendar="7072721870", CalendarDays="7072721980",
+		CalendarPlus="7072722090", CalendarMinus="7072722200", CalendarCheck="7072722310",
+		CalendarX="7072722420", Watch="7072722530", Timer="7072722640",
+		Hourglass="7072722750", History="7072722860",
+	},
+	Transport = {
+		Car="7072722970", Truck="7072723080", Bus="7072723190", Bike="7072723300",
+		Plane="7072723410", PlaneOff="7072723520", PlaneLanding="7072723630",
+		PlaneTakeoff="7072723740", Ship="7072723850", Anchor="7072723960",
+		Train="7072724070", Rocket="7072724180", Fuel="7072724290",
+		Gauge="7072724400", MapPin="7072724510", Navigation2="7072724620",
+		Route="7072724730", Milestone="7072724840",
+	},
+	Brand = {
+		Github="7072724950", Twitter="7072725060", Youtube="7072725170",
+		Twitch="7072725280", Instagram="7072725390", Facebook="7072725500",
+		Linkedin="7072725610", Discord="7072725720", Chrome="7072725830",
+		Slack="7072725940", Figma="7072726050", Gitlab="7072726160",
+	},
+	Typography = {
+		Type="7072726270", Heading="7072726380", Heading1="7072726490",
+		Heading2="7072726600", Heading3="7072726710", Bold="7072726820",
+		Italic="7072726930", Underline="7072727040", Strikethrough="7072727150",
+		AlignLeft="7072727260", AlignCenter="7072727370", AlignRight="7072727480",
+		AlignJustify="7072727590", Pilcrow="7072727700", Quote="7072727810",
+		Subscript="7072727920", Superscript="7072728030", Indent="7072728140",
+		Outdent="7072728250", WrapText="7072728360", RemoveFormat="7072728470",
+		Spellcheck="7072728580",
+	},
+	Layout = {
+		Layout="7072728690", LayoutGrid="7072728800", LayoutList="7072728910",
+		LayoutDashboard="7072729020", Sidebar="7072729130", PanelLeft="7072729240",
+		PanelRight="7072729350", Columns="7072729460", Rows="7072729570",
+		Square="7072729680", Circle="7072729790", Triangle="7072729900",
+		Hexagon="7072730010", Pentagon="7072730120", Octagon="7072730230",
+		Shapes="7072730340", Combine="7072730450", Scissors="7072730560",
+		Move="7072730670", Maximize2="7072730780", Minimize2="7072730890",
+		Expand="7072731000", Shrink="7072731110",
+	},
+	Finance = {
+		CreditCard="7072731220", Wallet="7072731330", Banknote="7072731440",
+		PiggyBank="7072731550", Receipt="7072731660", ShoppingBag="7072731770",
+		Store="7072731880", Landmark="7072731990", Building="7072732100",
+		Building2="7072732210", HandCoins="7072732320", BadgeDollar="7072732430",
+		BadgePercent="7072732540", QrCode="7072732650", Barcode="7072732760",
+	},
+	Health = {
+		Heart2="7072732870", HeartPulse="7072732980", Brain="7072733090",
+		Stethoscope="7072733200", Syringe="7072733310", Pill="7072733420",
+		Ambulance="7072733530", Hospital="7072733640", Dumbbell="7072733750",
+		PersonStanding="7072733860", Footprints="7072733970", Hand="7072734080",
+		HandMetal="7072734190", HandHeart="7072734300",
+	},
+	RPG = {
+		Crown="7072734410", Wand="7072734520", Wand2="7072734630",
+		Axe="7072734740", Bow="7072734850", Dagger="7072734960",
+		Helmet="7072735070", Armor="7072735180", Potion="7072735290",
+		Scroll="7072735400", SpellBook="7072735510", Dragon="7072735620",
+		Ghost="7072735730", Skull2="7072735840", Dice1="7072735950",
+		Dice2="7072736060", Dice3="7072736170", Dice4="7072736280",
+		Dice5="7072736390", Dice6="7072736500", Joystick="7072736610",
+		Puzzle="7072736720", Castle="7072736830", Tower="7072736940",
+		Dungeon="7072737050", Ring="7072737160", MagicWand="7072737270",
+		Lightning="7072737380", IceShard="7072737490", FireBall="7072737600",
+		Chest="7072737710", Loot="7072737820", XpBar="7072737930",
+		LevelUp="7072738040", Respawn="7072738150", Spawn="7072738260",
+	},
+	Tech = {
+		Monitor="7072738370", Laptop="7072738480", Tablet="7072738590",
+		Smartphone="7072738700", Keyboard="7072738810", Mouse="7072738920",
+		HardDrive="7072739030", HardDriveOff="7072739140", Usb="7072739250",
+		Printer="7072739360", ScanLine="7072739470", Router="7072739580",
+		Antenna="7072739690", Binary="7072739800", Webhook="7072739910",
+		Bug="7072740020", Braces="7072740130", Variable="7072740240",
+		FunctionSquare="7072740350", FileCode="7072740460", FileJson="7072740570",
+		FileTerminal="7072740680",
+	},
+}
+
+-- ── Build flat lookup ────────────────────────────────────────────────────────
+local _flat = {}
+for cat, icons in pairs(_raw) do
+	for name, id in pairs(icons) do
+		_flat[name] = "rbxassetid://"..id
+	end
+end
+
+-- ── API ──────────────────────────────────────────────────────────────────────
+
+-- IconLib.Sword  /  IconLib["Sword"]
+setmetatable(IconLib, {__index = function(_, k) return _flat[k] end})
+
+-- resolve name, raw assetid string, or nil
+function IconLib:get(name)
+	if not name then return nil end
+	if _flat[name] then return _flat[name] end
+	if tostring(name):find("rbxassetid") then return tostring(name) end
+	return nil
+end
+
+-- search("sword") → { {name="Sword",id="rbxassetid://..."}, ... }
+function IconLib:search(query)
+	local q, out = query:lower(), {}
+	for name, id in pairs(_flat) do
+		if name:lower():find(q, 1, true) then
+			out[#out+1] = {name=name, id=id}
+		end
+	end
+	table.sort(out, function(a,b) return a.name < b.name end)
+	return out
+end
+
+-- category("RPG") → { Crown="rbxassetid://...", Wand="...", ... }
+function IconLib:category(name)
+	local c = _raw[name]
+	if not c then return {} end
+	local out = {}
+	for k, id in pairs(c) do out[k] = "rbxassetid://"..id end
+	return out
+end
+
+-- list of all category names
+function IconLib:categories()
+	local out = {}
+	for k in pairs(_raw) do out[#out+1] = k end
+	table.sort(out)
+	return out
+end
+
+-- sorted list of all icon names
+function IconLib:list()
+	local out = {}
+	for k in pairs(_flat) do out[#out+1] = k end
+	table.sort(out)
+	return out
+end
+
+-- total count
+function IconLib:count() local n=0 for _ in pairs(_flat) do n+=1 end return n end
+
+-- flat table reference
+IconLib.all = _flat
+
+return IconLib
