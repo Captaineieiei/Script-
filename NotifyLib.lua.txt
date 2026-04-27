@@ -1,0 +1,289 @@
+--[[
+    NotifyLib - Roblox UI Notification Library
+    ใช้งาน:
+        local NotifyLib = loadstring(...)()
+        NotifyLib:Send("Title", "Message", "success", 5)
+    
+    Types: "success" | "error" | "warning" | "info"
+--]]
+
+local NotifyLib = {}
+NotifyLib.__index = NotifyLib
+
+-- ===== Config =====
+local CONFIG = {
+    MaxVisible   = 5,
+    Width        = 280,
+    Height       = 70,
+    Padding      = 8,
+    ScreenPadX   = 16,
+    ScreenPadY   = 16,
+    AnimTime     = 0.3,
+    Font         = Enum.Font.GothamSemibold,
+    BodyFont     = Enum.Font.Gotham,
+}
+
+local THEMES = {
+    success = { icon = "✔", accent = Color3.fromRGB(52, 199, 89),  bg = Color3.fromRGB(22, 35, 25) },
+    error   = { icon = "✖", accent = Color3.fromRGB(255, 69,  58),  bg = Color3.fromRGB(35, 20, 20) },
+    warning = { icon = "⚠", accent = Color3.fromRGB(255, 214,  10), bg = Color3.fromRGB(35, 32, 15) },
+    info    = { icon = "ℹ", accent = Color3.fromRGB(10,  132, 255), bg = Color3.fromRGB(15, 25, 38) },
+}
+
+-- ===== Internal State =====
+local TweenService   = game:GetService("TweenService")
+local Players        = game:GetService("Players")
+local LocalPlayer    = Players.LocalPlayer
+
+local _gui, _holder
+local _queue  = {}   -- { title, message, type, duration }
+local _active = {}   -- active frames (bottom = index 1)
+
+-- ===== Init GUI =====
+local function initGui()
+    if _gui then return end
+
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name              = "NotifyLib_GUI"
+    screenGui.ResetOnSpawn      = false
+    screenGui.ZIndexBehavior    = Enum.ZIndexBehavior.Sibling
+    screenGui.IgnoreGuiInset    = true
+
+    local ok, err = pcall(function()
+        screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+    end)
+    if not ok then
+        screenGui.Parent = game:GetService("CoreGui")
+    end
+
+    local holder = Instance.new("Frame")
+    holder.Name              = "Holder"
+    holder.BackgroundTransparency = 1
+    holder.Size              = UDim2.new(0, CONFIG.Width, 1, 0)
+    holder.Position          = UDim2.new(1, -(CONFIG.Width + CONFIG.ScreenPadX), 0, 0)
+    holder.AnchorPoint       = Vector2.new(0, 0)
+    holder.Parent            = screenGui
+
+    _gui    = screenGui
+    _holder = holder
+end
+
+-- ===== Create Notification Frame =====
+local function createFrame(title, message, ntype, duration)
+    local theme = THEMES[ntype] or THEMES.info
+
+    -- Root frame (starts off-screen to the right)
+    local frame = Instance.new("Frame")
+    frame.Name              = "Notify_" .. ntype
+    frame.Size              = UDim2.new(0, CONFIG.Width, 0, CONFIG.Height)
+    frame.Position          = UDim2.new(0, CONFIG.Width + 20, 1, -CONFIG.ScreenPadY - CONFIG.Height)
+    frame.BackgroundColor3  = theme.bg
+    frame.BorderSizePixel   = 0
+    frame.ClipsDescendants  = true
+    frame.Parent            = _holder
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 8)
+    corner.Parent = frame
+
+    -- Left accent bar
+    local bar = Instance.new("Frame")
+    bar.Name             = "AccentBar"
+    bar.Size             = UDim2.new(0, 3, 1, 0)
+    bar.BackgroundColor3 = theme.accent
+    bar.BorderSizePixel  = 0
+    bar.ZIndex           = 2
+    bar.Parent           = frame
+
+    local barCorner = Instance.new("UICorner")
+    barCorner.CornerRadius = UDim.new(0, 4)
+    barCorner.Parent = bar
+
+    -- Subtle bg glow
+    local glow = Instance.new("Frame")
+    glow.Size               = UDim2.new(0.5, 0, 1, 0)
+    glow.Position           = UDim2.new(0, 0, 0, 0)
+    glow.BackgroundColor3   = theme.accent
+    glow.BackgroundTransparency = 0.9
+    glow.BorderSizePixel    = 0
+    glow.ZIndex             = 1
+    glow.Parent             = frame
+
+    local glowGrad = Instance.new("UIGradient")
+    glowGrad.Rotation   = 90
+    glowGrad.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.5),
+        NumberSequenceKeypoint.new(1, 1),
+    })
+    glowGrad.Parent = glow
+
+    -- Icon label
+    local iconLabel = Instance.new("TextLabel")
+    iconLabel.Size               = UDim2.new(0, 28, 0, 28)
+    iconLabel.Position           = UDim2.new(0, 14, 0.5, -14)
+    iconLabel.BackgroundTransparency = 1
+    iconLabel.Text               = theme.icon
+    iconLabel.TextColor3         = theme.accent
+    iconLabel.TextSize           = 16
+    iconLabel.Font               = CONFIG.Font
+    iconLabel.ZIndex             = 3
+    iconLabel.Parent             = frame
+
+    -- Title label
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Size               = UDim2.new(1, -58, 0, 20)
+    titleLabel.Position           = UDim2.new(0, 50, 0, 12)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.Text               = title
+    titleLabel.TextColor3         = Color3.fromRGB(240, 240, 240)
+    titleLabel.TextSize           = 13
+    titleLabel.Font               = CONFIG.Font
+    titleLabel.TextXAlignment     = Enum.TextXAlignment.Left
+    titleLabel.TextTruncate       = Enum.TextTruncate.AtEnd
+    titleLabel.ZIndex             = 3
+    titleLabel.Parent             = frame
+
+    -- Message label
+    local msgLabel = Instance.new("TextLabel")
+    msgLabel.Size               = UDim2.new(1, -58, 0, 28)
+    msgLabel.Position           = UDim2.new(0, 50, 0, 31)
+    msgLabel.BackgroundTransparency = 1
+    msgLabel.Text               = message
+    msgLabel.TextColor3         = Color3.fromRGB(180, 180, 180)
+    msgLabel.TextSize           = 11
+    msgLabel.Font               = CONFIG.BodyFont
+    msgLabel.TextXAlignment     = Enum.TextXAlignment.Left
+    msgLabel.TextWrapped        = true
+    msgLabel.ZIndex             = 3
+    msgLabel.Parent             = frame
+
+    -- Progress bar (bottom)
+    local progressBg = Instance.new("Frame")
+    progressBg.Size             = UDim2.new(1, 0, 0, 2)
+    progressBg.Position         = UDim2.new(0, 0, 1, -2)
+    progressBg.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    progressBg.BorderSizePixel  = 0
+    progressBg.ZIndex           = 4
+    progressBg.Parent           = frame
+
+    local progressBar = Instance.new("Frame")
+    progressBar.Name            = "ProgressBar"
+    progressBar.Size            = UDim2.new(1, 0, 1, 0)
+    progressBar.BackgroundColor3 = theme.accent
+    progressBar.BorderSizePixel = 0
+    progressBar.ZIndex          = 5
+    progressBar.Parent          = progressBg
+
+    return frame, progressBar
+end
+
+-- ===== Tween helper =====
+local function tween(obj, props, t, style, dir)
+    style = style or Enum.EasingStyle.Quart
+    dir   = dir   or Enum.EasingDirection.Out
+    local info = TweenInfo.new(t, style, dir)
+    local tw = TweenService:Create(obj, info, props)
+    tw:Play()
+    return tw
+end
+
+-- ===== Reposition all active frames =====
+local function reposition(skipFrame)
+    local screenH = _holder.AbsoluteSize.Y
+    local yOffset = CONFIG.ScreenPadY
+
+    for i = #_active, 1, -1 do
+        local f = _active[i]
+        if f ~= skipFrame and f.Parent then
+            local targetY = 1 - (yOffset / screenH) - (CONFIG.Height / screenH)
+            tween(f, { Position = UDim2.new(0, 0, targetY, 0) }, CONFIG.AnimTime)
+            yOffset = yOffset + CONFIG.Height + CONFIG.Padding
+        end
+    end
+end
+
+-- ===== Dismiss a notification =====
+local function dismiss(frame)
+    -- Slide out to the right
+    local tw = tween(frame, {
+        Position = UDim2.new(0, CONFIG.Width + 20, frame.Position.Y.Scale, frame.Position.Y.Offset),
+        BackgroundTransparency = 1,
+    }, CONFIG.AnimTime, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+
+    tw.Completed:Connect(function()
+        -- Remove from _active list
+        for i, f in ipairs(_active) do
+            if f == frame then
+                table.remove(_active, i)
+                break
+            end
+        end
+        frame:Destroy()
+        reposition()
+
+        -- Process queue
+        if #_queue > 0 then
+            local next = table.remove(_queue, 1)
+            NotifyLib:Send(next.title, next.message, next.ntype, next.duration)
+        end
+    end)
+end
+
+-- ===== Public: Send =====
+function NotifyLib:Send(title, message, ntype, duration)
+    ntype    = ntype    or "info"
+    duration = duration or 4
+
+    initGui()
+
+    -- If too many active, queue
+    if #_active >= CONFIG.MaxVisible then
+        table.insert(_queue, { title = title, message = message, ntype = ntype, duration = duration })
+        return
+    end
+
+    local frame, progressBar = createFrame(title, message, ntype, duration)
+    table.insert(_active, frame)
+
+    -- Slide in
+    local screenH = _holder.AbsoluteSize.Y
+    local yOffset = CONFIG.ScreenPadY + (CONFIG.Height + CONFIG.Padding) * (#_active - 1)
+    local targetY = 1 - (yOffset / screenH) - (CONFIG.Height / screenH)
+
+    -- Reposition others above
+    reposition(frame)
+
+    -- Animate in
+    task.delay(0.01, function()
+        tween(frame, { Position = UDim2.new(0, 0, targetY, 0) }, CONFIG.AnimTime)
+    end)
+
+    -- Progress bar shrink
+    tween(progressBar, { Size = UDim2.new(0, 0, 1, 0) }, duration, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+
+    -- Auto dismiss
+    task.delay(duration, function()
+        if frame and frame.Parent then
+            dismiss(frame)
+        end
+    end)
+end
+
+-- ===== Public: Clear All =====
+function NotifyLib:ClearAll()
+    for _, frame in ipairs(_active) do
+        if frame and frame.Parent then
+            frame:Destroy()
+        end
+    end
+    _active = {}
+    _queue  = {}
+end
+
+-- ===== Shorthand aliases =====
+function NotifyLib:Success(title, message, duration) self:Send(title, message, "success", duration) end
+function NotifyLib:Error(title, message, duration)   self:Send(title, message, "error",   duration) end
+function NotifyLib:Warning(title, message, duration) self:Send(title, message, "warning", duration) end
+function NotifyLib:Info(title, message, duration)    self:Send(title, message, "info",    duration) end
+
+return NotifyLib
