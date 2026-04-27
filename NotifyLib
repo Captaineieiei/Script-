@@ -1,4 +1,4 @@
--- NotifyLib v2 _by SpectreWare (compact)
+-- NotifyLib v2 by SpectreWare (compact)
 local TS, Players = game:GetService("TweenService"), game:GetService("Players")
 local PGui = Players.LocalPlayer:WaitForChild("PlayerGui")
 
@@ -100,4 +100,4 @@ function NotifyLib:ClearAll()
 	table.clear(active)
 end
 
-return by
+return NotifyLib
