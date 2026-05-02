@@ -26,10 +26,16 @@ local function integrityFail(r)
 end
 
 local _isMobile=(function()
+    -- executor global check (เชื่อถือได้ที่สุด — ตรวจก่อนเลย)
+    if rawget(_G,"WISPBYTE") or rawget(_G,"WispByte") or rawget(_G,"wispbyte") then return true end
+    if rawget(_G,"ARCEUS_X") or rawget(_G,"arceus") or rawget(_G,"ArceusX") then return true end
+    if rawget(_G,"Delta") or rawget(_G,"DELTA_LOADED") then return true end
+    -- UIS platform string
     local ok,p=pcall(function() return tostring(game:GetService("UserInputService"):GetPlatform()):lower() end)
     if ok and p then
         if p:find("ios")or p:find("android")or p:find("phone")or p:find("tablet")or p:find("mobile") then return true end
     end
+    -- TouchEnabled + no keyboard = mobile
     local ok2,te=pcall(function() return game:GetService("UserInputService").TouchEnabled end)
     if ok2 and te==true then
         local ok3,ke=pcall(function() return game:GetService("UserInputService").KeyboardEnabled end)
