@@ -25,27 +25,16 @@ local _native_pcall,_native_loadstring,_native_tostring=pcall,loadstring,tostrin
 local function integrityFail(r)
     warn("SpectreWare: integrity check failed — ".._native_tostring(r))
     getgenv()._SpectreRunning=nil; getgenv()._SpectreToken=nil
-    -- KEY ถูก wipe แล้วตั้งแต่บนสุด ไม่ต้อง clear ซ้ำ
     pcall(function() game:GetService("Players").LocalPlayer:Kick("[ SpectreWare ]  Anti-Bypass triggered.\nContact Discord.") end)
 end
 
--- [HARDENED #2] loadstring hook detection เพิ่มขึ้น
--- ทดสอบ 3 ระดับ: (a) pcall ปกติ (b) loadstring execute (c) closure upvalue integrity
-local _pOk=_native_pcall(function() error("_chk") end); if _pOk then integrityFail("pcall hooked"); return end
-local _lsFn=_native_loadstring("return 0xDEAD"); if not _lsFn then integrityFail("loadstring broken"); return end
-local _lsOk,_lsVal=_native_pcall(_lsFn); if not _lsOk or _lsVal~=0xDEAD then integrityFail("loadstring hooked"); return end
-_lsFn=nil
-
--- [HARDENED #2b] ตรวจว่า loadstring ถูก hook ด้วย environment substitution หรือเปล่า
--- [FIX] ข้าม vararg check บนมือถือ — executor มือถือ (WispByte ฯลฯ) ไม่รองรับ vararg ผ่าน loadstring
--- ทำให้ _cVal ~= _sentinel แม้ไม่ได้ถูก hook จริง → false positive → kick ผิดพลาด
+-- [MOBILE FIX] ย้าย _isMobile มาก่อน integrity check ทั้งหมด
+-- เพราะ check #2 (pcall/loadstring) ก็ false-positive บน mobile executor เช่นกัน
 local _isMobile=(function()
-    -- Method 1: GetPlatform
     local ok,p=pcall(function() return tostring(game:GetService("UserInputService"):GetPlatform()):lower() end)
     if ok and p then
         if p:find("ios")or p:find("android")or p:find("phone")or p:find("tablet")or p:find("mobile") then return true end
     end
-    -- Method 2: TouchEnabled=true + KeyboardEnabled=false → มือถือ
     local ok2,te=pcall(function() return game:GetService("UserInputService").TouchEnabled end)
     if ok2 and te==true then
         local ok3,ke=pcall(function() return game:GetService("UserInputService").KeyboardEnabled end)
@@ -53,7 +42,16 @@ local _isMobile=(function()
     end
     return false
 end)()
+
+-- [HARDENED #2] loadstring hook detection — ข้ามทั้งหมดบนมือถือ
+-- mobile executor (WispByte, Arceus X ฯลฯ) implement pcall/loadstring ต่างออกไป
+-- ทำให้ทุก check ข้างล่าง false-positive แม้ไม่ได้ถูก hook จริง
 if not _isMobile then
+    local _pOk=_native_pcall(function() error("_chk") end); if _pOk then integrityFail("pcall hooked"); return end
+    local _lsFn=_native_loadstring("return 0xDEAD"); if not _lsFn then integrityFail("loadstring broken"); return end
+    local _lsOk,_lsVal=_native_pcall(_lsFn); if not _lsOk or _lsVal~=0xDEAD then integrityFail("loadstring hooked"); return end
+    _lsFn=nil
+    -- vararg check
     do
         local _sentinel={}
         local _closureChk=_native_loadstring("return ...")
