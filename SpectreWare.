@@ -183,9 +183,10 @@ local function httpSend(opts)
     local method=(opts.Method or"GET"):upper()
     local fns={
         function() return syn and syn.request and syn.request(opts) end,
-        function() return http and rawget(http,"request") and http.request(opts) end,
-        function() return _r_rawget(_G,"request") and _r_rawget(_G,"request")(opts) end,
+        function() return http and http.request and http.request(opts) end,
+        function() return http and http.Request and http.Request(opts) end,
         function() return request and request(opts) end,
+        function() return _r_rawget(_G,"request") and _r_rawget(_G,"request")(opts) end,
         function() return http_request and http_request(opts) end,
         function() return HttpRequest and HttpRequest(opts) end,
         function() return httpRequest and httpRequest(opts) end,
