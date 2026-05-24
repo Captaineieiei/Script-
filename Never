@@ -20,7 +20,6 @@ for _, c in ipairs(LP.PlayerGui:GetChildren()) do _pgBefore[c] = true end
 
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
--- SnapShot ScreenGui ที่ WindUI เพิ่มเข้ามา (ใช้กรอง inject ไม่ให้ไปโดน UI ของเกม)
 local WindUIGui = nil
 for _, c in ipairs(LP.PlayerGui:GetChildren()) do
     if not _pgBefore[c] and c:IsA("ScreenGui") then
@@ -57,7 +56,6 @@ local CFG = {
 }
 local Blacklist, ESPObjects, BypassConns = {}, {}, {}
 
--- CONFIG
 local CONFIG_FILE    = "SpectreWare.json"
 local AntiAFKEnabled = true
 local BOOL_KEYS = {"Enabled","NPCSESP","ShowHP","ShowHPText","ShowName","ShowDist","BypassAntiESP","HideDeadESP"}
@@ -88,7 +86,6 @@ local function LoadCFG()
 end
 LoadCFG()
 
--- BYPASS
 local function applyBypass(c)
     if BypassConns[c] then return end
     pcall(function()
@@ -106,7 +103,6 @@ local function removeBypass(c)
     BypassConns[c]=nil
 end
 
--- WINDOW
 local Window = WindUI:CreateWindow({
     Title="SpectreWare | NEVER TOWN", Icon="rbxassetid://71815202801684",
     Author="#Captain", Folder="MySuperHub",
@@ -133,7 +129,6 @@ task.spawn(function()
     task.wait(0.5); buildWaterPickDropdown()
 end)
 
--- HELPERS
 local function findLabelByText(text)
     local found
     for _,root in ipairs({game:GetService("CoreGui"), LP.PlayerGui}) do
@@ -168,7 +163,6 @@ local function resolveHRP(c)
         or c:FindFirstChild("Torso") or c:FindFirstChild("Head")
 end
 
--- ESP DRAWING
 local Camera = workspace.CurrentCamera
 workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function() Camera=workspace.CurrentCamera end)
 
@@ -335,14 +329,18 @@ for _,plr in pairs(Players:GetPlayers()) do setupPlayerESP(plr) end
 Players.PlayerAdded:Connect(setupPlayerESP)
 Players.PlayerRemoving:Connect(cleanPlayerESP)
 
--- Fix: re-scan every 1s for characters that streamed in without triggering CharacterAdded
+local _espScanEvent = Instance.new("BindableEvent")
 task.spawn(function()
-    while task.wait(1) do
-        if not CFG.Enabled then continue end
-        for _,plr in pairs(Players:GetPlayers()) do
-            if plr ~= LP and plr.Character and plr.Character.Parent and not ESPObjects[plr.Character] then
-                spawnESP(plr.Character, plr)
+    while true do
+        _espScanEvent.Event:Wait()
+        while CFG.Enabled do
+            for _,plr in pairs(Players:GetPlayers()) do
+                if plr ~= LP and plr.Character and plr.Character.Parent
+                    and not ESPObjects[plr.Character] then
+                    spawnESP(plr.Character, plr)
+                end
             end
+            task.wait(1)
         end
     end
 end)
@@ -379,7 +377,6 @@ task.spawn(function()
     end)
 end)
 
--- TAB: MENU
 local FarmTab = Window:Tab({Title="Menu", Icon="wheat", Locked=false})
 local DepositRemote, FarmRunning = nil, false
 local BACKPACK_GUI = "Backpack_Never"
@@ -491,7 +488,6 @@ local function patchDropdownIcons()
     injectIconsIntoDropdown()
 end
 
--- watch เฉพาะ WindUIGui สำหรับ dropdown list ที่เปิดใหม่
 task.spawn(function()
     local watchTarget = WindUIGui or LP.PlayerGui
     watchTarget.DescendantAdded:Connect(function(obj)
@@ -805,6 +801,7 @@ ESPMain:Toggle({
             for c2,_ in pairs(ESPObjects) do if not c2 or not c2.Parent then RemoveESP(c2) end end
             for _,plr in pairs(Players:GetPlayers()) do if plr~=LP and plr.Character then spawnESP(plr.Character,plr) end end
             if CFG.NPCSESP then task.spawn(ScanWorkspace) end
+        _espScanEvent:Fire()
         end
         SaveCFG()
     end,
