@@ -15,7 +15,19 @@ LP.CharacterAdded:Connect(updateChar)
 local folderName = "PlantedTrees_"..LP.UserId
 local allTrees, parentFolder, giveWaterRemote
 
+local _pgBefore = {}
+for _, c in ipairs(LP.PlayerGui:GetChildren()) do _pgBefore[c] = true end
+
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
+-- SnapShot ScreenGui ที่ WindUI เพิ่มเข้ามา (ใช้กรอง inject ไม่ให้ไปโดน UI ของเกม)
+local WindUIGui = nil
+for _, c in ipairs(LP.PlayerGui:GetChildren()) do
+    if not _pgBefore[c] and c:IsA("ScreenGui") then
+        WindUIGui = c; break
+    end
+end
+_pgBefore = nil
 
 local SpectreAccent = Color3.fromRGB(139,92,246)
 pcall(function()
@@ -162,14 +174,18 @@ workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function() Camera=wo
 
 local function GetBoundingBox(hrp, vpY)
     if not hrp or not hrp.Parent then return nil end
+    if not Camera then return nil end
     local pos = hrp.Position
     local center = Camera:WorldToViewportPoint(pos)
-    if center.Z <= 0 then return nil end
+    if not center or center.Z <= 0 then return nil end
     local vpSizeY = vpY or Camera.ViewportSize.Y
+    if not vpSizeY then return nil end
     local top    = Camera:WorldToViewportPoint(pos + Vector3.new(0,  2.80, 0))
     local bottom = Camera:WorldToViewportPoint(pos + Vector3.new(0, -2.75, 0))
+    if not top or not bottom then return nil end
     local topY    = (top.Z    <= 0) and 0       or top.Y
     local bottomY = (bottom.Z <= 0) and vpSizeY or bottom.Y
+    if not topY or not bottomY then return nil end
     local h = bottomY - topY
     if h < 2 then return nil end
     local w = h * 0.42
@@ -224,9 +240,13 @@ local function CreateESP(c, forcePlr)
     if CFG.BypassAntiESP and not obj.isNPC then applyBypass(c) end
 end
 
+local _drawKeys = {"boxTop","boxBot","boxLeft","boxRight","hpBG","hpFill","nameLabel","distLabel","hpLabel"}
+local _pendingESP = {}   -- char → true while a spawnESP coroutine is in-flight
+
 local function RemoveESP(c)
     local obj=ESPObjects[c]; if not obj then return end
     ESPObjects[c]=nil
+    _pendingESP[c]=nil   -- unblock any future spawnESP for this character
     for _,k in ipairs(_drawKeys) do pcall(function() obj[k]:Remove() end) end
     removeBypass(c)
 end
@@ -234,8 +254,10 @@ end
 local _toRemove = {}
 RunService.RenderStepped:Connect(function()
     if not CFG.Enabled then return end
+    if not Camera then return end
     local myHRP = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
     local frameThickness, frameBoxColor, frameVpY = CFG.BoxThickness, CFG.BoxColor, Camera.ViewportSize.Y
+    if not frameVpY then return end
     local myPos = myHRP and myHRP.Position
     local ri = 0
 
@@ -294,9 +316,12 @@ local function cleanPlayerESP(plr)
     for _,oldChar in ipairs(toClean) do RemoveESP(oldChar) end
 end
 local function spawnESP(c2,plr)
+    if _pendingESP[c2] then return end   -- already waiting; avoid task pileup
+    _pendingESP[c2] = true
     task.spawn(function()
-        pcall(function() c2:WaitForChild("HumanoidRootPart",10) end)
-        pcall(function() c2:WaitForChild("Humanoid",10) end)
+        pcall(function() c2:WaitForChild("HumanoidRootPart",5) end)
+        pcall(function() c2:WaitForChild("Humanoid",5) end)
+        _pendingESP[c2] = nil
         if c2 and c2.Parent then CreateESP(c2,plr) end
     end)
 end
@@ -315,7 +340,7 @@ task.spawn(function()
     while task.wait(1) do
         if not CFG.Enabled then continue end
         for _,plr in pairs(Players:GetPlayers()) do
-            if plr ~= LP and plr.Character and not ESPObjects[plr.Character] then
+            if plr ~= LP and plr.Character and plr.Character.Parent and not ESPObjects[plr.Character] then
                 spawnESP(plr.Character, plr)
             end
         end
@@ -348,7 +373,7 @@ task.spawn(function()
     LP.CharacterAdded:Connect(function()
         task.wait(1)
         for _,plr in pairs(Players:GetPlayers()) do
-            if plr~=LP and plr.Character and not ESPObjects[plr.Character] then spawnESP(plr.Character,plr) end
+            if plr~=LP and plr.Character and plr.Character.Parent and not ESPObjects[plr.Character] then spawnESP(plr.Character,plr) end
         end
         ScanWorkspace()
     end)
@@ -425,30 +450,37 @@ local function injectIconsIntoDropdown()
     task.delay(0.15, function()
         _injectPending = false
         pcall(function()
-            for _,root in ipairs(LP.PlayerGui:GetChildren()) do
-                if not root:IsA("ScreenGui") then continue end
-                for _,lbl in ipairs(root:GetDescendants()) do
-                    if lbl:IsA("TextLabel") and FarmItemMap[lbl.Text] then
-                        local entry = FarmItemMap[lbl.Text]
-                        if not entry or not entry.icon then continue end
-                        local p = lbl.Parent
-                        if not p then continue end
-                        -- ข้ามถ้ามี SW_Icon อยู่แล้ว
-                        if p:FindFirstChild("SW_Icon") then
-                            p:FindFirstChild("SW_Icon").Image = entry.icon
-                            continue
-                        end
-                        local img = Instance.new("ImageLabel")
-                        img.Name = "SW_Icon"
-                        img.BackgroundTransparency = 1
-                        img.Size = UDim2.fromOffset(20, 20)
-                        img.Position = UDim2.new(0, 4, 0.5, -10)
-                        img.Image = entry.icon
-                        img.ZIndex = lbl.ZIndex + 1
-                        img.Parent = p
-                        -- เลื่อน TextLabel ออกไปทางขวา
-                        pcall(function() lbl.Position = UDim2.new(0, 28, lbl.Position.Y.Scale, lbl.Position.Y.Offset) end)
+            -- ถ้าไม่มี WindUIGui ให้ fallback หา ScreenGui ใหม่อีกครั้ง (กันกรณี respawn gui)
+            if not WindUIGui or not WindUIGui.Parent then
+                for _, c in ipairs(LP.PlayerGui:GetChildren()) do
+                    if c:IsA("ScreenGui") and c:FindFirstChildWhichIsA("Frame", true) then
+                        -- หา ScreenGui ที่ไม่ใช่ CoreGui / GameGui (ไม่มี ResetOnSpawn=true ส่วนใหญ่)
+                        if not c.ResetOnSpawn then WindUIGui = c; break end
                     end
+                end
+            end
+            -- scan เฉพาะใน WindUIGui เท่านั้น ไม่แตะ UI ของเกม
+            local scanRoot = WindUIGui
+            if not scanRoot then return end
+            for _, lbl in ipairs(scanRoot:GetDescendants()) do
+                if lbl:IsA("TextLabel") and FarmItemMap[lbl.Text] then
+                    local entry = FarmItemMap[lbl.Text]
+                    if not entry or not entry.icon then continue end
+                    local p = lbl.Parent
+                    if not p then continue end
+                    if p:FindFirstChild("SW_Icon") then
+                        p:FindFirstChild("SW_Icon").Image = entry.icon
+                        continue
+                    end
+                    local img = Instance.new("ImageLabel")
+                    img.Name = "SW_Icon"
+                    img.BackgroundTransparency = 1
+                    img.Size = UDim2.fromOffset(20, 20)
+                    img.Position = UDim2.new(0, 4, 0.5, -10)
+                    img.Image = entry.icon
+                    img.ZIndex = lbl.ZIndex + 1
+                    img.Parent = p
+                    pcall(function() lbl.Position = UDim2.new(0, 28, lbl.Position.Y.Scale, lbl.Position.Y.Offset) end)
                 end
             end
         end)
@@ -459,9 +491,12 @@ local function patchDropdownIcons()
     injectIconsIntoDropdown()
 end
 
--- watch WindUI ScreenGui สำหรับ dropdown list ที่เปิดใหม่
+-- watch เฉพาะ WindUIGui สำหรับ dropdown list ที่เปิดใหม่
 task.spawn(function()
-    LP.PlayerGui.DescendantAdded:Connect(function(obj)
+    local watchTarget = WindUIGui or LP.PlayerGui
+    watchTarget.DescendantAdded:Connect(function(obj)
+        -- ถ้า watch PlayerGui (fallback) ให้เช็คว่า obj อยู่ใน WindUIGui scope
+        if watchTarget == LP.PlayerGui and WindUIGui and not obj:IsDescendantOf(WindUIGui) then return end
         if obj:IsA("TextLabel") and FarmItemMap[obj.Text] then
             task.delay(0.05, injectIconsIntoDropdown)
         end
@@ -824,11 +859,6 @@ task.spawn(function() task.wait(2); rebuildBLDropdown() end)
 local TeleportTab = Window:Tab({Title="Teleport", Icon="map-pin", Locked=false})
 
 local Locations = {
-    {Title="🛒 ที่ขายของ",        Position=Vector3.new(10559,-328,-3839)},
-    {Title="🌶️ เก็บพริก",        Position=Vector3.new(7319,-295,-616)},
-    {Title="🥕 เก็บแครอท",        Position=Vector3.new(10311,-293,27)},
-    {Title="🥛 เก็บนม",           Position=Vector3.new(-3782,-295,3153)},
-    {Title="🍅 เก็บมะเขือเทศ",   Position=Vector3.new(-9181,-260,-238)},
     {Title="เรเบล",               Position=Vector3.new(2007,-321,-6963)},
     {Title="⛏️เหมืองทอง+เหล็ก", Position=Vector3.new(-9538,-311,4862)},
     {Title="ที่โพ เหล็ก+ทอง",    Position=Vector3.new(-265,-321,-3122)},
@@ -854,7 +884,7 @@ TeleportTab:Button({Title="Teleport", Desc="กด Teleport ไปยังส�
                 for _,delay in ipairs({0.3,1,2}) do
                     task.wait(delay)
                     for _,plr in pairs(Players:GetPlayers()) do
-                        if plr~=LP and plr.Character and not ESPObjects[plr.Character] then spawnESP(plr.Character,plr) end
+                        if plr~=LP and plr.Character and plr.Character.Parent and not ESPObjects[plr.Character] then spawnESP(plr.Character,plr) end
                     end
                     if CFG.NPCSESP then ScanWorkspace() end
                 end
