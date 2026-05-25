@@ -226,7 +226,7 @@ local function CreateESP(c, forcePlr)
         boxTop=NewLine(), boxBot=NewLine(), boxLeft=NewLine(), boxRight=NewLine(),
         hpBG=NewRect(), hpFill=NewRect(),
         nameLabel=NewText(CFG.NameSize), distLabel=NewText(11,Color3.fromRGB(200,200,200)), hpLabel=NewText(10),
-        hrp=hrp, hum=hum2, plr=plr, isNPC=not plr and IsNPC(c), _vis=false, char=c,
+        hrp=hrp, hum=hum2, plr=plr, isNPC=not plr and IsNPC(c), _vis=false, char=c, _hideFrames=0,
     }
     obj.sides = {obj.boxTop, obj.boxBot, obj.boxLeft, obj.boxRight}
     obj.hpBG.Color=Color3.fromRGB(30,30,30); obj.hpBG.Transparency=0.4
@@ -262,14 +262,22 @@ RunService.RenderStepped:Connect(function()
         if not obj.hum or not obj.hum.Parent then obj.hum=c2:FindFirstChildOfClass("Humanoid") end
         local hrp2,hum2 = obj.hrp, obj.hum
         if not hrp2 or not hrp2.Parent or not hum2 or not hum2.Parent
-            or (CFG.HideDeadESP and hum2.Health<=0) then hideObj(obj); continue end
+            or (CFG.HideDeadESP and hum2.Health<=0) then
+            obj._hideFrames = (obj._hideFrames or 0) + 1
+            if obj._hideFrames >= 5 then hideObj(obj) end
+            continue
+        end
         local charName = obj.plr and obj.plr.Name or c2.Name
         if Blacklist[charName] then hideObj(obj); continue end
         local dist = myPos and (myPos-hrp2.Position).Magnitude or math.huge
         if dist > CFG.MaxDist then hideObj(obj); continue end
         local x1,y1,x2,y2 = GetBoundingBox(hrp2, frameVpY)
-        if not x1 then hideObj(obj); continue end
-
+        if not x1 then
+            obj._hideFrames = (obj._hideFrames or 0) + 1
+            if obj._hideFrames >= 5 then hideObj(obj) end
+            continue
+        end
+        obj._hideFrames = 0
         obj._vis=true
         local h,cx = y2-y1, (x1+x2)*0.5
         local lineColor = obj.isNPC and Color3.fromRGB(255,80,80) or frameBoxColor
@@ -856,7 +864,8 @@ task.spawn(function() task.wait(2); rebuildBLDropdown() end)
 local TeleportTab = Window:Tab({Title="Teleport", Icon="map-pin", Locked=false})
 
 local Locations = {
-    {Title="เรเบล",               Position=Vector3.new(2007,-321,-6963)},
+    {Title="เรเบล",               Position=Vector3.new(2717, 18, -4659)},
+     {Title="ขายของ",               Position=Vector3.new(4188, 6, 68)},
     {Title="⛏️เหมืองทอง+เหล็ก", Position=Vector3.new(-9538,-311,4862)},
     {Title="ที่โพ เหล็ก+ทอง",    Position=Vector3.new(-265,-321,-3122)},
     {Title="ปลูกแคนดี้",          Position=Vector3.new(-403,-324,-1617)},
