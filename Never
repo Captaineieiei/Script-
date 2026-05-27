@@ -263,7 +263,7 @@ RunService.RenderStepped:Connect(function()
         local hrp2,hum2 = obj.hrp, obj.hum
         if not hrp2 or not hrp2.Parent or not hum2 or not hum2.Parent
             or (CFG.HideDeadESP and hum2.Health<=0) then
-            obj._hideFrames = (obj._hideFrames or 0) + 1
+            obj._hideFrames += 1
             if obj._hideFrames >= 5 then hideObj(obj) end
             continue
         end
@@ -273,7 +273,7 @@ RunService.RenderStepped:Connect(function()
         if dist > CFG.MaxDist then hideObj(obj); continue end
         local x1,y1,x2,y2 = GetBoundingBox(hrp2, frameVpY)
         if not x1 then
-            obj._hideFrames = (obj._hideFrames or 0) + 1
+            obj._hideFrames += 1
             if obj._hideFrames >= 5 then hideObj(obj) end
             continue
         end
@@ -321,8 +321,7 @@ local function spawnESP(c2,plr)
     if _pendingESP[c2] then return end   -- already waiting; avoid task pileup
     _pendingESP[c2] = true
     task.spawn(function()
-        pcall(function() c2:WaitForChild("HumanoidRootPart",5) end)
-        pcall(function() c2:WaitForChild("Humanoid",5) end)
+        pcall(function() c2:WaitForChild("HumanoidRootPart",5); c2:WaitForChild("Humanoid",5) end)
         _pendingESP[c2] = nil
         if c2 and c2.Parent then CreateESP(c2,plr) end
     end)
@@ -370,7 +369,9 @@ local function ScanWorkspace()
     end
 end
 workspace.ChildAdded:Connect(function(obj)
-    if obj:IsA("Model") then task.wait(0.3); if IsNPC(obj) and CFG.NPCSESP and CFG.Enabled then CreateESP(obj) end end
+    if obj:IsA("Model") then
+        task.delay(0.3, function() if IsNPC(obj) and CFG.NPCSESP and CFG.Enabled then CreateESP(obj) end end)
+    end
 end)
 workspace.ChildRemoved:Connect(function(obj) if ESPObjects[obj] then RemoveESP(obj) end end)
 
@@ -398,15 +399,24 @@ end
 
 local function loadBackpackItems()
     local titles, itemMap = {}, {}
-    local ok,scrolling = pcall(function()
-        return LP.PlayerGui:WaitForChild(BACKPACK_GUI,5):WaitForChild("BG",5)
-            :WaitForChild("item",5):WaitForChild("Scrollingitem",5)
-    end)
-    if ok and scrolling then
+    -- fast path: ใช้ FindFirstChild ก่อน ไม่ต้อง yield ถ้า GUI โหลดแล้ว
+    local scrolling = getScrolling()
+    if not scrolling then
+        local ok, s = pcall(function()
+            return LP.PlayerGui:WaitForChild(BACKPACK_GUI,5):WaitForChild("BG",5)
+                :WaitForChild("item",5):WaitForChild("Scrollingitem",5)
+        end)
+        if ok then scrolling = s end
+    end
+    if scrolling then
+        local count = 0
         for _,slot in ipairs(scrolling:GetChildren()) do
             if not slot:IsA("Frame") then continue end
             local name = slot.Name
             if name == "" or name == "Animation" then continue end
+            -- yield ทุก 10 slot เพื่อป้องกัน frame freeze
+            count = count + 1
+            if count % 10 == 0 then task.wait() end
             local max = 60
             local nl = name:lower()
             if nl:find("stone") or nl:find("gold") or nl:find("iron") then max = 500 end
@@ -445,6 +455,7 @@ local FarmItemTitles = {PLACEHOLDER}
 local FarmItemMap    = {[PLACEHOLDER]={Title=PLACEHOLDER, value="", max=60}}
 local SelectedItem   = FarmItemMap[FarmItemTitles[1]]
 local CustomMax      = 60
+local CustomMaxSet   = false
 local ItemDropdown   = nil
 local FarmSection    = FarmTab:Section({Title="⚙️ ตั้งค่าของที่จะเก็บใส่ตู้", Opened=true})
 -- inject รูป item เข้า WindUI dropdown list โดยตรง
@@ -492,9 +503,6 @@ local function injectIconsIntoDropdown()
     end)
 end
 
-local function patchDropdownIcons()
-    injectIconsIntoDropdown()
-end
 
 task.spawn(function()
     local watchTarget = WindUIGui or LP.PlayerGui
@@ -528,11 +536,11 @@ local function createItemDropdown(titles, itemMap)
             Callback=function(option)
                 local key=type(option)=="table" and option.Title or tostring(option)
                 SelectedItem=FarmItemMap[key]; if SelectedItem then CustomMax=SelectedItem.max end
-                patchDropdownIcons() -- patch button area ทุกครั้งที่เลือก
+                injectIconsIntoDropdown()
             end,
         })
     end
-    patchDropdownIcons()
+    injectIconsIntoDropdown()
     if not SelectedItem or SelectedItem.value=="" then
         SelectedItem=itemMap[titles[1]]; CustomMax=(SelectedItem and SelectedItem.max) or 60
     end
@@ -557,7 +565,7 @@ createItemDropdown(FarmItemTitles, FarmItemMap); reloadItems()
 FarmSection:Input({
     Title="จำนวนของที่จะเก็บก่อน Deposit", Desc="พิมตัวเลข เช่น 30 / 60 / 500",
     Placeholder=tostring(CustomMax), Numeric=true, Finished=true,
-    Callback=function(value) local num=tonumber(value); if num and num>0 then CustomMax=num end end,
+    Callback=function(value) local num=tonumber(value); if num and num>0 then CustomMax=num; CustomMaxSet=true end end,
 })
 FarmSection:Button({Title="Reload Items", Desc="กดถ้า Dropdown ยังแสดง placeholder", Icon="refresh-cw", Callback=reloadItems})
 FarmSection:Paragraph({Title="📦 จำนวนปัจจุบัน", Desc="__AMOUNT_INIT__"})
@@ -567,7 +575,7 @@ task.spawn(function()
     if AmountDescLabel then AmountDescLabel.Text="-- รอเลือกไอเทม..." end
 end)
 
-local slotLabelCache={}
+local slotLabelCache = setmetatable({}, {__mode="k"})
 local function getSlotCount(slot)
     local lbl=slotLabelCache[slot]
     if not lbl or not lbl.Parent then
@@ -601,15 +609,34 @@ task.spawn(function()
     end
 end)
 
-FarmSection:Toggle({
+local AutoFarmToggle = FarmSection:Toggle({
     Title="Auto Farm", Desc="เปิด = เริ่มเก็บ  |  ปิด = หยุดเก็บ", Icon="zap", Value=false,
     Callback=function(state)
-        if state and (not SelectedItem or SelectedItem.value=="") then
-            FarmRunning=false
-            WindUI:Notify({Title="⚠️ ยังไม่เลือกของ", Content="กรุณาเลือกของที่จะเก็บก่อนเปิด Auto Farm", Duration=4})
+        if state then
+            local noItem = not SelectedItem or SelectedItem.value==""
+            local noAmt  = not CustomMaxSet
+            if noItem and noAmt then
+                FarmRunning=false
+                WindUI:Notify({Title="⚠️ ยังไม่ได้ตั้งค่า", Content="กรุณาเลือกของและกรอกจำนวนก่อนเปิด Auto Farm", Duration=4})
+                task.defer(function() pcall(function() AutoFarmToggle:Set(false) end) end)
+                return
+            elseif noItem then
+                FarmRunning=false
+                WindUI:Notify({Title="⚠️ ยังไม่เลือกของ", Content="กรุณาเลือกของที่จะเก็บก่อนเปิด Auto Farm", Duration=4})
+                task.defer(function() pcall(function() AutoFarmToggle:Set(false) end) end)
+                return
+            elseif noAmt then
+                FarmRunning=false
+                WindUI:Notify({Title="⚠️ ยังไม่ได้กรอกจำนวน", Content="กรุณากรอกจำนวนของที่จะเก็บก่อน Deposit", Duration=4})
+                task.defer(function() pcall(function() AutoFarmToggle:Set(false) end) end)
+                return
+            end
+        end
+        FarmRunning=state
+        if not state then
+            WindUI:Notify({Title="🛑 Auto Farm ปิด", Content="หยุดเก็บของแล้ว", Duration=3})
             return
         end
-        FarmRunning=state; if not state then return end
         task.spawn(function()
             if not DepositRemote then
                 task.wait(0.5)
@@ -624,6 +651,7 @@ FarmSection:Toggle({
                 WindUI:Notify({Title="❌ Auto Farm หยุด", Content="ไม่พบ DepositRemote กรุณา Rejoin", Duration=5})
                 return
             end
+            WindUI:Notify({Title="🟢 Auto Farm เปิด", Content="กำลังเก็บ: "..SelectedItem.value, Duration=3})
             local farmScrolling
             while FarmRunning do
                 pcall(function()
@@ -941,12 +969,11 @@ local function setFullbright(state)
     FullbrightEnabled=state
     if state then
         captureOrigLighting(); applyFullbright()
-        _fbConn = RunService.RenderStepped:Connect(function()
-            if not FullbrightEnabled then _fbConn:Disconnect(); _fbConn=nil; return end
-            applyFullbright()
+        _fbConn = task.spawn(function()
+            while FullbrightEnabled do applyFullbright(); task.wait(0.5) end
         end)
     else
-        if _fbConn then _fbConn:Disconnect(); _fbConn=nil end
+        _fbConn = nil   -- loop exits on next iteration
         restoreOrigLighting()
     end
 end
