@@ -1,20 +1,15 @@
--- SpectreWare | ConfigLib v1.0
--- Usage:
---   local Cfg = loadstring(game:HttpGet("RAW_URL"))()
---   local CFG, Save, Load = Cfg.new("MyScript.json", boolKeys, numKeys, colorKeys, defaults)
-
 local HttpService = game:GetService("HttpService")
 
 local ConfigLib = {}
 
 function ConfigLib.new(filename, boolKeys, numKeys, colorKeys, defaults)
-    -- colorKeys = {"BoxColor", ...}  → stored as {R,G,B}
+   
     boolKeys   = boolKeys   or {}
     numKeys    = numKeys    or {}
     colorKeys  = colorKeys  or {}
 
     local CFG = {}
-    -- apply defaults
+
     if defaults then for k,v in pairs(defaults) do CFG[k]=v end end
 
     local function c3t(c) return {c.R, c.G, c.B} end
