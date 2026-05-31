@@ -134,8 +134,26 @@ local function setAmount(text)
 end
 
 -- ── ESP ──
-local ESPObjects = {}
-local _bypassTick = {}
+local ESPObjects   = {}
+local _espPartCache = {}   -- model -> {BasePart, ...}  rebuilt on demand
+
+-- โฟลเดอร์ที่ไม่ต้องการ ESP (NPC ใน folder เหล่านี้จะถูกข้ามทั้งหมด)
+local ESP_EXCLUDE_PATHS = {
+    {"System", "[Server] Npc_Seal"},
+    {"System", "[Prompt] Team"},
+    {"Farmer_1"},
+}
+local function isESPExcluded(model)
+    for _,path in ipairs(ESP_EXCLUDE_PATHS) do
+        local node = workspace
+        for _,name in ipairs(path) do
+            node = node:FindFirstChild(name)
+            if not node then break end
+        end
+        if node and (model == node or model:IsDescendantOf(node)) then return true end
+    end
+    return false
+end
 
 local function newLine(thick, color)
     local d=Drawing.new("Line"); d.Thickness=thick; d.Color=color; d.Transparency=1; d.Visible=false; return d
@@ -153,6 +171,7 @@ local function makeESP(model, isNPC)
         nameLabel= newText(CFG.NameSize,   Color3.new(1,1,1)),
         distLabel= newText(11,             Color3.fromRGB(200,200,200)),
         hpText   = newText(10,             Color3.fromRGB(200,255,200)),
+        hideTick = 0,  -- debounce: ซ่อนจริงหลัง fail ติดกัน N frame
     }
 end
 
@@ -163,6 +182,7 @@ local function removeESP(model)
         pcall(function() obj[k]:Remove() end)
     end
     ESPObjects[model]=nil
+    _espPartCache[model]=nil
 end
 
 local function setVisible(obj, v)
@@ -171,36 +191,72 @@ local function setVisible(obj, v)
     obj.distLabel.Visible=v; obj.hpText.Visible=v
 end
 
+local HIDE_DEBOUNCE = 3  -- ต้อง fail ติดกัน N frame ถึงซ่อนจริง
+
 RunService.RenderStepped:Connect(function()
     if not CFG.Enabled then return end
     local Camera = workspace.CurrentCamera
-    local now    = tick()
     for model, obj in pairs(ESPObjects) do
         pcall(function()
             local root = model:FindFirstChild("HumanoidRootPart")
             local hum  = model:FindFirstChildOfClass("Humanoid")
-            if not root or not hum then setVisible(obj,false); return end
-            if CFG.HideDeadESP and hum.Health<=0 then setVisible(obj,false); return end
+            if not root or not hum then
+                obj.hideTick = obj.hideTick + 1
+                if obj.hideTick >= HIDE_DEBOUNCE then setVisible(obj,false) end
+                return
+            end
+            if CFG.HideDeadESP and hum.Health<=0 then
+                obj.hideTick = obj.hideTick + 1
+                if obj.hideTick >= HIDE_DEBOUNCE then setVisible(obj,false) end
+                return
+            end
 
             local myRoot = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
             local dist   = myRoot and (myRoot.Position-root.Position).Magnitude or 0
-            if dist>CFG.MaxDist then setVisible(obj,false); return end
+            if dist>CFG.MaxDist then
+                obj.hideTick = obj.hideTick + 1
+                if obj.hideTick >= HIDE_DEBOUNCE then setVisible(obj,false) end
+                return
+            end
 
             if not obj.isNPC then
                 local plr=Players:GetPlayerFromCharacter(model)
-                if not plr then setVisible(obj,false); return end
-                if CFG.HideFriends and FriendSet[plr.UserId] then setVisible(obj,false); return end
+                if not plr then
+                    obj.hideTick = obj.hideTick + 1
+                    if obj.hideTick >= HIDE_DEBOUNCE then setVisible(obj,false) end
+                    return
+                end
+                if CFG.HideFriends and FriendSet[plr.UserId] then
+                    obj.hideTick = obj.hideTick + 1
+                    if obj.hideTick >= HIDE_DEBOUNCE then setVisible(obj,false) end
+                    return
+                end
+            elseif isESPExcluded(model) then
+                removeESP(model); return
             end
 
-            if CFG.BypassAntiESP and (not _bypassTick[model] or (now-_bypassTick[model])>=0.5) then
-                _bypassTick[model]=now
-                for _,p in ipairs(model:GetDescendants()) do
-                    if p:IsA("BasePart") then pcall(function() p.LocalTransparencyModifier=0 end) end
+            if CFG.BypassAntiESP then
+                -- Run every frame using a cached part list so GetDescendants is only
+                -- called once per character (rebuilt automatically when cache is nil).
+                local parts = _espPartCache[model]
+                if not parts then
+                    parts = {}
+                    for _,p in ipairs(model:GetDescendants()) do
+                        if p:IsA("BasePart") then parts[#parts+1]=p end
+                    end
+                    _espPartCache[model] = parts
+                end
+                for _,p in ipairs(parts) do
+                    pcall(function() p.LocalTransparencyModifier=0 end)
                 end
             end
 
             local pos3, onScreen = Camera:WorldToViewportPoint(root.Position)
-            if not onScreen then setVisible(obj,false); return end
+            if not onScreen then
+                obj.hideTick = obj.hideTick + 1
+                if obj.hideTick >= HIDE_DEBOUNCE then setVisible(obj,false) end
+                return
+            end
 
             local head    = model:FindFirstChild("Head") or root
             local topPos3 = Camera:WorldToViewportPoint(head.Position+Vector3.new(0,head.Size.Y/2+0.3,0))
@@ -209,9 +265,16 @@ RunService.RenderStepped:Connect(function()
             local y1 = math.min(topPos3.Y, botPos3.Y)
             local y2 = math.max(topPos3.Y, botPos3.Y)
             local h  = y2 - y1
-            if h < 1 then setVisible(obj,false); return end
+            if h < 1 then
+                obj.hideTick = obj.hideTick + 1
+                if obj.hideTick >= HIDE_DEBOUNCE then setVisible(obj,false) end
+                return
+            end
             local w  = h*0.6
             local x1,x2 = cx-w/2, cx+w/2
+
+            -- ผ่านทุกเงื่อนไข: reset debounce แล้ววาด
+            obj.hideTick = 0
 
             for _,l in ipairs(obj.box) do l.Thickness=CFG.BoxThickness; l.Color=CFG.BoxColor end
             obj.box[1].From=Vector2.new(x1,y1); obj.box[1].To=Vector2.new(x2,y1); obj.box[1].Visible=true
@@ -220,11 +283,15 @@ RunService.RenderStepped:Connect(function()
             obj.box[4].From=Vector2.new(x2,y1); obj.box[4].To=Vector2.new(x2,y2); obj.box[4].Visible=true
 
             local hpR = math.clamp(hum.Health/math.max(hum.MaxHealth,1),0,1)
-            obj.hpBar.Thickness=CFG.HPBarWidth
-            obj.hpBar.Color=Color3.fromRGB(math.floor(255*(1-hpR)), math.floor(255*hpR), 0)
-            obj.hpBar.From=Vector2.new(x1-CFG.HPBarWidth-2, y2)
-            obj.hpBar.To  =Vector2.new(x1-CFG.HPBarWidth-2, y2-h*hpR)
-            obj.hpBar.Visible=CFG.ShowHP
+            -- แถบ HP แนวนอน อยู่ชิดขอบล่างในกล่อง (ง่ายต่อการอ่านระหว่างเล่น)
+            local hpColor = hpR > 0.5
+                and Color3.fromRGB(math.floor(255*(1-hpR)*2), 255, 0)
+                or  Color3.fromRGB(255, math.floor(255*hpR*2), 0)
+            obj.hpBar.Thickness = 3
+            obj.hpBar.Color     = hpColor
+            obj.hpBar.From      = Vector2.new(x1, y2-1)
+            obj.hpBar.To        = Vector2.new(x1+(x2-x1)*hpR, y2-1)
+            obj.hpBar.Visible   = CFG.ShowHP
 
             local plr = not obj.isNPC and Players:GetPlayerFromCharacter(model)
             obj.nameLabel.Text    =plr and plr.Name or model.Name
@@ -236,9 +303,9 @@ RunService.RenderStepped:Connect(function()
             obj.distLabel.Position=Vector2.new(cx, y2+2)
             obj.distLabel.Visible =CFG.ShowDist
 
-            obj.hpText.Text    =math.floor(hum.Health).."/"..math.floor(hum.MaxHealth)
-            obj.hpText.Position=Vector2.new(cx, y2+(CFG.ShowDist and 13 or 2))
-            obj.hpText.Visible =CFG.ShowHPText
+            obj.hpText.Text    = math.floor(hum.Health).."/"..math.floor(hum.MaxHealth)
+            obj.hpText.Position= Vector2.new(cx, y2+(CFG.ShowDist and 13 or 2))
+            obj.hpText.Visible = CFG.ShowHPText
         end)
     end
 end)
@@ -252,11 +319,14 @@ local function trackPlayer(plr)
         if not ok or not c.Parent then return end
         if ESPObjects[c] then removeESP(c) end
         makeESP(c, false)
+        c.DescendantAdded:Connect(function(d)
+            if d:IsA("BasePart") then _espPartCache[c]=nil end
+        end)
         c.AncestryChanged:Connect(function(_,p)
-            if not p then removeESP(c); _bypassTick[c]=nil end
+            if not p then removeESP(c); _espPartCache[c]=nil end
         end)
     end
-    local cr=plr.CharacterRemoving:Connect(function(c) removeESP(c); _bypassTick[c]=nil end)
+    local cr=plr.CharacterRemoving:Connect(function(c) removeESP(c); _espPartCache[c]=nil end)
     local ca=plr.CharacterAdded:Connect(function(c) task.spawn(onChar, c) end)
     if plr.Character then task.spawn(onChar, plr.Character) end
     _plrConns[plr]={ca,cr}
@@ -264,7 +334,7 @@ end
 Players.PlayerAdded:Connect(trackPlayer)
 Players.PlayerRemoving:Connect(function(plr)
     if _plrConns[plr] then for _,c in ipairs(_plrConns[plr]) do c:Disconnect() end; _plrConns[plr]=nil end
-    if plr.Character then removeESP(plr.Character); _bypassTick[plr.Character]=nil end
+    if plr.Character then removeESP(plr.Character); _espPartCache[plr.Character]=nil end
 end)
 for _,plr in ipairs(Players:GetPlayers()) do trackPlayer(plr) end
 
@@ -280,12 +350,13 @@ end
 function esp:ScanWorkspace()
     for _,obj in ipairs(workspace:GetDescendants()) do
         if obj:IsA("Model") and obj:FindFirstChildOfClass("Humanoid")
-        and not Players:GetPlayerFromCharacter(obj) and obj~=LP.Character then
+        and not Players:GetPlayerFromCharacter(obj) and obj~=LP.Character
+        and not isESPExcluded(obj) then
             if not ESPObjects[obj] then makeESP(obj, true) end
             if not _npcConns[obj] then
                 _npcConns[obj] = obj.AncestryChanged:Connect(function(_,p)
                     if not p then
-                        removeESP(obj); _bypassTick[obj]=nil
+                        removeESP(obj); _espPartCache[obj]=nil
                         if _npcConns[obj] then _npcConns[obj]:Disconnect(); _npcConns[obj]=nil end
                     end
                 end)
@@ -295,7 +366,7 @@ function esp:ScanWorkspace()
 end
 function esp:Clear()
     for model in pairs(ESPObjects) do removeESP(model) end
-    _bypassTick = {}
+    _espPartCache = {}
 end
 esp.RemoveAll = esp.Clear
 
@@ -803,7 +874,7 @@ local espToggles = {
     {"NPC ESP",               "แสดง ESP ของ NPC ในแผนที่",              "NPCSESP",      function(s) if s then task.spawn(function() esp:ScanWorkspace() end) end end},
     {"ซ่อน ESP ผู้เล่นที่ตาย","เปิด = ไม่แสดง ESP เมื่อ HP = 0",       "HideDeadESP",  nil},
     {"แสดงเลือด",             "แสดงแถบ HP",                             "ShowHP",       nil},
-    {"แสดงตัวเลข HP",         "แสดง HP/MaxHP ใต้กรอบ",                  "ShowHPText",   nil},
+    {"แสดงตัวเลข HP",         "แสดง % HP ใต้กล่อง เช่น 75%",            "ShowHPText",   nil},
     {"แสดงชื่อ",              "แสดงชื่อเหนือกรอบ",                      "ShowName",     nil},
     {"แสดงระยะห่าง",          "แสดงระยะ studs ใต้กรอบ",                 "ShowDist",     nil},
     {"ซ่อน ESP เพื่อน Roblox","เปิด = ไม่แสดง ESP ของผู้เล่นที่แอดเป็นเพื่อนใน Roblox","HideFriends",nil},
