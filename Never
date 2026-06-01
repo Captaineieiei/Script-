@@ -1,4 +1,4 @@
--- NEVER TOWN | SpectreWare by #CaptainZ v1.6.7
+-- NEVER TOWN | SpectreWare by #CaptainZ v1.6.8
 if not game:IsLoaded() then game.Loaded:Wait() end
 
 local Players    = game:GetService("Players")
@@ -87,7 +87,7 @@ Window:EditOpenButton({
     StrokeThickness=2, Color=ColorSequence.new(Color3.fromRGB(139,92,246),Color3.fromRGB(91,33,182)),
     OnlyMobile=true, Enabled=true, Draggable=true,
 })
-Window:Tag({Title="v1.6.7", Icon="github", Color=Color3.fromRGB(139,92,246), Radius=13})
+Window:Tag({Title="v1.6.8", Icon="github", Color=Color3.fromRGB(139,92,246), Radius=13})
 Window:SetIconSize(80)
 
 task.spawn(function()
@@ -386,6 +386,139 @@ local function getScrolling()
     return it:FindFirstChild("Scrollingitem")
 end
 
+-- ── Thai item name map ──
+local ITEM_THAI = {
+    -- ทรัพยากร
+    Iron        = "เหล็ก",
+    Gold        = "ทอง",
+    Stone       = "หิน",
+    Wood        = "ไม้",
+    Coal        = "ถ่านหิน",
+    Diamond     = "เพชร",
+    Crystal     = "คริสตัล",
+    -- ผัก/ผลไม้
+    Lettuce     = "ผักกาด",
+    Grape       = "องุ่น",
+    Tomato      = "มะเขือเทศ",
+    Carrot      = "แครอท",
+    Potato      = "มันฝรั่ง",
+    Corn        = "ข้าวโพด",
+    Pumpkin     = "ฟักทอง",
+    Strawberry  = "สตรอเบอรี่",
+    Watermelon  = "แตงโม",
+    Mushroom    = "เห็ด",
+    Cabbage     = "กะหล่ำ",
+    Onion       = "หัวหอม",
+    -- สกุลเงิน/โทเค็น
+    GemCoin     = "เหรียญอัญมณี",
+    LoopCoin    = "เหรียญลูป",
+    GoldCoin    = "เหรียญทอง",
+    -- อุปกรณ์
+    LockPick    = "กุญแจล็อค",
+    KeyLevel1   = "กุญแจ Lv1",
+    KeyLevel2   = "กุญแจ Lv2",
+    KeyLevel3   = "กุญแจ Lv3",
+    KeyLevel4   = "กุญแจ Lv4",
+    KeyLevel5   = "กุญแจ Lv5",
+    -- ของกิน
+    Candy       = "ลูกอม",
+    Bread       = "ขนมปัง",
+    Burger      = "เบอร์เกอร์",
+    Cake        = "เค้ก",
+    Donut       = "โดนัท",
+    Coffee      = "กาแฟ",
+    -- อื่นๆ ที่พบในเกม
+    Fertilizer  = "ปุ๋ย",
+    Seed        = "เมล็ดพันธุ์",
+    Rope        = "เชือก",
+    Barrel      = "ถัง",
+    Crate       = "ลัง",
+    Milk        = "นม",
+    Egg         = "ไข่",
+    Fish        = "ปลา",
+    Meat        = "เนื้อ",
+    Bone        = "กระดูก",
+    Fur         = "ขน",
+    Leather     = "หนัง",
+    Cloth       = "ผ้า",
+    String      = "เส้นด้าย",
+    Wire        = "ลวด",
+    Gear        = "เฟือง",
+    Scrap       = "เศษโลหะ",
+    Sand        = "ทราย",
+    Clay        = "ดินเหนียว",
+    Glass       = "กระจก",
+    Rubber      = "ยาง",
+    Oil         = "น้ำมัน",
+    Gasoline    = "น้ำมันเบนซิน",
+    Battery     = "แบตเตอรี่",
+    Circuit     = "วงจร",
+    Chip        = "ชิป",
+    Bolt        = "สลักเกลียว",
+    Nail        = "ตะปู",
+    Plank       = "แผ่นไม้",
+    Log         = "ท่อนไม้",
+    Stick       = "ไม้กาง",
+    Charcoal    = "ถ่าน",
+    Ash         = "เถ้า",
+    Fiber       = "เส้นใย",
+    Herb        = "สมุนไพร",
+    Flower      = "ดอกไม้",
+    Leaf        = "ใบไม้",
+    Root        = "ราก",
+    Berry       = "เบอร์รี่",
+    Apple       = "แอปเปิล",
+    Orange      = "ส้ม",
+    Banana      = "กล้วย",
+    Mango       = "มะม่วง",
+    Cherry      = "เชอร์รี่",
+    Lemon       = "มะนาว",
+    Pineapple   = "สับปะรด",
+    Coconut     = "มะพร้าว",
+    Wheat       = "ข้าวสาลี",
+    Rice        = "ข้าว",
+    Sugar       = "น้ำตาล",
+    Salt        = "เกลือ",
+    Pepper      = "พริกไทย",
+    Spice       = "เครื่องเทศ",
+    Honey       = "น้ำผึ้ง",
+    Wax         = "ขี้ผึ้ง",
+    Feather     = "ขนนก",
+    Shell       = "เปลือกหอย",
+    Pearl       = "ไข่มุก",
+    Ruby        = "ทับทิม",
+    Emerald     = "มรกต",
+    Sapphire    = "ไพลิน",
+    Amethyst    = "อเมทิสต์",
+    Obsidian    = "ออบซิเดียน",
+    Quartz      = "ควอตซ์",
+    Copper      = "ทองแดง",
+    Tin         = "ดีบุก",
+    Silver      = "เงิน",
+    Platinum    = "แพลตตินัม",
+    Titanium    = "ไทเทเนียม",
+    Steel       = "เหล็กกล้า",
+    Bronze      = "ทองสัมฤทธิ์",
+    Brass       = "ทองเหลือง",
+}
+
+local function getThaiName(name)
+    -- ลอง exact match ก่อน
+    if ITEM_THAI[name] then return ITEM_THAI[name] end
+    -- ลอง case-insensitive
+    local low = name:lower()
+    for k,v in pairs(ITEM_THAI) do
+        if k:lower() == low then return v end
+    end
+    return nil
+end
+
+local function formatItemTitle(name)
+    local thai = getThaiName(name)
+    if thai then return name.." ("..thai..")" end
+    return name
+end
+
 local function loadBackpackItems()
     local scrolling = getScrolling()
     if not scrolling then
@@ -431,8 +564,9 @@ local function loadBackpackItems()
                 if inner and inner.Image~="" then icon=inner.Image end
             end
 
-            table.insert(titles, name)
-            itemMap[name]={Title=name, value=name, max=max, icon=icon}
+            local displayName = formatItemTitle(name)
+            table.insert(titles, displayName)
+            itemMap[displayName]={Title=displayName, value=name, max=max, icon=icon}
         end
     end
     if #titles==0 then
