@@ -170,7 +170,7 @@ local function makeESP(model, isNPC)
         hpBar    = newLine(CFG.HPBarWidth, Color3.new(0,1,0)),
         nameLabel= newText(CFG.NameSize,   Color3.new(1,1,1)),
         distLabel= newText(11,             Color3.fromRGB(200,200,200)),
-        hpText   = newText(10,             Color3.fromRGB(200,255,200)),
+        hpText   = newText(16,             Color3.fromRGB(200,255,200)),
         hideTick = 0,  -- debounce: ซ่อนจริงหลัง fail ติดกัน N frame
     }
 end
@@ -287,10 +287,10 @@ RunService.RenderStepped:Connect(function()
             local hpColor = hpR > 0.5
                 and Color3.fromRGB(math.floor(255*(1-hpR)*2), 255, 0)
                 or  Color3.fromRGB(255, math.floor(255*hpR*2), 0)
-            obj.hpBar.Thickness = 3
+            obj.hpBar.Thickness = 6
             obj.hpBar.Color     = hpColor
-            obj.hpBar.From      = Vector2.new(x1, y2-1)
-            obj.hpBar.To        = Vector2.new(x1+(x2-x1)*hpR, y2-1)
+            obj.hpBar.From      = Vector2.new(x1, y2+4)
+            obj.hpBar.To        = Vector2.new(x1+(x2-x1)*hpR, y2+4)
             obj.hpBar.Visible   = CFG.ShowHP
 
             local plr = not obj.isNPC and Players:GetPlayerFromCharacter(model)
@@ -300,11 +300,15 @@ RunService.RenderStepped:Connect(function()
             obj.nameLabel.Visible =CFG.ShowName
 
             obj.distLabel.Text    =string.format("%.0f studs", dist)
-            obj.distLabel.Position=Vector2.new(cx, y2+2)
+            obj.distLabel.Position=Vector2.new(cx, y2+30)
             obj.distLabel.Visible =CFG.ShowDist
 
-            obj.hpText.Text    = math.floor(hum.Health).."/"..math.floor(hum.MaxHealth)
-            obj.hpText.Position= Vector2.new(cx, y2+(CFG.ShowDist and 13 or 2))
+            local hpPct = math.floor(hpR*100)
+            local dynSize = math.clamp(math.floor(28 - dist/12), 11, 28)
+            obj.hpText.Text    = hpPct.."%  ("..math.floor(hum.Health).."/"..math.floor(hum.MaxHealth)..")"
+            obj.hpText.Size    = dynSize
+            obj.hpText.Color   = hpColor
+            obj.hpText.Position= Vector2.new(cx, y2+12)
             obj.hpText.Visible = CFG.ShowHPText
         end)
     end
@@ -738,19 +742,23 @@ local function walkToTarget(model)
     local part=model:FindFirstChildWhichIsA("BasePart",true)
     local hum2=LP.Character and LP.Character:FindFirstChildOfClass("Humanoid")
     if not part or not hum2 then return false end
+    local origSpeed=hum2.WalkSpeed
+    hum2.WalkSpeed=32
     hum2:MoveTo(part.Position)
     local arrived=false
     local conn=hum2.MoveToFinished:Connect(function() arrived=true end)
     local t=os.clock()
-    repeat task.wait(0.5) until arrived or (os.clock()-t)>10
-    conn:Disconnect(); return arrived
+    repeat task.wait(0.1) until arrived or (os.clock()-t)>8
+    conn:Disconnect()
+    hum2.WalkSpeed=origSpeed
+    return arrived
 end
 
 local function checkAndWater(tree)
     local stats=tree:FindFirstChild("Stats"); if not stats then return end
     local wv=stats:FindFirstChild("Water");  if not wv or not giveWaterRemote then return end
-    if wv.Value<50 and walkToTarget(tree) then
-        while wv.Value<100 and autoWaterEnabled do giveWaterRemote:FireServer(); task.wait(0.5) end
+    if wv.Value<=49 and walkToTarget(tree) then
+        while wv.Value<100 and autoWaterEnabled do giveWaterRemote:FireServer(); task.wait(0.3) end
     end
 end
 
@@ -770,7 +778,7 @@ WaterSection:Toggle({
                         for _,tree in pairs(folder:GetChildren()) do
                             local stats=tree:FindFirstChild("Stats")
                             local wv=stats and stats:FindFirstChild("Water")
-                            if wv and wv.Value<50 then table.insert(allTreeList,tree) end
+                            if wv and wv.Value<=49 then table.insert(allTreeList,tree) end
                         end
                     end
                 end
