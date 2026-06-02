@@ -172,6 +172,7 @@ local function makeESP(model, isNPC)
         distLabel= newText(11,             Color3.fromRGB(200,200,200)),
         hpText   = newText(16,             Color3.fromRGB(200,255,200)),
         hideTick = 0,  -- debounce: ซ่อนจริงหลัง fail ติดกัน N frame
+        showTick = 0,  -- debounce: แสดงจริงหลัง pass ติดกัน N frame (กันกระพริบ)
     }
 end
 
@@ -191,7 +192,8 @@ local function setVisible(obj, v)
     obj.distLabel.Visible=v; obj.hpText.Visible=v
 end
 
-local HIDE_DEBOUNCE = 3  -- ต้อง fail ติดกัน N frame ถึงซ่อนจริง
+local HIDE_DEBOUNCE = 6  -- ต้อง fail ติดกัน N frame ถึงซ่อนจริง
+local SHOW_DEBOUNCE = 3  -- ต้อง pass ติดกัน N frame ถึงแสดงจริง (กันกระพริบขอบจอ)
 
 RunService.RenderStepped:Connect(function()
     if not CFG.Enabled then return end
@@ -200,37 +202,23 @@ RunService.RenderStepped:Connect(function()
         pcall(function()
             local root = model:FindFirstChild("HumanoidRootPart")
             local hum  = model:FindFirstChildOfClass("Humanoid")
-            if not root or not hum then
+            local function hideAndReturn()
+                obj.showTick = 0
                 obj.hideTick = obj.hideTick + 1
                 if obj.hideTick >= HIDE_DEBOUNCE then setVisible(obj,false) end
-                return
             end
-            if CFG.HideDeadESP and hum.Health<=0 then
-                obj.hideTick = obj.hideTick + 1
-                if obj.hideTick >= HIDE_DEBOUNCE then setVisible(obj,false) end
-                return
-            end
+
+            if not root or not hum then hideAndReturn(); return end
+            if CFG.HideDeadESP and hum.Health<=0 then hideAndReturn(); return end
 
             local myRoot = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
             local dist   = myRoot and (myRoot.Position-root.Position).Magnitude or 0
-            if dist>CFG.MaxDist then
-                obj.hideTick = obj.hideTick + 1
-                if obj.hideTick >= HIDE_DEBOUNCE then setVisible(obj,false) end
-                return
-            end
+            if dist>CFG.MaxDist then hideAndReturn(); return end
 
             if not obj.isNPC then
                 local plr=Players:GetPlayerFromCharacter(model)
-                if not plr then
-                    obj.hideTick = obj.hideTick + 1
-                    if obj.hideTick >= HIDE_DEBOUNCE then setVisible(obj,false) end
-                    return
-                end
-                if CFG.HideFriends and FriendSet[plr.UserId] then
-                    obj.hideTick = obj.hideTick + 1
-                    if obj.hideTick >= HIDE_DEBOUNCE then setVisible(obj,false) end
-                    return
-                end
+                if not plr then hideAndReturn(); return end
+                if CFG.HideFriends and FriendSet[plr.UserId] then hideAndReturn(); return end
             elseif isESPExcluded(model) then
                 removeESP(model); return
             end
@@ -251,36 +239,33 @@ RunService.RenderStepped:Connect(function()
                 end
             end
 
-            local pos3, onScreen = Camera:WorldToViewportPoint(root.Position)
-            if not onScreen then
-                obj.hideTick = obj.hideTick + 1
-                if obj.hideTick >= HIDE_DEBOUNCE then setVisible(obj,false) end
-                return
-            end
-
+            -- ใช้ head+root สองจุดเช็ค onScreen แทนจุดเดียว กันกระพริบขอบจอ
             local head    = model:FindFirstChild("Head") or root
             local topPos3 = Camera:WorldToViewportPoint(head.Position+Vector3.new(0,head.Size.Y/2+0.3,0))
             local botPos3 = Camera:WorldToViewportPoint(root.Position-Vector3.new(0,3,0))
+            local pos3, onScreen = Camera:WorldToViewportPoint(root.Position)
+            -- ถือว่า onScreen ถ้า root หรือ head อยู่ในจอ (กัน edge case ตัวอยู่ขอบ)
+            local _, headOnScreen = Camera:WorldToViewportPoint(head.Position)
+            if not onScreen and not headOnScreen then hideAndReturn(); return end
+
             local cx      = pos3.X
             local y1 = math.min(topPos3.Y, botPos3.Y)
             local y2 = math.max(topPos3.Y, botPos3.Y)
             local h  = y2 - y1
-            if h < 1 then
-                obj.hideTick = obj.hideTick + 1
-                if obj.hideTick >= HIDE_DEBOUNCE then setVisible(obj,false) end
-                return
-            end
+            if h < 1 then hideAndReturn(); return end
             local w  = h*0.6
             local x1,x2 = cx-w/2, cx+w/2
 
-            -- ผ่านทุกเงื่อนไข: reset debounce แล้ววาด
+            -- ผ่านทุกเงื่อนไข: reset hideTick, เพิ่ม showTick
             obj.hideTick = 0
+            obj.showTick = math.min(obj.showTick + 1, SHOW_DEBOUNCE)
+            local visible = obj.showTick >= SHOW_DEBOUNCE
 
             for _,l in ipairs(obj.box) do l.Thickness=CFG.BoxThickness; l.Color=CFG.BoxColor end
-            obj.box[1].From=Vector2.new(x1,y1); obj.box[1].To=Vector2.new(x2,y1); obj.box[1].Visible=true
-            obj.box[2].From=Vector2.new(x1,y2); obj.box[2].To=Vector2.new(x2,y2); obj.box[2].Visible=true
-            obj.box[3].From=Vector2.new(x1,y1); obj.box[3].To=Vector2.new(x1,y2); obj.box[3].Visible=true
-            obj.box[4].From=Vector2.new(x2,y1); obj.box[4].To=Vector2.new(x2,y2); obj.box[4].Visible=true
+            obj.box[1].From=Vector2.new(x1,y1); obj.box[1].To=Vector2.new(x2,y1); obj.box[1].Visible=visible
+            obj.box[2].From=Vector2.new(x1,y2); obj.box[2].To=Vector2.new(x2,y2); obj.box[2].Visible=visible
+            obj.box[3].From=Vector2.new(x1,y1); obj.box[3].To=Vector2.new(x1,y2); obj.box[3].Visible=visible
+            obj.box[4].From=Vector2.new(x2,y1); obj.box[4].To=Vector2.new(x2,y2); obj.box[4].Visible=visible
 
             local hpR = math.clamp(hum.Health/math.max(hum.MaxHealth,1),0,1)
             -- แถบ HP แนวนอน อยู่ชิดขอบล่างในกล่อง (ง่ายต่อการอ่านระหว่างเล่น)
@@ -291,17 +276,17 @@ RunService.RenderStepped:Connect(function()
             obj.hpBar.Color     = hpColor
             obj.hpBar.From      = Vector2.new(x1, y2+4)
             obj.hpBar.To        = Vector2.new(x1+(x2-x1)*hpR, y2+4)
-            obj.hpBar.Visible   = CFG.ShowHP
+            obj.hpBar.Visible   = CFG.ShowHP and visible
 
             local plr = not obj.isNPC and Players:GetPlayerFromCharacter(model)
             obj.nameLabel.Text    =plr and plr.Name or model.Name
             obj.nameLabel.Size    =CFG.NameSize
             obj.nameLabel.Position=Vector2.new(cx, y1-CFG.NameSize-2)
-            obj.nameLabel.Visible =CFG.ShowName
+            obj.nameLabel.Visible =CFG.ShowName and visible
 
             obj.distLabel.Text    =string.format("%.0f studs", dist)
             obj.distLabel.Position=Vector2.new(cx, y2+30)
-            obj.distLabel.Visible =CFG.ShowDist
+            obj.distLabel.Visible =CFG.ShowDist and visible
 
             local hpPct = math.floor(hpR*100)
             local dynSize = math.clamp(math.floor(28 - dist/12), 11, 28)
@@ -309,7 +294,7 @@ RunService.RenderStepped:Connect(function()
             obj.hpText.Size    = dynSize
             obj.hpText.Color   = hpColor
             obj.hpText.Position= Vector2.new(cx, y2+12)
-            obj.hpText.Visible = CFG.ShowHPText
+            obj.hpText.Visible = CFG.ShowHPText and visible
         end)
     end
 end)
