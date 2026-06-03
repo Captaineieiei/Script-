@@ -3,12 +3,14 @@ local HttpService = game:GetService("HttpService")
 local ConfigLib = {}
 
 function ConfigLib.new(filename, boolKeys, numKeys, colorKeys, defaults)
-   
+
     boolKeys   = boolKeys   or {}
     numKeys    = numKeys    or {}
     colorKeys  = colorKeys  or {}
 
-    local CFG = {}
+    local CFG        = {}
+    local _callbacks = {}
+    local _loaded    = false
 
     if defaults then for k,v in pairs(defaults) do CFG[k]=v end end
 
@@ -34,10 +36,20 @@ function ConfigLib.new(filename, boolKeys, numKeys, colorKeys, defaults)
             for _,k in ipairs(numKeys)   do if type(d[k])=="number"  then CFG[k]=d[k] end end
             for _,k in ipairs(colorKeys) do if type(d[k])=="table"   then CFG[k]=tc3(d[k]) end end
         end)
+        _loaded = true
+        for _, cb in ipairs(_callbacks) do task.defer(cb, CFG) end
+        _callbacks = {}
+    end
+
+    -- fire cb ทันที (deferred 1 frame) ถ้าโหลดแล้ว
+    -- ถ้ายังไม่โหลด queue ไว้รอ
+    local function OnLoaded(cb)
+        if _loaded then task.defer(cb, CFG)
+        else table.insert(_callbacks, cb) end
     end
 
     Load()
-    return CFG, Save, Load
+    return CFG, Save, Load, OnLoaded
 end
 
 return ConfigLib
