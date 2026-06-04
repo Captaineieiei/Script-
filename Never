@@ -1,4 +1,4 @@
--- NEVER TOWN | SpectreWare by #CaptainZ v1.6.8
+-- NEVER TOWN | SpectreWare by #CaptainZ v1.6.12
 if not game:IsLoaded() then game.Loaded:Wait() end
 
 local Players    = game:GetService("Players")
@@ -87,7 +87,7 @@ Window:EditOpenButton({
     StrokeThickness=2, Color=ColorSequence.new(Color3.fromRGB(139,92,246),Color3.fromRGB(91,33,182)),
     OnlyMobile=true, Enabled=true, Draggable=true,
 })
-Window:Tag({Title="v1.6.8", Icon="github", Color=Color3.fromRGB(139,92,246), Radius=13})
+Window:Tag({Title="v1.6.12", Icon="github", Color=Color3.fromRGB(139,92,246), Radius=13})
 Window:SetIconSize(80)
 
 task.spawn(function()
@@ -761,6 +761,8 @@ function buildWaterPickDropdown()
 end
 buildWaterPickDropdown()
 
+local WATER_REACH_DIST = 15  -- studs — ต้องอยู่ในระยะนี้ถึงจะรดน้ำได้
+
 local function walkToTarget(model)
     local part=model:FindFirstChildWhichIsA("BasePart",true)
     local hum2=LP.Character and LP.Character:FindFirstChildOfClass("Humanoid")
@@ -769,11 +771,17 @@ local function walkToTarget(model)
     hum2.WalkSpeed=32
     hum2:MoveTo(part.Position)
     local arrived=false
-    local conn=hum2.MoveToFinished:Connect(function() arrived=true end)
+    -- ✅ เช็ค reached parameter จริงๆ (false = roblox internal timeout, ไม่ถึง)
+    local conn=hum2.MoveToFinished:Connect(function(reached) arrived=reached end)
     local t=os.clock()
     repeat task.wait(0.1) until arrived or (os.clock()-t)>8
     conn:Disconnect()
     hum2.WalkSpeed=origSpeed
+    -- ✅ ตรวจระยะจริงเป็น ground truth (ครอบกรณี arrived แต่ internal timer expire)
+    local hrp=LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        return (hrp.Position - part.Position).Magnitude <= WATER_REACH_DIST
+    end
     return arrived
 end
 
@@ -791,7 +799,12 @@ local function checkAndWater(tree)
     local stats=tree:FindFirstChild("Stats"); if not stats then return end
     local wv=stats:FindFirstChild("Water");  if not wv or not giveWaterRemote then return end
     if math.floor(wv.Value)>=100 then return end
+    local treePart=tree:FindFirstChildWhichIsA("BasePart",true)
+    -- เดินไปหาต้น — ถ้าไม่ถึงจริงให้ข้าม
     if not walkToTarget(tree) then return end
+    -- ✅ double-check ระยะจริงก่อนรด (กัน edge case walkToTarget ผ่านแต่ drift ออก)
+    local hrp=LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+    if treePart and hrp and (hrp.Position-treePart.Position).Magnitude > WATER_REACH_DIST then return end
     local tries=0
     while math.floor(wv.Value)<100 and autoWaterEnabled do
         giveWaterRemote:FireServer(); task.wait(0.3)
@@ -848,54 +861,53 @@ task.spawn(function()
     task.wait(0.5); TreeStatusDescLabel=findLabelByText("__TREE_STATUS_INIT__")
     if TreeStatusDescLabel then
         pcall(function() TreeStatusDescLabel.RichText=true end)
-        TreeStatusDescLabel.Text="-- รอข้อมูล..."
+        TreeStatusDescLabel.Text="กรุณากด Reload Candy"
     end
 end)
 
-task.spawn(function()
-    while true do
-        pcall(function()
-            if not allTrees then return end
-            local lines={}
-            for _,folder in pairs(allTrees:GetChildren()) do
-                local uid=tonumber(folder.Name:match("PlantedTrees_(%d+)"))
-                local dname=uid and ((Players:GetPlayerByUserId(uid) or {}).Name or tostring(uid)) or folder.Name
-                local header=folder.Name==folderName and ("👤 ของฉัน ("..dname..")") or ("👥 "..dname)
-                local treeLines={}
-                for _,tree in pairs(folder:GetChildren()) do
-                    local stats=tree:FindFirstChild("Stats")
-                    if stats then
-                        local w=stats:FindFirstChild("Water"); local f=stats:FindFirstChild("Food"); local g=stats:FindFirstChild("Growth")
-                        local pad=string.rep(" ",math.max(0,10-#tree.Name))
-                        table.insert(treeLines, string.format(
-                            '<font face="Code">  %s%s | 💧%3d%%  🍬%3d%%  📈%3d%%</font>',
-                            tree.Name, pad,
-                            w and math.floor(w.Value) or 0,
-                            f and math.floor(f.Value) or 0,
-                            g and math.floor(g.Value) or 0
-                        ))
-                    end
-                end
-                if #treeLines>0 then
-                    table.insert(lines, header)
-                    for _,l in ipairs(treeLines) do table.insert(lines,l) end
+local function refreshTreeStatus()
+    pcall(function()
+        if not allTrees then return end
+        local lines={}
+        for _,folder in pairs(allTrees:GetChildren()) do
+            local uid=tonumber(folder.Name:match("PlantedTrees_(%d+)"))
+            local dname=uid and ((Players:GetPlayerByUserId(uid) or {}).Name or tostring(uid)) or folder.Name
+            local header=folder.Name==folderName and ("👤 ของฉัน ("..dname..")") or ("👥 "..dname)
+            local treeLines={}
+            for _,tree in pairs(folder:GetChildren()) do
+                local stats=tree:FindFirstChild("Stats")
+                if stats then
+                    local w=stats:FindFirstChild("Water"); local f=stats:FindFirstChild("Food"); local g=stats:FindFirstChild("Growth")
+                    local pad=string.rep(" ",math.max(0,10-#tree.Name))
+                    table.insert(treeLines, string.format(
+                        '<font face="Code">  %s%s | 💧%3d%%  🍬%3d%%  📈%3d%%</font>',
+                        tree.Name, pad,
+                        w and math.floor(w.Value) or 0,
+                        f and math.floor(f.Value) or 0,
+                        g and math.floor(g.Value) or 0
+                    ))
                 end
             end
-            if TreeStatusDescLabel and TreeStatusDescLabel.Parent then
-                TreeStatusDescLabel.Text=#lines>0 and table.concat(lines,"\n") or "-- ไม่พบต้นแคนดี้"
+            if #treeLines>0 then
+                table.insert(lines, header)
+                for _,l in ipairs(treeLines) do table.insert(lines,l) end
             end
-        end)
-        task.wait(8)
-    end
-end)
+        end
+        if TreeStatusDescLabel and TreeStatusDescLabel.Parent then
+            TreeStatusDescLabel.Text=#lines>0 and table.concat(lines,"\n") or "-- ไม่พบต้นแคนดี้"
+        end
+    end)
+end
 
+-- tree status แสดงเฉพาะเมื่อกดปุ่ม Reload Candy
 WaterSection:Button({
     Title="Reload Candy", Desc="โหลดข้อมูลต้นแคนดี้ใหม่ + รีเฟรชรายชื่อผู้เล่น", Icon="refresh-cw",
     Callback=function()
         task.spawn(function()
-            allTrees=workspace:WaitForChild("AllPlantedTrees",10)
-            parentFolder=allTrees and allTrees:WaitForChild(folderName,10) or nil
+            allTrees=workspace:FindFirstChild("AllPlantedTrees")
+            parentFolder=allTrees and allTrees:FindFirstChild(folderName) or nil
             task.wait(0.3); buildWaterPickDropdown()
+            refreshTreeStatus()
             WindUI:Notify({Title="🔄 รีเฟรชแล้ว", Content="อัพเดทรายชื่อผู้เล่นสำเร็จ", Duration=3})
         end)
     end,
@@ -997,24 +1009,34 @@ local _origLighting     = {}
 local _fbProps   = {"Ambient","OutdoorAmbient","Brightness","ClockTime","FogEnd","FogStart","GlobalShadows"}
 local _fbVals    = {Color3.new(1,1,1), Color3.new(1,1,1), 2, 14, 1e6, 1e6, false}
 local _fbFxTypes = {"Atmosphere","BloomEffect","ColorCorrectionEffect","SunRaysEffect","DepthOfFieldEffect"}
+local _fbConn    = nil   -- เก็บ connection แทน while loop
+local _fbGuard   = false -- กัน recursive จาก Lighting.Changed
 
 local function setLighting(vals)
     pcall(function()
-        for i,k in ipairs(_fbProps) do Lighting[k]=vals and vals[i] or _origLighting[k] end
+        for i,k in ipairs(_fbProps) do Lighting[k] = vals and vals[i] or _origLighting[k] end
         for _,fx in ipairs(Lighting:GetChildren()) do
             for _,t in ipairs(_fbFxTypes) do
-                if fx:IsA(t) then pcall(function() fx.Enabled=not vals end); break end
+                if fx:IsA(t) then pcall(function() fx.Enabled = not vals end); break end
             end
         end
     end)
 end
 
 local function setFullbright(state)
-    FullbrightEnabled=state
+    FullbrightEnabled = state
+    -- disconnect loop เก่าก่อนเสมอ
+    if _fbConn then _fbConn:Disconnect(); _fbConn = nil end
     if state then
-        for _,k in ipairs(_fbProps) do _origLighting[k]=Lighting[k] end
+        for _,k in ipairs(_fbProps) do _origLighting[k] = Lighting[k] end
         setLighting(_fbVals)
-        task.spawn(function() while FullbrightEnabled do setLighting(_fbVals); task.wait(0.5) end end)
+        -- ดักทันทีที่เกมพยายาม reset lighting ค่าไหนก็ตาม
+        _fbConn = Lighting.Changed:Connect(function()
+            if not FullbrightEnabled or _fbGuard then return end
+            _fbGuard = true
+            setLighting(_fbVals)
+            _fbGuard = false
+        end)
     else
         setLighting(nil)
     end
