@@ -36,9 +36,9 @@ end)
 pcall(function()
     WindUI:AddTheme({
         Name="SpectreTheme", Accent=SpectreAccent,
-        Outline=Color3.fromRGB(46,42,54),        Text=Color3.fromRGB(248,250,252),
-        Placeholder=Color3.fromRGB(148,163,184),  Background=Color3.fromRGB(15,12,22),
-        Button=Color3.fromRGB(30,26,41),           Icon=Color3.fromRGB(196,181,253),
+        Outline=Color3.fromRGB(95,82,130),        Text=Color3.fromRGB(248,250,252),
+        Placeholder=Color3.fromRGB(160,148,200),  Background=Color3.fromRGB(15,12,22),
+        Button=Color3.fromRGB(62,52,95),           Icon=Color3.fromRGB(210,196,255),
     })
 end)
 
@@ -59,7 +59,7 @@ end
 task.spawn(refreshFriends)
 
 local _Cfg = loadstring(game:HttpGet("https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/SpectreConfig.lua"))()
-local CFG, SaveCFG, LoadCFG = _Cfg.new(
+local CFG, SaveCFG, LoadCFG, OnCFGLoaded = _Cfg.new(
     "SpectreWare.json",
     {"Enabled","NPCSESP","ShowHP","ShowHPText","ShowName","ShowDist","BypassAntiESP","HideDeadESP","HideFriends"},
     {"BoxThickness","HPBarWidth","NameSize","MaxDist"},
@@ -101,16 +101,15 @@ task.spawn(function()
 end)
 
 local function findLabelByText(text)
-    local found
     for _,root in ipairs({game:GetService("CoreGui"), LP.PlayerGui}) do
+        local found
         pcall(function()
             for _,v in ipairs(root:GetDescendants()) do
-                if v:IsA("TextLabel") and v.Text==text then found=v; return end
+                if v:IsA("TextLabel") and v.Text==text then found=v end
             end
         end)
-        if found then break end
+        if found then return found end
     end
-    return found
 end
 
 local function resolveRemotePath(root, path, timeout)
@@ -360,7 +359,7 @@ end
 esp.RemoveAll = esp.Clear
 
 -- ── TAB: MENU / FARM ──
-local FarmTab = Window:Tab({Title="Menu", Icon="wheat", Locked=false})
+local FarmTab = Window:Tab({Title="Menu", Icon="archive", Locked=false})
 local DepositRemote, FarmRunning = nil, false
 local BACKPACK_GUI = "Backpack_Never"
 
@@ -374,134 +373,44 @@ end
 -- ── Thai item name map ──
 local ITEM_THAI = {
     -- ทรัพยากร
-    Iron        = "เหล็ก",
-    Gold        = "ทอง",
-    Stone       = "หิน",
-    Wood        = "ไม้",
-    Coal        = "ถ่านหิน",
-    Diamond     = "เพชร",
-    Crystal     = "คริสตัล",
-    -- ผัก/ผลไม้
-    Lettuce     = "ผักกาด",
-    Grape       = "องุ่น",
-    Tomato      = "มะเขือเทศ",
-    Carrot      = "แครอท",
-    Potato      = "มันฝรั่ง",
-    Corn        = "ข้าวโพด",
-    Pumpkin     = "ฟักทอง",
-    Strawberry  = "สตรอเบอรี่",
-    Watermelon  = "แตงโม",
-    Mushroom    = "เห็ด",
-    Cabbage     = "กะหล่ำ",
-    Onion       = "หัวหอม",
-    -- สกุลเงิน/โทเค็น
-    GemCoin     = "เหรียญอัญมณี",
-    LoopCoin    = "เหรียญลูป",
-    GoldCoin    = "เหรียญทอง",
-    -- อุปกรณ์
-    LockPick    = "กุญแจล็อค",
-    KeyLevel1   = "กุญแจ Lv1",
-    KeyLevel2   = "กุญแจ Lv2",
-    KeyLevel3   = "กุญแจ Lv3",
-    KeyLevel4   = "กุญแจ Lv4",
-    KeyLevel5   = "กุญแจ Lv5",
-    -- ของกิน
-    Candy       = "ลูกอม",
-    Bread       = "ขนมปัง",
-    Burger      = "เบอร์เกอร์",
-    Cake        = "เค้ก",
-    Donut       = "โดนัท",
-    Coffee      = "กาแฟ",
-    -- อื่นๆ ที่พบในเกม
-    Fertilizer  = "ปุ๋ย",
-    Seed        = "เมล็ดพันธุ์",
-    Rope        = "เชือก",
-    Barrel      = "ถัง",
-    Crate       = "ลัง",
-    Milk        = "นม",
-    Egg         = "ไข่",
-    Fish        = "ปลา",
-    Meat        = "เนื้อ",
-    Bone        = "กระดูก",
-    Fur         = "ขน",
-    Leather     = "หนัง",
-    Cloth       = "ผ้า",
-    String      = "เส้นด้าย",
-    Wire        = "ลวด",
-    Gear        = "เฟือง",
-    Scrap       = "เศษโลหะ",
-    Sand        = "ทราย",
-    Clay        = "ดินเหนียว",
-    Glass       = "กระจก",
-    Rubber      = "ยาง",
-    Oil         = "น้ำมัน",
-    Gasoline    = "น้ำมันเบนซิน",
-    Battery     = "แบตเตอรี่",
-    Circuit     = "วงจร",
-    Chip        = "ชิป",
-    Bolt        = "สลักเกลียว",
-    Nail        = "ตะปู",
-    Plank       = "แผ่นไม้",
-    Log         = "ท่อนไม้",
-    Stick       = "ไม้กาง",
-    Charcoal    = "ถ่าน",
-    Ash         = "เถ้า",
-    Fiber       = "เส้นใย",
-    Herb        = "สมุนไพร",
-    Flower      = "ดอกไม้",
-    Leaf        = "ใบไม้",
-    Root        = "ราก",
-    Berry       = "เบอร์รี่",
-    Apple       = "แอปเปิล",
-    Orange      = "ส้ม",
-    Banana      = "กล้วย",
-    Mango       = "มะม่วง",
-    Cherry      = "เชอร์รี่",
-    Lemon       = "มะนาว",
-    Pineapple   = "สับปะรด",
-    Coconut     = "มะพร้าว",
-    Wheat       = "ข้าวสาลี",
-    Rice        = "ข้าว",
-    Sugar       = "น้ำตาล",
-    Salt        = "เกลือ",
-    Pepper      = "พริกไทย",
-    Spice       = "เครื่องเทศ",
-    Honey       = "น้ำผึ้ง",
-    Wax         = "ขี้ผึ้ง",
-    Feather     = "ขนนก",
-    Shell       = "เปลือกหอย",
-    Pearl       = "ไข่มุก",
-    Ruby        = "ทับทิม",
-    Emerald     = "มรกต",
-    Sapphire    = "ไพลิน",
-    Amethyst    = "อเมทิสต์",
-    Obsidian    = "ออบซิเดียน",
-    Quartz      = "ควอตซ์",
-    Copper      = "ทองแดง",
-    Tin         = "ดีบุก",
-    Silver      = "เงิน",
-    Platinum    = "แพลตตินัม",
-    Titanium    = "ไทเทเนียม",
-    Steel       = "เหล็กกล้า",
-    Bronze      = "ทองสัมฤทธิ์",
-    Brass       = "ทองเหลือง",
+    Iron="เหล็ก", Gold="ทอง", Stone="หิน", Wood="ไม้", Coal="ถ่านหิน",
+    Diamond="เพชร", Crystal="คริสตัล", Copper="ทองแดง", Silver="เงิน",
+    Steel="เหล็กกล้า", Bronze="ทองสัมฤทธิ์", Brass="ทองเหลือง",
+    Scrap="เศษโลหะ", Wire="ลวด", Gear="เฟือง", Bolt="สลักเกลียว", Nail="ตะปู",
+    Sand="ทราย", Clay="ดินเหนียว", Glass="กระจก", Rubber="ยาง",
+    Oil="น้ำมัน", Gasoline="น้ำมันเบนซิน", Battery="แบตเตอรี่", Circuit="วงจร", Chip="ชิป",
+    Plank="แผ่นไม้", Log="ท่อนไม้", Stick="ไม้กาง", Charcoal="ถ่าน", Ash="เถ้า",
+    Fiber="เส้นใย", Cloth="ผ้า", String="เส้นด้าย", Leather="หนัง", Fur="ขน",
+    Rope="เชือก", Barrel="ถัง", Crate="ลัง",
+    -- ผัก/ผลไม้/ของกิน
+    Lettuce="ผักกาด", Grape="องุ่น", Tomato="มะเขือเทศ", Carrot="แครอท",
+    Potato="มันฝรั่ง", Corn="ข้าวโพด", Pumpkin="ฟักทอง", Strawberry="สตรอเบอรี่",
+    Watermelon="แตงโม", Mushroom="เห็ด", Cabbage="กะหล่ำ", Onion="หัวหอม",
+    Apple="แอปเปิล", Orange="ส้ม", Banana="กล้วย", Mango="มะม่วง",
+    Cherry="เชอร์รี่", Lemon="มะนาว", Pineapple="สับปะรด", Coconut="มะพร้าว",
+    Berry="เบอร์รี่", Wheat="ข้าวสาลี", Rice="ข้าว", Sugar="น้ำตาล",
+    Salt="เกลือ", Pepper="พริกไทย", Spice="เครื่องเทศ", Honey="น้ำผึ้ง",
+    Milk="นม", Egg="ไข่", Fish="ปลา", Meat="เนื้อ", Bone="กระดูก",
+    Candy="ลูกอม", Bread="ขนมปัง", Burger="เบอร์เกอร์", Cake="เค้ก", Donut="โดนัท", Coffee="กาแฟ",
+    Fertilizer="ปุ๋ย", Seed="เมล็ดพันธุ์",
+    -- ธรรมชาติ/อัญมณี
+    Herb="สมุนไพร", Flower="ดอกไม้", Leaf="ใบไม้", Root="ราก",
+    Wax="ขี้ผึ้ง", Feather="ขนนก", Shell="เปลือกหอย", Pearl="ไข่มุก",
+    Ruby="ทับทิม", Emerald="มรกต", Sapphire="ไพลิน", Amethyst="อเมทิสต์",
+    Obsidian="ออบซิเดียน", Quartz="ควอตซ์",
+    -- สกุลเงิน/อุปกรณ์
+    GemCoin="เหรียญอัญมณี", LoopCoin="เหรียญลูป", GoldCoin="เหรียญทอง",
+    LockPick="กุญแจล็อค", KeyLevel1="กุญแจ Lv1", KeyLevel2="กุญแจ Lv2",
+    KeyLevel3="กุญแจ Lv3", KeyLevel4="กุญแจ Lv4", KeyLevel5="กุญแจ Lv5",
 }
 
-local function getThaiName(name)
-    -- ลอง exact match ก่อน
-    if ITEM_THAI[name] then return ITEM_THAI[name] end
-    -- ลอง case-insensitive
-    local low = name:lower()
-    for k,v in pairs(ITEM_THAI) do
-        if k:lower() == low then return v end
-    end
-    return nil
-end
-
 local function formatItemTitle(name)
-    local thai = getThaiName(name)
-    if thai then return name.." ("..thai..")" end
-    return name
+    local thai = ITEM_THAI[name]
+    if not thai then
+        local low = name:lower()
+        for k,v in pairs(ITEM_THAI) do if k:lower()==low then thai=v; break end end
+    end
+    return thai and (name.." ("..thai..")") or name
 end
 
 local function loadBackpackItems()
@@ -535,19 +444,14 @@ local function loadBackpackItems()
             end)
 
             local icon
-            local imgObj=slot:FindFirstChild("ItemImage")
-            if imgObj then
-                if imgObj:IsA("ImageLabel") or imgObj:IsA("ImageButton") then
-                    icon=imgObj.Image~="" and imgObj.Image or nil
-                else
-                    local inner=imgObj:FindFirstChildWhichIsA("ImageLabel") or imgObj:FindFirstChildWhichIsA("ImageButton")
-                    if inner then icon=inner.Image~="" and inner.Image or nil end
-                end
-            end
-            if not icon then
-                local inner=slot:FindFirstChildWhichIsA("ImageLabel",true) or slot:FindFirstChildWhichIsA("ImageButton",true)
-                if inner and inner.Image~="" then icon=inner.Image end
-            end
+            pcall(function()
+                local img = slot:FindFirstChild("ItemImage")
+                local src = (img and (img:IsA("ImageLabel") or img:IsA("ImageButton")) and img)
+                         or (img and (img:FindFirstChildWhichIsA("ImageLabel") or img:FindFirstChildWhichIsA("ImageButton")))
+                         or slot:FindFirstChildWhichIsA("ImageLabel", true)
+                         or slot:FindFirstChildWhichIsA("ImageButton", true)
+                if src and src.Image ~= "" then icon = src.Image end
+            end)
 
             local displayName = formatItemTitle(name)
             table.insert(titles, displayName)
@@ -766,7 +670,7 @@ task.spawn(function()
 end)
 
 AutoFarmToggle = FarmSection:Toggle({
-    Title="Auto Farm", Desc="เปิด = เริ่มเก็บ  |  ปิด = หยุดเก็บ", Value=false,
+    Title="Auto Deposit", Desc="เปิด = เริ่มเก็บใส่ตู้  |  ปิด = หยุด", Value=false,
     Callback=function(state)
         if state then
             local noItem=not UserSelectedItem
@@ -775,9 +679,9 @@ AutoFarmToggle = FarmSection:Toggle({
                 FarmRunning=false
                 task.spawn(function() pcall(function() AutoFarmToggle:Set(false) end) end)
                 local msg
-                if   noItem and noAmt then msg="กรุณาเลือกของ และกรอกจำนวนก่อนเปิด Auto Farm"
-                elseif noItem         then msg="กรุณาเลือกของที่จะเก็บก่อนเปิด Auto Farm"
-                else                       msg="กรุณากรอกจำนวนของที่จะเก็บก่อนเปิด Auto Farm" end
+                if   noItem and noAmt then msg="กรุณาเลือกของ และกรอกจำนวนก่อนเปิด Auto Deposit"
+                elseif noItem         then msg="กรุณาเลือกของที่จะเก็บก่อนเปิด Auto Deposit"
+                else                       msg="กรุณากรอกจำนวนของที่จะเก็บก่อนเปิด Auto Deposit" end
                 WindUI:Notify({Title="🔒 เปิดไม่ได้", Content=msg, Duration=4})
                 return
             end
@@ -795,10 +699,10 @@ AutoFarmToggle = FarmSection:Toggle({
             end
             if not DepositRemote then
                 FarmRunning=false
-                WindUI:Notify({Title="❌ Auto Farm หยุด", Content="ไม่พบ DepositRemote กรุณา Rejoin", Duration=5})
+                WindUI:Notify({Title="❌ Auto Deposit หยุด", Content="ไม่พบ DepositRemote กรุณา Rejoin", Duration=5})
                 return
             end
-            WindUI:Notify({Title="🟢 Auto Farm เปิด", Content="กำลังเก็บ: "..SelectedItem.value, Duration=3})
+            WindUI:Notify({Title="🟢 Auto Deposit เปิด", Content="กำลังเก็บใส่ตู้: "..SelectedItem.value, Duration=3})
             local farmScrolling
             while FarmRunning do
                 pcall(function()
@@ -873,21 +777,34 @@ local function walkToTarget(model)
     return arrived
 end
 
+local _controls
+pcall(function()
+    _controls = require(LP.PlayerScripts:WaitForChild("PlayerModule",5)):GetControls()
+end)
+
+local function setWaterInputLock(state)
+    if not _controls then return end
+    if state then _controls:Disable() else _controls:Enable() end
+end
+
 local function checkAndWater(tree)
     local stats=tree:FindFirstChild("Stats"); if not stats then return end
     local wv=stats:FindFirstChild("Water");  if not wv or not giveWaterRemote then return end
-    if wv.Value<=49 and walkToTarget(tree) then
-        while wv.Value<100 and autoWaterEnabled do giveWaterRemote:FireServer(); task.wait(0.3) end
+    if math.floor(wv.Value)>=100 then return end
+    if not walkToTarget(tree) then return end
+    local tries=0
+    while math.floor(wv.Value)<100 and autoWaterEnabled do
+        giveWaterRemote:FireServer(); task.wait(0.3)
+        tries=tries+1; if tries>60 then break end
     end
 end
 
 WaterSection:Toggle({
     Title="Auto Water", Desc="รดน้ำอัตโนมัติเมื่อน้ำต่ำกว่า 50% (เรียงใกล้→ไกล)", Value=false,
     Callback=function(state)
-        autoWaterEnabled=state; if not state then return end
+        autoWaterEnabled=state; setWaterInputLock(state); if not state then return end
         if #selectedWaterFolders==0 then
-            WindUI:Notify({Title="❌ ไม่พบโฟลเดอร์", Content="ลอง Reload Candy ก่อน แล้วเปิด Toggle ใหม่", Duration=4})
-            autoWaterEnabled=false; return
+            autoWaterEnabled=false; setWaterInputLock(false); return
         end
         task.spawn(function()
             while autoWaterEnabled do
@@ -919,6 +836,7 @@ WaterSection:Toggle({
                 end
                 task.wait(5)
             end
+            setWaterInputLock(false)
         end)
     end,
 })
@@ -1058,10 +976,21 @@ Window:Divider()
 local SettingsTab = Window:Tab({Title="Settings", Icon="settings", Locked=false})
 
 local function doAntiAFK()
-    pcall(function() VirtualUser:CaptureController(); VirtualUser:ClickButton2(Vector2.new()) end)
+    pcall(function()
+        VirtualUser:CaptureController()
+        VirtualUser:ClickButton2(Vector2.new())
+    end)
+    -- simulate movement จริงสำหรับเกมที่มี AFK detection ของตัวเอง
+    pcall(function()
+        if hum and hum.Parent and hum.Health > 0 then
+            hum:Move(Vector3.new(0.001, 0, 0), false)
+            task.wait(0.1)
+            hum:Move(Vector3.zero, false)
+        end
+    end)
 end
 LP.Idled:Connect(function() if AntiAFKEnabled then doAntiAFK() end end)
-task.spawn(function() while true do task.wait(45); if AntiAFKEnabled then doAntiAFK() end end end)
+task.spawn(function() while true do task.wait(20); if AntiAFKEnabled then doAntiAFK() end end end)
 
 local FullbrightEnabled = false
 local _origLighting     = {}
@@ -1104,3 +1033,9 @@ if WindUI.Themes then for name in pairs(WindUI.Themes) do table.insert(themes,na
 if #themes==0 then themes={"Dark"} end
 UISettings:Dropdown({Flag="UITheme", Title="UI Theme", Values=themes, Default="Dark",
     Callback=function(t) pcall(function() WindUI:SetTheme(t) end) end})
+
+OnCFGLoaded(function(cfg)
+    if not cfg.Enabled then return end
+    esp:FireScan()
+    if cfg.NPCSESP then task.spawn(function() esp:ScanWorkspace() end) end
+end)
