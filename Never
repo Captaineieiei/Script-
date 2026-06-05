@@ -133,14 +133,16 @@ local function setAmount(text)
 end
 
 -- ── ESP ──
-local ESPObjects   = {}
-local _espPartCache = {}   -- model -> {BasePart, ...}  rebuilt on demand
+local ESPObjects     = {}
+local _espPartCache  = {}   -- model -> {BasePart, ...}  rebuilt on demand
+local _espCacheBuild = {}   -- model -> true  ป้องกัน spawn ซ้อนตอน rebuild
 
 -- โฟลเดอร์ที่ไม่ต้องการ ESP (NPC ใน folder เหล่านี้จะถูกข้ามทั้งหมด)
 local ESP_EXCLUDE_PATHS = {
     {"System", "[Server] Npc_Seal"},
     {"System", "[Prompt] Team"},
     {"Farmer_1"},
+    {"[Prompt] Market"}
 }
 local function isESPExcluded(model)
     for _,path in ipairs(ESP_EXCLUDE_PATHS) do
@@ -183,6 +185,7 @@ local function removeESP(model)
     end
     ESPObjects[model]=nil
     _espPartCache[model]=nil
+    _espCacheBuild[model]=nil
 end
 
 local function setVisible(obj, v)
@@ -223,18 +226,22 @@ RunService.RenderStepped:Connect(function()
             end
 
             if CFG.BypassAntiESP then
-                -- Run every frame using a cached part list so GetDescendants is only
-                -- called once per character (rebuilt automatically when cache is nil).
+                -- cache rebuild ทำใน task.spawn (ไม่บล็อก RenderStepped)
                 local parts = _espPartCache[model]
-                if not parts then
-                    parts = {}
-                    for _,p in ipairs(model:GetDescendants()) do
-                        if p:IsA("BasePart") then parts[#parts+1]=p end
+                if parts then
+                    for _,p in ipairs(parts) do
+                        pcall(function() p.LocalTransparencyModifier=0 end)
                     end
-                    _espPartCache[model] = parts
-                end
-                for _,p in ipairs(parts) do
-                    pcall(function() p.LocalTransparencyModifier=0 end)
+                elseif not _espCacheBuild[model] then
+                    _espCacheBuild[model] = true
+                    task.spawn(function()
+                        local newParts = {}
+                        for _,p in ipairs(model:GetDescendants()) do
+                            if p:IsA("BasePart") then newParts[#newParts+1]=p end
+                        end
+                        _espPartCache[model] = newParts
+                        _espCacheBuild[model] = nil
+                    end)
                 end
             end
 
@@ -336,7 +343,11 @@ function esp:FireScan()
     end
 end
 function esp:ScanWorkspace()
-    for _,obj in ipairs(workspace:GetDescendants()) do
+    local all = workspace:GetDescendants()
+    local count = 0
+    for _,obj in ipairs(all) do
+        count = count + 1
+        if count % 150 == 0 then task.wait() end
         if obj:IsA("Model") and obj:FindFirstChildOfClass("Humanoid")
         and not Players:GetPlayerFromCharacter(obj) and obj~=LP.Character
         and not isESPExcluded(obj) then
@@ -355,6 +366,7 @@ end
 function esp:Clear()
     for model in pairs(ESPObjects) do removeESP(model) end
     _espPartCache = {}
+    _espCacheBuild = {}
 end
 esp.RemoveAll = esp.Clear
 
