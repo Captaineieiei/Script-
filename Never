@@ -370,48 +370,6 @@ local function getScrolling()
     return it:FindFirstChild("Scrollingitem")
 end
 
--- ── Thai item name map ──
-local ITEM_THAI = {
-    -- ทรัพยากร
-    Iron="เหล็ก", Gold="ทอง", Stone="หิน", Wood="ไม้", Coal="ถ่านหิน",
-    Diamond="เพชร", Crystal="คริสตัล", Copper="ทองแดง", Silver="เงิน",
-    Steel="เหล็กกล้า", Bronze="ทองสัมฤทธิ์", Brass="ทองเหลือง",
-    Scrap="เศษโลหะ", Wire="ลวด", Gear="เฟือง", Bolt="สลักเกลียว", Nail="ตะปู",
-    Sand="ทราย", Clay="ดินเหนียว", Glass="กระจก", Rubber="ยาง",
-    Oil="น้ำมัน", Gasoline="น้ำมันเบนซิน", Battery="แบตเตอรี่", Circuit="วงจร", Chip="ชิป",
-    Plank="แผ่นไม้", Log="ท่อนไม้", Stick="ไม้กาง", Charcoal="ถ่าน", Ash="เถ้า",
-    Fiber="เส้นใย", Cloth="ผ้า", String="เส้นด้าย", Leather="หนัง", Fur="ขน",
-    Rope="เชือก", Barrel="ถัง", Crate="ลัง",
-    -- ผัก/ผลไม้/ของกิน
-    Lettuce="ผักกาด", Grape="องุ่น", Tomato="มะเขือเทศ", Carrot="แครอท",
-    Potato="มันฝรั่ง", Corn="ข้าวโพด", Pumpkin="ฟักทอง", Strawberry="สตรอเบอรี่",
-    Watermelon="แตงโม", Mushroom="เห็ด", Cabbage="กะหล่ำ", Onion="หัวหอม",
-    Apple="แอปเปิล", Orange="ส้ม", Banana="กล้วย", Mango="มะม่วง",
-    Cherry="เชอร์รี่", Lemon="มะนาว", Pineapple="สับปะรด", Coconut="มะพร้าว",
-    Berry="เบอร์รี่", Wheat="ข้าวสาลี", Rice="ข้าว", Sugar="น้ำตาล",
-    Salt="เกลือ", Pepper="พริกไทย", Spice="เครื่องเทศ", Honey="น้ำผึ้ง",
-    Milk="นม", Egg="ไข่", Fish="ปลา", Meat="เนื้อ", Bone="กระดูก",
-    Candy="ลูกอม", Bread="ขนมปัง", Burger="เบอร์เกอร์", Cake="เค้ก", Donut="โดนัท", Coffee="กาแฟ",
-    Fertilizer="ปุ๋ย", Seed="เมล็ดพันธุ์",
-    -- ธรรมชาติ/อัญมณี
-    Herb="สมุนไพร", Flower="ดอกไม้", Leaf="ใบไม้", Root="ราก",
-    Wax="ขี้ผึ้ง", Feather="ขนนก", Shell="เปลือกหอย", Pearl="ไข่มุก",
-    Ruby="ทับทิม", Emerald="มรกต", Sapphire="ไพลิน", Amethyst="อเมทิสต์",
-    Obsidian="ออบซิเดียน", Quartz="ควอตซ์",
-    -- สกุลเงิน/อุปกรณ์
-    GemCoin="เหรียญอัญมณี", LoopCoin="เหรียญลูป", GoldCoin="เหรียญทอง",
-    LockPick="กุญแจล็อค", KeyLevel1="กุญแจ Lv1", KeyLevel2="กุญแจ Lv2",
-    KeyLevel3="กุญแจ Lv3", KeyLevel4="กุญแจ Lv4", KeyLevel5="กุญแจ Lv5",
-}
-
-local function formatItemTitle(name)
-    local thai = ITEM_THAI[name]
-    if not thai then
-        local low = name:lower()
-        for k,v in pairs(ITEM_THAI) do if k:lower()==low then thai=v; break end end
-    end
-    return thai and (name.." ("..thai..")") or name
-end
 
 local function loadBackpackItems()
     local scrolling = getScrolling()
@@ -453,7 +411,7 @@ local function loadBackpackItems()
                 if src and src.Image ~= "" then icon = src.Image end
             end)
 
-            local displayName = formatItemTitle(name)
+            local displayName = name
             table.insert(titles, displayName)
             itemMap[displayName]={Title=displayName, value=name, max=max, icon=icon}
         end
