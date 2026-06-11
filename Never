@@ -383,6 +383,23 @@ local function getScrolling()
 end
 
 
+-- ── ชื่อไทยของไอเทม (English → ภาษาไทย) ──
+local ITEM_THAI = {
+    ["Grape"]        = "องุ่น",
+    ["Peach"]        = "พีช",
+    ["Orange"]       = "ส้ม",
+    ["Cauliflower"]  = "กะหล่ำดอก",
+    ["Corn"]         = "ข้าวโพด",
+}
+
+-- ── ไอเทมที่ไม่ให้แสดงใน Dropdown ──
+local BLOCKED_ITEMS = {
+    ["CASH"]    = true,
+    ["IDCard"]  = true,
+    ["R8"]      = true,
+    ["Classic"] = true,
+}
+
 local function loadBackpackItems()
     local scrolling = getScrolling()
     if not scrolling then
@@ -400,6 +417,7 @@ local function loadBackpackItems()
             if not slot:IsA("Frame") then continue end
             local name=slot.Name
             if name=="" or name=="Animation" then continue end
+            if BLOCKED_ITEMS[name] then continue end
             count=count+1
             if count%10==0 then task.wait() end
 
@@ -423,7 +441,8 @@ local function loadBackpackItems()
                 if src and src.Image ~= "" then icon = src.Image end
             end)
 
-            local displayName = name
+            local thaiName = ITEM_THAI[name]
+            local displayName = thaiName and (name.." ("..thaiName..")") or name
             table.insert(titles, displayName)
             itemMap[displayName]={Title=displayName, value=name, max=max, icon=icon}
         end
@@ -431,6 +450,26 @@ local function loadBackpackItems()
     if #titles==0 then
         titles={"(ไม่พบไอเทม)"}; itemMap["(ไม่พบไอเทม)"]={Title="(ไม่พบไอเทม)", value="", max=0}
     end
+    -- ── ปักหมุดไอเทมที่ใช้บ่อยไว้บนสุด (เรียงตามลำดับนี้) ──
+    local PINNED_ORDER = {"Cauliflower","Corn","Peach","Grape","Orange"}
+    local pinnedSet, rest = {}, {}
+    for _, t in ipairs(titles) do
+        local entry = itemMap[t]
+        if entry then pinnedSet[entry.value] = t
+        else table.insert(rest, t) end
+    end
+    -- ไอเทมที่ไม่อยู่ใน PINNED_ORDER ให้ไปอยู่ท้าย
+    local pinnedKeys = {}
+    for _, v in ipairs(PINNED_ORDER) do pinnedKeys[v] = true end
+    for _, t in ipairs(titles) do
+        local entry = itemMap[t]
+        if entry and not pinnedKeys[entry.value] then table.insert(rest, t) end
+    end
+    titles = {}
+    for _, key in ipairs(PINNED_ORDER) do
+        if pinnedSet[key] then table.insert(titles, pinnedSet[key]) end
+    end
+    for _, t in ipairs(rest) do table.insert(titles, t) end
     return titles, itemMap
 end
 
