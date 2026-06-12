@@ -204,10 +204,8 @@ local function _notifyWL(timeLeft,tier)
     if NotificationLibrary then pcall(function() NotificationLibrary:SendNotification("Success",msg,7) end) end
 end
 local function _notifyHWID()
-    local t,b="SpectreWare  ·  รีเซ็ต HWID","กด 'รีเซ็ต HWID' เพื่อเปิด Discord"
-    local function _od() pcall(function() game:GetService("GuiService"):OpenBrowserWindow(CFG.discordUrl) end) end
+    local b="กด 'รีเซ็ต HWID' เพื่อเปิด Discord"
     if NotificationLibrary then pcall(function() NotificationLibrary:SendNotification("Info","⚡  SpectreWare  —  "..b,10) end) end
-    pcall(function() local be=Instance.new("BindableEvent");be.Event:Connect(function(btn) if btn=="Button1" then _od() end;be:Destroy() end);game:GetService("StarterGui"):SetCore("SendNotification",{Title=t,Text=b,Duration=10,Button1Text="🔄 รีเซ็ต HWID",Callback=be}) end)
 end
 local function maskKey(k) local s=tostring(k or"");if #s<=8 then return string.rep("*",#s) end;return s:sub(1,4)..string.rep("*",#s-8)..s:sub(-4) end
 local ERR_MAP={expired="Key has expired",["hwid mismatch"]="HWID mismatch — bound to another device",
@@ -373,7 +371,6 @@ local _mainOk=xpcall(function()
         print("  ◆     ⏳  ".._timeTag)
         _div()
         task.delay(1, function() _notifyWL(_timeTag, _isDev and "DEV 👑" or "FREE 🎁") end)
-        task.delay(9, _notifyHWID)
         _expiresAt_cached=-1
         task.spawn(function() sendWebhook("login",{key=_keyTag,hwid=hwid,timeLeft=_timeTag}) end)
         log("Loading script...","loading")
@@ -432,6 +429,7 @@ local _mainOk=xpcall(function()
     if type(data.hwid)=="string" and data.hwid~=""and data.hwid~=hwid then
         log("HWID mismatch — key bound to another device","error")
         task.spawn(function() sendWebhook("mismatch",{key=_getKey(),hwid=hwid,timeLeft="BLOCKED"}) end)
+        _notifyHWID()
         getgenv()[_GK.running]=nil;task.wait(2)
         PL:Kick("[ SpectreWare ]  HWID Mismatch.\nKey นี้ผูกกับอุปกรณ์อื่น — ติดต่อ Discord.");return
     end
@@ -454,7 +452,6 @@ local _mainOk=xpcall(function()
     print("  ◆     🎮  PlaceId: "..tostring(game.PlaceId))
     _div()
     task.delay(1, function() _notifyWL(timeLeft, "KEY") end)
-    task.delay(9, _notifyHWID)
     task.spawn(function() sendWebhook("login",{key=_getKey(),hwid=hwid,timeLeft=timeLeft,expiresAt=expiresAt}) end)
     local scriptSrc
     if type(data.scriptEnc)=="string" and data.scriptEnc~="" then
@@ -524,6 +521,7 @@ task.spawn(function()
         if curHwid~=hwid and curHwid~="UNKNOWN" then
             _sessionActive=false;warn("SpectreWare: HWID drift")
             pcall(function() sendWebhook("mismatch",{key=_getKey(),hwid=curHwid,timeLeft="DRIFT"}) end)
+            _notifyHWID()
             task.wait(1);pcall(function() PL:Kick("[ SpectreWare ]  HWID drift detected.\nContact Discord.") end);break
         end
         if _r_type(_r_pcall)~="function" or _r_type(_r_rawget)~="function" then _sessionActive=false;warn("SpectreWare: stdlib hooked");integrityFail("stdlib_hooked");break end
