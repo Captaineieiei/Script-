@@ -206,7 +206,7 @@ end
 local function _notifyHWID()
     local t,b="SpectreWare  ·  รีเซ็ต HWID","กด 'รีเซ็ต HWID' เพื่อเปิด Discord"
     local function _od() pcall(function() game:GetService("GuiService"):OpenBrowserWindow(CFG.discordUrl) end) end
-    if NotificationLibrary then pcall(function() NotificationLibrary:SendNotification("Info",t,b,10) end) end
+    if NotificationLibrary then pcall(function() NotificationLibrary:SendNotification("Info","⚡  SpectreWare  —  "..b,10) end) end
     pcall(function() local be=Instance.new("BindableEvent");be.Event:Connect(function(btn) if btn=="Button1" then _od() end;be:Destroy() end);game:GetService("StarterGui"):SetCore("SendNotification",{Title=t,Text=b,Duration=10,Button1Text="🔄 รีเซ็ต HWID",Callback=be}) end)
 end
 local function maskKey(k) local s=tostring(k or"");if #s<=8 then return string.rep("*",#s) end;return s:sub(1,4)..string.rep("*",#s-8)..s:sub(-4) end
