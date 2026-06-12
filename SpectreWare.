@@ -314,7 +314,6 @@ local function apiLookup(key,hwidStr) local ok,body=pcall(HS.JSONEncode,HS,{key=
 local function _awaitResult(fn,maxTicks) local done,r1,r2=false,nil,nil;task.spawn(function() r1,r2=fn();done=true end);local t=0;while not done and t<maxTicks do task.wait(0.1);t=t+1 end;return r1,r2 end
 local _mainOk=xpcall(function()
     task.wait(CFG.waitOnStart)
-    do local _t=0;while not _nlReady and _t<50 do task.wait(0.1);_t=_t+1 end end
     if NotificationLibrary then NotificationLibrary:SendNotification("Info","⚡  SpectreWare  v"..CFG.loaderVersion.."  —  กำลังโหลด...",4) end
     local _uid=PL.UserId
     do
