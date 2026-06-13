@@ -134,10 +134,9 @@ end
 
 -- ── ESP ──
 local ESPObjects     = {}
-local _espPartCache  = {}   -- model -> {BasePart, ...}  rebuilt on demand
-local _espCacheBuild = {}   -- model -> true  ป้องกัน spawn ซ้อนตอน rebuild
+local _espPartCache  = {}   
+local _espCacheBuild = {}   
 
--- โฟลเดอร์ที่ไม่ต้องการ ESP (NPC ใน folder เหล่านี้จะถูกข้ามทั้งหมด)
 local ESP_EXCLUDE_PATHS = {
     {"System", "[Server] Npc_Seal"},
     {"System", "[Prompt] Team"},
@@ -172,8 +171,8 @@ local function makeESP(model, isNPC)
         nameLabel= newText(CFG.NameSize,   Color3.new(1,1,1)),
         distLabel= newText(11,             Color3.fromRGB(200,200,200)),
         hpText   = newText(16,             Color3.fromRGB(200,255,200)),
-        hideTick = 0,  -- debounce: ซ่อนจริงหลัง fail ติดกัน N frame
-        showTick = 0,  -- debounce: แสดงจริงหลัง pass ติดกัน N frame (กันกระพริบ)
+        hideTick = 0,
+        showTick = 0,
     }
 end
 
@@ -194,87 +193,109 @@ local function setVisible(obj, v)
     obj.distLabel.Visible=v; obj.hpText.Visible=v
 end
 
-local HIDE_DEBOUNCE = 6  -- ต้อง fail ติดกัน N frame ถึงซ่อนจริง
-local SHOW_DEBOUNCE = 3  -- ต้อง pass ติดกัน N frame ถึงแสดงจริง (กันกระพริบขอบจอ)
+local HIDE_DEBOUNCE = 6  
+local SHOW_DEBOUNCE = 3  
 
 RunService.RenderStepped:Connect(function()
     if not CFG.Enabled then return end
     local Camera = workspace.CurrentCamera
+    local camViewportSize = Camera.ViewportSize
+    
+    -- Custom OnScreen check to prevent behind-camera flickering and edge flickering
+    local function isOnScreen(v3)
+        if v3.Z <= 0 then return false end
+        return v3.X > -100 and v3.X < camViewportSize.X + 100 and v3.Y > -100 and v3.Y < camViewportSize.Y + 100
+    end
+
     for model, obj in pairs(ESPObjects) do
         pcall(function()
             local root = model:FindFirstChild("HumanoidRootPart")
             local hum  = model:FindFirstChildOfClass("Humanoid")
-            local function hideAndReturn()
-                obj.showTick = 0
-                obj.hideTick = obj.hideTick + 1
-                if obj.hideTick >= HIDE_DEBOUNCE then setVisible(obj,false) end
-            end
+            local isValid = true
 
-            if not root or not hum then hideAndReturn(); return end
-            if CFG.HideDeadESP and hum.Health<=0 then hideAndReturn(); return end
+            if not root or not hum then isValid = false end
+            if isValid and CFG.HideDeadESP and hum.Health <= 0 then isValid = false end
 
-            local myRoot = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
-            local dist   = myRoot and (myRoot.Position-root.Position).Magnitude or 0
-            if dist>CFG.MaxDist then hideAndReturn(); return end
+            if isValid then
+                local myRoot = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+                local dist   = myRoot and (myRoot.Position - root.Position).Magnitude or 0
+                if dist > CFG.MaxDist then isValid = false end
 
-            if not obj.isNPC then
-                local plr=Players:GetPlayerFromCharacter(model)
-                if not plr then hideAndReturn(); return end
-                if CFG.HideFriends and FriendSet[plr.UserId] then hideAndReturn(); return end
-            elseif isESPExcluded(model) then
-                removeESP(model); return
-            end
-
-            if CFG.BypassAntiESP then
-                -- cache rebuild ทำใน task.spawn (ไม่บล็อก RenderStepped)
-                local parts = _espPartCache[model]
-                if parts then
-                    for _,p in ipairs(parts) do
-                        pcall(function() p.LocalTransparencyModifier=0 end)
+                if isValid then
+                    if not obj.isNPC then
+                        local plr = Players:GetPlayerFromCharacter(model)
+                        if not plr then isValid = false
+                        elseif CFG.HideFriends and FriendSet[plr.UserId] then isValid = false end
+                    elseif isESPExcluded(model) then
+                        removeESP(model); return
                     end
-                elseif not _espCacheBuild[model] then
-                    _espCacheBuild[model] = true
-                    task.spawn(function()
-                        local newParts = {}
-                        for _,p in ipairs(model:GetDescendants()) do
-                            if p:IsA("BasePart") then newParts[#newParts+1]=p end
-                        end
-                        _espPartCache[model] = newParts
-                        _espCacheBuild[model] = nil
-                    end)
                 end
             end
 
-            -- ใช้ head+root สองจุดเช็ค onScreen แทนจุดเดียว กันกระพริบขอบจอ
-            local head    = model:FindFirstChild("Head") or root
-            local topPos3 = Camera:WorldToViewportPoint(head.Position+Vector3.new(0,head.Size.Y/2+0.3,0))
-            local botPos3 = Camera:WorldToViewportPoint(root.Position-Vector3.new(0,3,0))
-            local pos3, onScreen = Camera:WorldToViewportPoint(root.Position)
-            -- ถือว่า onScreen ถ้า root หรือ head อยู่ในจอ (กัน edge case ตัวอยู่ขอบ)
-            local _, headOnScreen = Camera:WorldToViewportPoint(head.Position)
-            if not onScreen and not headOnScreen then hideAndReturn(); return end
+            local topPos3, botPos3, pos3
+            if isValid then
+                if CFG.BypassAntiESP then
+                    local parts = _espPartCache[model]
+                    if parts then
+                        for _, p in ipairs(parts) do
+                            pcall(function() p.LocalTransparencyModifier = 0 end)
+                        end
+                    elseif not _espCacheBuild[model] then
+                        _espCacheBuild[model] = true
+                        task.spawn(function()
+                            local newParts = {}
+                            for _, p in ipairs(model:GetDescendants()) do
+                                if p:IsA("BasePart") then newParts[#newParts + 1] = p end
+                            end
+                            _espPartCache[model] = newParts
+                            _espCacheBuild[model] = nil
+                        end)
+                    end
+                end
 
-            local cx      = pos3.X
+                local head = model:FindFirstChild("Head") or root
+                topPos3 = Camera:WorldToViewportPoint(head.Position + Vector3.new(0, head.Size.Y / 2 + 0.3, 0))
+                botPos3 = Camera:WorldToViewportPoint(root.Position - Vector3.new(0, 3, 0))
+                pos3 = Camera:WorldToViewportPoint(root.Position)
+
+                if not isOnScreen(pos3) and not isOnScreen(topPos3) then
+                    isValid = false
+                end
+            end
+
+            -- DEBOUNCE LOGIC FIX
+            if isValid then
+                obj.hideTick = 0
+                obj.showTick = math.min(obj.showTick + 1, SHOW_DEBOUNCE)
+            else
+                obj.showTick = 0
+                obj.hideTick = math.min(obj.hideTick + 1, HIDE_DEBOUNCE)
+            end
+
+            -- Visible if: (Valid and show debounce reached) OR (Invalid but hide debounce NOT reached yet)
+            local visible = (isValid and obj.showTick >= SHOW_DEBOUNCE) or (not isValid and obj.hideTick < HIDE_DEBOUNCE)
+
+            if not visible then
+                setVisible(obj, false)
+                return
+            end
+
+            -- If we reach here, ESP is valid and visible. Calculate math safely.
+            local cx = pos3.X
             local y1 = math.min(topPos3.Y, botPos3.Y)
             local y2 = math.max(topPos3.Y, botPos3.Y)
             local h  = y2 - y1
-            if h < 1 then hideAndReturn(); return end
-            local w  = h*0.6
-            local x1,x2 = cx-w/2, cx+w/2
+            if h < 1 then setVisible(obj, false); return end
+            local w  = h * 0.6
+            local x1, x2 = cx - w/2, cx + w/2
 
-            -- ผ่านทุกเงื่อนไข: reset hideTick, เพิ่ม showTick
-            obj.hideTick = 0
-            obj.showTick = math.min(obj.showTick + 1, SHOW_DEBOUNCE)
-            local visible = obj.showTick >= SHOW_DEBOUNCE
-
-            for _,l in ipairs(obj.box) do l.Thickness=CFG.BoxThickness; l.Color=CFG.BoxColor end
+            for _, l in ipairs(obj.box) do l.Thickness=CFG.BoxThickness; l.Color=CFG.BoxColor end
             obj.box[1].From=Vector2.new(x1,y1); obj.box[1].To=Vector2.new(x2,y1); obj.box[1].Visible=visible
             obj.box[2].From=Vector2.new(x1,y2); obj.box[2].To=Vector2.new(x2,y2); obj.box[2].Visible=visible
             obj.box[3].From=Vector2.new(x1,y1); obj.box[3].To=Vector2.new(x1,y2); obj.box[3].Visible=visible
             obj.box[4].From=Vector2.new(x2,y1); obj.box[4].To=Vector2.new(x2,y2); obj.box[4].Visible=visible
 
-            local hpR = math.clamp(hum.Health/math.max(hum.MaxHealth,1),0,1)
-            -- แถบ HP แนวนอน อยู่ชิดขอบล่างในกล่อง (ง่ายต่อการอ่านระหว่างเล่น)
+            local hpR = math.clamp(hum.Health / math.max(hum.MaxHealth, 1), 0, 1)
             local hpColor = hpR > 0.5
                 and Color3.fromRGB(math.floor(255*(1-hpR)*2), 255, 0)
                 or  Color3.fromRGB(255, math.floor(255*hpR*2), 0)
@@ -285,14 +306,16 @@ RunService.RenderStepped:Connect(function()
             obj.hpBar.Visible   = CFG.ShowHP and visible
 
             local plr = not obj.isNPC and Players:GetPlayerFromCharacter(model)
-            obj.nameLabel.Text    =plr and plr.Name or model.Name
-            obj.nameLabel.Size    =CFG.NameSize
-            obj.nameLabel.Position=Vector2.new(cx, y1-CFG.NameSize-2)
-            obj.nameLabel.Visible =CFG.ShowName and visible
+            obj.nameLabel.Text    = plr and plr.Name or model.Name
+            obj.nameLabel.Size    = CFG.NameSize
+            obj.nameLabel.Position= Vector2.new(cx, y1-CFG.NameSize-2)
+            obj.nameLabel.Visible = CFG.ShowName and visible
 
-            obj.distLabel.Text    =string.format("%.0f studs", dist)
-            obj.distLabel.Position=Vector2.new(cx, y2+30)
-            obj.distLabel.Visible =CFG.ShowDist and visible
+            local myRoot = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+            local dist   = myRoot and (myRoot.Position - root.Position).Magnitude or 0
+            obj.distLabel.Text    = string.format("%.0f studs", dist)
+            obj.distLabel.Position= Vector2.new(cx, y2+30)
+            obj.distLabel.Visible = CFG.ShowDist and visible
 
             local hpPct = math.floor(hpR*100)
             local dynSize = math.clamp(math.floor(28 - dist/12), 11, 28)
@@ -382,8 +405,6 @@ local function getScrolling()
     return it:FindFirstChild("Scrollingitem")
 end
 
-
--- ── ชื่อไทยของไอเทม (English → ภาษาไทย) ──
 local ITEM_THAI = {
     ["Grape"]        = "องุ่น",
     ["Peach"]        = "พีช",
@@ -392,7 +413,6 @@ local ITEM_THAI = {
     ["Corn"]         = "ข้าวโพด",
 }
 
--- ── ไอเทมที่ไม่ให้แสดงใน Dropdown ──
 local BLOCKED_ITEMS = {
     ["CASH"]    = true,
     ["IDCard"]  = true,
@@ -450,7 +470,6 @@ local function loadBackpackItems()
     if #titles==0 then
         titles={"(ไม่พบไอเทม)"}; itemMap["(ไม่พบไอเทม)"]={Title="(ไม่พบไอเทม)", value="", max=0}
     end
-    -- ── ปักหมุดไอเทมที่ใช้บ่อยไว้บนสุด (เรียงตามลำดับนี้) ──
     local PINNED_ORDER = {"Cauliflower","Corn","Peach","Grape","Orange"}
     local pinnedSet, rest = {}, {}
     for _, t in ipairs(titles) do
@@ -458,7 +477,6 @@ local function loadBackpackItems()
         if entry then pinnedSet[entry.value] = t
         else table.insert(rest, t) end
     end
-    -- ไอเทมที่ไม่อยู่ใน PINNED_ORDER ให้ไปอยู่ท้าย
     local pinnedKeys = {}
     for _, v in ipairs(PINNED_ORDER) do pinnedKeys[v] = true end
     for _, t in ipairs(titles) do
@@ -508,7 +526,6 @@ local function injectIconsIntoDropdown()
     task.delay(0.15, function()
         _injectPending=false
         pcall(function()
-            -- scan every ScreenGui WindUI created, not just the main one
             for _,sg in ipairs(LP.PlayerGui:GetChildren()) do
                 if not sg:IsA("ScreenGui") then continue end
                 local n=sg.Name
@@ -524,7 +541,6 @@ local function injectIconsIntoDropdown()
 end
 
 task.spawn(function()
-    -- watch for new labels AND text changes on existing ones
     LP.PlayerGui.DescendantAdded:Connect(function(obj)
         if not obj:IsA("TextLabel") then return end
         local sg=obj:FindFirstAncestorWhichIsA("ScreenGui")
@@ -532,7 +548,6 @@ task.spawn(function()
         local n=sg.Name
         if not (n=="WindUI" or n:sub(1,7)=="WindUI/") then return end
         if FarmItemMap[obj.Text] then task.delay(0.05, injectIconsIntoDropdown) end
-        -- also watch text changes (selected value label reuses same instance)
         obj:GetPropertyChangedSignal("Text"):Connect(function()
             if FarmItemMap[obj.Text] then task.delay(0.05, injectIconsIntoDropdown) end
         end)
@@ -561,14 +576,11 @@ local function createItemDropdown(titles, itemMap)
                 injectIconsIntoDropdown()
             end,
         })
-        -- hook selected-value display directly via WindUI's internal TextLabel
-        -- The "Frame" container uses UIListLayout horizontal, so we add the icon
-        -- as a child with LayoutOrder=-1 (before the TextLabel) instead of using Position
         task.delay(0.1, function()
             pcall(function()
                 local dd = ItemDropdown.UIElements and ItemDropdown.UIElements.Dropdown
                 if not dd then return end
-                local inner = dd.Frame.Frame   -- has UIListLayout + TextLabel
+                local inner = dd.Frame.Frame   
                 local lbl   = inner.TextLabel
                 local iconShifted = false
 
@@ -579,7 +591,6 @@ local function createItemDropdown(titles, itemMap)
                         if img then
                             img:Destroy()
                             if iconShifted then
-                                -- restore width taken for icon
                                 lbl.Size = UDim2.new(lbl.Size.X.Scale,
                                     lbl.Size.X.Offset + 38,
                                     lbl.Size.Y.Scale, lbl.Size.Y.Offset)
@@ -593,12 +604,11 @@ local function createItemDropdown(titles, itemMap)
                         img.Name                 = "SW_SelIcon"
                         img.BackgroundTransparency = 1
                         img.Size                 = UDim2.fromOffset(30, 30)
-                        img.LayoutOrder          = -1   -- before TextLabel (LayoutOrder=0)
+                        img.LayoutOrder          = -1   
                         img.ZIndex               = lbl.ZIndex + 1
                         img.Parent               = inner
                         if not iconShifted then
                             iconShifted = true
-                            -- shrink TextLabel to make room (icon 22 + layout padding 8)
                             lbl.Size = UDim2.new(lbl.Size.X.Scale,
                                 lbl.Size.X.Offset - 38,
                                 lbl.Size.Y.Scale, lbl.Size.Y.Offset)
@@ -770,7 +780,7 @@ function buildWaterPickDropdown()
 end
 buildWaterPickDropdown()
 
-local WATER_REACH_DIST = 15  -- studs — ต้องอยู่ในระยะนี้ถึงจะรดน้ำได้
+local WATER_REACH_DIST = 15  
 
 local function walkToTarget(model)
     local part=model:FindFirstChildWhichIsA("BasePart",true)
@@ -780,13 +790,11 @@ local function walkToTarget(model)
     hum2.WalkSpeed=32
     hum2:MoveTo(part.Position)
     local arrived=false
-    -- ✅ เช็ค reached parameter จริงๆ (false = roblox internal timeout, ไม่ถึง)
     local conn=hum2.MoveToFinished:Connect(function(reached) arrived=reached end)
     local t=os.clock()
     repeat task.wait(0.1) until arrived or (os.clock()-t)>8
     conn:Disconnect()
     hum2.WalkSpeed=origSpeed
-    -- ✅ ตรวจระยะจริงเป็น ground truth (ครอบกรณี arrived แต่ internal timer expire)
     local hrp=LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
     if hrp then
         return (hrp.Position - part.Position).Magnitude <= WATER_REACH_DIST
@@ -809,9 +817,7 @@ local function checkAndWater(tree)
     local wv=stats:FindFirstChild("Water");  if not wv or not giveWaterRemote then return end
     if math.floor(wv.Value)>=100 then return end
     local treePart=tree:FindFirstChildWhichIsA("BasePart",true)
-    -- เดินไปหาต้น — ถ้าไม่ถึงจริงให้ข้าม
     if not walkToTarget(tree) then return end
-    -- ✅ double-check ระยะจริงก่อนรด (กัน edge case walkToTarget ผ่านแต่ drift ออก)
     local hrp=LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
     if treePart and hrp and (hrp.Position-treePart.Position).Magnitude > WATER_REACH_DIST then return end
     local tries=0
@@ -908,7 +914,6 @@ local function refreshTreeStatus()
     end)
 end
 
--- tree status แสดงเฉพาะเมื่อกดปุ่ม Reload Candy
 WaterSection:Button({
     Title="Reload Candy", Desc="โหลดข้อมูลต้นแคนดี้ใหม่ + รีเฟรชรายชื่อผู้เล่น", Icon="refresh-cw",
     Callback=function()
@@ -1001,7 +1006,6 @@ local function doAntiAFK()
         VirtualUser:CaptureController()
         VirtualUser:ClickButton2(Vector2.new())
     end)
-    -- simulate movement จริงสำหรับเกมที่มี AFK detection ของตัวเอง
     pcall(function()
         if hum and hum.Parent and hum.Health > 0 then
             hum:Move(Vector3.new(0.001, 0, 0), false)
@@ -1018,8 +1022,8 @@ local _origLighting     = {}
 local _fbProps   = {"Ambient","OutdoorAmbient","Brightness","ClockTime","FogEnd","FogStart","GlobalShadows"}
 local _fbVals    = {Color3.new(1,1,1), Color3.new(1,1,1), 2, 14, 1e6, 1e6, false}
 local _fbFxTypes = {"Atmosphere","BloomEffect","ColorCorrectionEffect","SunRaysEffect","DepthOfFieldEffect"}
-local _fbConn    = nil   -- เก็บ connection แทน while loop
-local _fbGuard   = false -- กัน recursive จาก Lighting.Changed
+local _fbConn    = nil   
+local _fbGuard   = false 
 
 local function setLighting(vals)
     pcall(function()
@@ -1034,12 +1038,10 @@ end
 
 local function setFullbright(state)
     FullbrightEnabled = state
-    -- disconnect loop เก่าก่อนเสมอ
     if _fbConn then _fbConn:Disconnect(); _fbConn = nil end
     if state then
         for _,k in ipairs(_fbProps) do _origLighting[k] = Lighting[k] end
         setLighting(_fbVals)
-        -- ดักทันทีที่เกมพยายาม reset lighting ค่าไหนก็ตาม
         _fbConn = Lighting.Changed:Connect(function()
             if not FullbrightEnabled or _fbGuard then return end
             _fbGuard = true
