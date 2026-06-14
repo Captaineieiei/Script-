@@ -193,17 +193,16 @@ local function setVisible(obj, v)
     obj.distLabel.Visible=v; obj.hpText.Visible=v
 end
 
-local HIDE_DEBOUNCE = 6  
-local SHOW_DEBOUNCE = 3  
+local HIDE_DEBOUNCE = 8  
+local SHOW_DEBOUNCE = 2  
 
 RunService.RenderStepped:Connect(function()
     if not CFG.Enabled then return end
     local Camera = workspace.CurrentCamera
     local camViewportSize = Camera.ViewportSize
     
-    -- Custom OnScreen check to prevent behind-camera flickering and edge flickering
     local function isOnScreen(v3)
-        if v3.Z <= 0 then return false end
+        if v3.Z <= 0.1 then return false end
         return v3.X > -100 and v3.X < camViewportSize.X + 100 and v3.Y > -100 and v3.Y < camViewportSize.Y + 100
     end
 
@@ -258,21 +257,29 @@ RunService.RenderStepped:Connect(function()
                 botPos3 = Camera:WorldToViewportPoint(root.Position - Vector3.new(0, 3, 0))
                 pos3 = Camera:WorldToViewportPoint(root.Position)
 
-                if not isOnScreen(pos3) and not isOnScreen(topPos3) then
+                -- CRITICAL FIX: If the root is calculated to be behind the camera, break math
+                if pos3.Z <= 0 then
                     isValid = false
+                else
+                    if not isOnScreen(pos3) and not isOnScreen(topPos3) then
+                        isValid = false
+                    end
                 end
             end
 
-            -- DEBOUNCE LOGIC FIX
+            -- IMPROVED DEBOUNCE LOGIC: Prevents micro-flickering when values fluctuate
             if isValid then
                 obj.hideTick = 0
                 obj.showTick = math.min(obj.showTick + 1, SHOW_DEBOUNCE)
             else
-                obj.showTick = 0
                 obj.hideTick = math.min(obj.hideTick + 1, HIDE_DEBOUNCE)
+                -- Only reset showTick if we've been invalid long enough to pass the hide debounce
+                if obj.hideTick >= HIDE_DEBOUNCE then
+                    obj.showTick = 0
+                end
             end
 
-            -- Visible if: (Valid and show debounce reached) OR (Invalid but hide debounce NOT reached yet)
+            -- Visible if: (Valid and reached show debounce) OR (Recently became invalid but hide debounce not reached)
             local visible = (isValid and obj.showTick >= SHOW_DEBOUNCE) or (not isValid and obj.hideTick < HIDE_DEBOUNCE)
 
             if not visible then
@@ -285,7 +292,9 @@ RunService.RenderStepped:Connect(function()
             local y1 = math.min(topPos3.Y, botPos3.Y)
             local y2 = math.max(topPos3.Y, botPos3.Y)
             local h  = y2 - y1
-            if h < 1 then setVisible(obj, false); return end
+            
+            -- CRITICAL FIX: Enforce minimum height to prevent bounding box collapse/invisibility at distance
+            if h < 2 then h = 2 end
             local w  = h * 0.6
             local x1, x2 = cx - w/2, cx + w/2
 
