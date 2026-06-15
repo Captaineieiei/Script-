@@ -82,11 +82,31 @@ local HS=game:GetService("HttpService");local PL=game:GetService("Players").Loca
 local UIS=game:GetService("UserInputService")
 local MPS=game:GetService("MarketplaceService");local STS=game:GetService("Stats")
 local NotificationLibrary
-local _SYM={info="◆",success="✔",error="✘",loading="◈",warn="▲"}
-local _PFX={info="     ",success="  ✔  ",error="  ✘  ",loading="···  ",warn="  !  "}
-local function log(msg,t) t=t or"info";print("  ".._SYM[t]..(_PFX[t] or"     ")..msg) end
-local function _div() print("  "..("─"):rep(44)) end
-local function _banner(msg) print("  "..msg) end
+
+-- ═══════════════════════════════════════════════════════════
+-- SPECTREWARE CYBERTERMINAL UI LOGGING SYSTEM (FIXED FOR ROBLOX CONSOLE)
+-- ═══════════════════════════════════════════════════════════
+local _SYM={info="◈",success="✔",error="✘",loading="⟳",warn="⚠"}
+local _PFX={info="  [◈ INF] ",success="  [✔ OK ] ",error="  [✘ ERR] ",loading="  [⟳ LD ] ",warn="  [⚠ WRN] "}
+local function log(msg,t) t=t or"info";print(_PFX[t]..msg) end
+local function _div() print("  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━") end
+local function _banner(msg) 
+    local pad = 49 - #msg
+    print("\n  ┌─────────────────────────────────────────────────┐")
+    print("  │  "..msg..string.rep(" ", pad > 0 and pad or 0).."│")
+    print("  └─────────────────────────────────────────────────┘")
+end
+local function _splash()
+    print([[
+      
+  ____  __  __  ____  __  __  ____  ____  ____  _   _  ____  __  __ 
+ / ___||  \/  |/ ___||  \/  |/ ___|| __ )| __ )| | | |/ ___||  \/  |
+ \___ \| |\/| |\___ \| |\/| |\___ \|  _ \|  _ \| | | | |    | |\/| |
+  ___) | |  | | ___) | |  | | ___) | |_) | |_) | |_| | |___ | |  | |
+ |____/|_|  |_||____/|_|  |_||____/|____/|____/ \___/ \____||_|  |_|
+                       [ L O A D E R ]   v]]..CFG.loaderVersion.."\n")
+end
+
 local function try(fn,def) local ok,v=pcall(fn);return ok and v or def end
 local function new(cls,props,par) local i=Instance.new(cls);for k,v in pairs(props) do i[k]=v end;i.Parent=par;return i end
 local function _normalizeRes(res)
@@ -314,6 +334,7 @@ local function apiLookup(key,hwidStr) local ok,body=pcall(HS.JSONEncode,HS,{key=
 local function _awaitResult(fn,maxTicks) local done,r1,r2=false,nil,nil;task.spawn(function() r1,r2=fn();done=true end);local t=0;while not done and t<maxTicks do task.wait(0.1);t=t+1 end;return r1,r2 end
 local _mainOk=xpcall(function()
     task.wait(CFG.waitOnStart)
+    _splash()
     if NotificationLibrary then NotificationLibrary:SendNotification("Info","⚡  SpectreWare  v"..CFG.loaderVersion.."  —  กำลังโหลด...",4) end
     local _uid=PL.UserId
     do
@@ -364,10 +385,10 @@ local _mainOk=xpcall(function()
         local _keyTag=_isDev and"[DEV]" or"[FREE]"
         local _timeTag=_isDev and"∞  Developer" or"∞  Free"
         _div()
-        _banner("  ✔  ".._label.."  ·  SpectreWare  v"..CFG.loaderVersion)
-        print("  ◆     👤  "..PL.Name.."  ("..tostring(_uid)..")")
-        print("  ◆     🎮  PlaceId: "..tostring(game.PlaceId))
-        print("  ◆     ⏳  ".._timeTag)
+        _banner("✔  ".._label.."  ·  SpectreWare  v"..CFG.loaderVersion)
+        log("👤  User: "..PL.Name.."  ("..tostring(_uid)..")", "info")
+        log("🎮  Game: PlaceId "..tostring(game.PlaceId), "info")
+        log("⏳  Access: ".._timeTag, "info")
         _div()
         task.delay(1, function() _notifyWL(_timeTag, _isDev and "DEV 👑" or "FREE 🎁") end)
         _expiresAt_cached=-1
@@ -397,7 +418,7 @@ local _mainOk=xpcall(function()
     if not _checkPcall() then warn("SpectreWare: pcall hook pre-auth");integrityFail("pcall_preauth");return end
     if not _checkRawops() then warn("SpectreWare: rawops hook pre-auth");integrityFail("rawops_preauth");return end
     _div()
-    _banner("  SpectreWare  v"..CFG.loaderVersion.."  ·  Initialising")
+    _banner("SpectreWare  v"..CFG.loaderVersion.."  ·  Initialising")
     _div()
     log("Key: "..maskKey(_getKey()),"loading")
     hwid=getHWID()
@@ -442,13 +463,13 @@ local _mainOk=xpcall(function()
     _expiresAt_cached=expiresAt
     log("Key verified  —  Expires: "..timeLeft,"success")
     _div()
-    _banner("  ✔  VERIFIED  ·  SpectreWare  v"..CFG.loaderVersion)
-    print("  ◆     👤  "..PL.Name)
+    _banner("✔  VERIFIED  ·  SpectreWare  v"..CFG.loaderVersion)
+    log("👤  User: "..PL.Name, "info")
     local _discordStr=tostring(data.redeemed_by or"")
     local _discordName=_discordStr:match("^(.-)%s*%(%d+%)$") or _discordStr
-    if _discordName~="" then print("  ◆     💬  ".._discordName.." (Discord)") end
-    print("  ◆     ⏳  "..timeLeft)
-    print("  ◆     🎮  PlaceId: "..tostring(game.PlaceId))
+    if _discordName~="" then log("💬  Discord: ".._discordName, "info") end
+    log("⏳  Expires: "..timeLeft, "info")
+    log("🎮  Game: PlaceId "..tostring(game.PlaceId), "info")
     _div()
     task.delay(1, function() _notifyWL(timeLeft, "KEY") end)
     task.spawn(function() sendWebhook("login",{key=_getKey(),hwid=hwid,timeLeft=timeLeft,expiresAt=expiresAt}) end)
