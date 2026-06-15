@@ -84,27 +84,16 @@ local MPS=game:GetService("MarketplaceService");local STS=game:GetService("Stats
 local NotificationLibrary
 
 -- ═══════════════════════════════════════════════════════════
--- SPECTREWARE CYBERTERMINAL UI LOGGING SYSTEM (FIXED FOR ROBLOX CONSOLE)
+-- SPECTREWARE CLEAN MINIMALIST UI LOGGING SYSTEM (NO LINES)
 -- ═══════════════════════════════════════════════════════════
-local _SYM={info="◈",success="✔",error="✘",loading="⟳",warn="⚠"}
-local _PFX={info="  [◈ INF] ",success="  [✔ OK ] ",error="  [✘ ERR] ",loading="  [⟳ LD ] ",warn="  [⚠ WRN] "}
+local _PFX={info="  [◈] ",success="  [✔] ",error="  [✘] ",loading="  [⟳] ",warn="  [⚠] "}
 local function log(msg,t) t=t or"info";print(_PFX[t]..msg) end
-local function _div() print("  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━") end
+local function _div() print("  • • • • • • • • • • • • • • • • • • • • • • • • • •") end
 local function _banner(msg) 
-    local pad = 49 - #msg
-    print("\n  ┌─────────────────────────────────────────────────┐")
-    print("  │  "..msg..string.rep(" ", pad > 0 and pad or 0).."│")
-    print("  └─────────────────────────────────────────────────┘")
+    print("\n  ◈  "..msg.."  ◈\n") 
 end
 local function _splash()
-    print([[
-      
-  ____  __  __  ____  __  __  ____  ____  ____  _   _  ____  __  __ 
- / ___||  \/  |/ ___||  \/  |/ ___|| __ )| __ )| | | |/ ___||  \/  |
- \___ \| |\/| |\___ \| |\/| |\___ \|  _ \|  _ \| | | | |    | |\/| |
-  ___) | |  | | ___) | |  | | ___) | |_) | |_) | |_| | |___ | |  | |
- |____/|_|  |_||____/|_|  |_||____/|____/|____/ \___/ \____||_|  |_|
-                       [ L O A D E R ]   v]]..CFG.loaderVersion.."\n")
+    print("\n  ⚡ S P E C T R E W A R E ⚡\n  [ L O A D E R ]   v"..CFG.loaderVersion.."\n")
 end
 
 local function try(fn,def) local ok,v=pcall(fn);return ok and v or def end
