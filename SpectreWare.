@@ -256,47 +256,34 @@ local STS = game:GetService("Stats")
 
 -- ── Logging / UI helpers ─────────────────────────────────────────────────────
 local NotificationLibrary
+local _BW = 52  -- horizontal rule width (no right cap → emoji-safe)
 
--- ไม่มีเส้นเลย ใช้ warn() = เหลือง สำหรับ header / print() = ขาว สำหรับ detail
-local _TAG = {
-    info    = "[ -- ]",
-    success = "[ OK ]",
-    error   = "[ !! ]",
-    loading = "[ .. ]",
-    warn    = "[ ** ]",
-}
+-- Half-open box: left cap only, so emoji widths don't affect alignment
+local function _bRow(msg)  print("  ║  " .. msg) end
+local function _bTop()     print("  ╔" .. ("═"):rep(_BW)) end
+local function _bBot()     print("  ╚" .. ("═"):rep(_BW)) end
+local function _bMid()     print("  ╠" .. ("═"):rep(_BW)) end
 
+-- Separator line between log sections
+local function _div()      print("  " .. ("─"):rep(_BW + 4)) end
+
+-- Standalone header box (top ═ title ═ bottom)
+local function _banner(msg)
+    _bTop(); _bRow(msg); _bBot()
+end
+
+-- Per-line logger with │ prefix
 local function log(msg, t)
     t = t or "info"
-    print("  " .. (_TAG[t] or _TAG.info) .. "  " .. msg)
+    local _icons = {
+        info    = "  ◇  ",
+        success = "  ✔  ",
+        error   = "  ✘  ",
+        loading = "  ⟳  ",
+        warn    = "  ⚠  ",
+    }
+    print("  │" .. (_icons[t] or "  ◇  ") .. msg)
 end
-
-local function _div()         end   -- no-op (ไม่ปริ้นเส้น)
-local function _banner(msg)   warn("  " .. msg)  end  -- legacy → warn
-
--- header section (เหลือง)
-local function _headerBox(line1, line2)
-    warn("")
-    warn("  " .. line1)
-    if line2 then warn("  " .. line2) end
-    warn("")
-end
-
--- info card: header เหลือง แล้ว rows ขาว label-aligned
-local function _cardOpen(title)
-    warn("")
-    warn("  " .. title)
-end
--- _cardRow("Player", PL.Name) หรือ _cardRow("Player  :  " .. PL.Name)
-local function _cardRow(label, value)
-    if value ~= nil then
-        print(("    %-10s  %s"):format(label, tostring(value)))
-    else
-        print("    " .. tostring(label))
-    end
-end
-local function _cardClose()   print("")  end
-
 local function try(fn, def) local ok, v = pcall(fn); return ok and v or def end
 local function new(cls, props, par)
     local i = Instance.new(cls)
@@ -815,11 +802,13 @@ local _mainOk = xpcall(function()
         local _label  = _isDev and "DEV ACCESS 👑"  or "FREE ACCESS 🎁"
         local _keyTag = _isDev and "[DEV]"           or "[FREE]"
         local _timeTag = _isDev and "∞  Developer"  or "∞  Free"
-        _cardOpen("✔  " .. _label .. "  |  SpectreWare  v" .. CFG.loaderVersion)
-        _cardRow("Player",  PL.Name .. "  (" .. tostring(_uid) .. ")")
-        _cardRow("PlaceId", tostring(game.PlaceId))
-        _cardRow("Expires", _timeTag)
-        _cardClose()
+        _bTop()
+        _bRow("✔  " .. _label .. "  ·  SpectreWare  v" .. CFG.loaderVersion)
+        _bMid()
+        _bRow("👤  Player   ›  " .. PL.Name .. "  (" .. tostring(_uid) .. ")")
+        _bRow("🎮  PlaceId  ›  " .. tostring(game.PlaceId))
+        _bRow("⏳  Access   ›  " .. _timeTag)
+        _bBot()
         task.delay(1, function() _notifyWL(_timeTag, _isDev and "DEV 👑" or "FREE 🎁") end)
         _expiresAt_cached = -1
         task.spawn(function() sendWebhook("login", { key = _keyTag, hwid = hwid, timeLeft = _timeTag }) end)
@@ -853,16 +842,13 @@ local _mainOk = xpcall(function()
     if not _checkGetgenv() then warn("SpectreWare: getgenv hook pre-auth"); integrityFail("getgenv_preauth"); return end
     if not _checkPcall()   then warn("SpectreWare: pcall hook pre-auth");   integrityFail("pcall_preauth");   return end
     if not _checkRawops()  then warn("SpectreWare: rawops hook pre-auth");  integrityFail("rawops_preauth");  return end
-    _headerBox(
-        "⚡  SpectreWare  v" .. CFG.loaderVersion,
-        "    Initialising ..."
-    )
-    log("Key: " .. maskKey(_getKey()), "loading")
+    _banner("⚡  SpectreWare  v" .. CFG.loaderVersion .. "  ·  Initialising...")
+    log("🔑  Key    ›  " .. maskKey(_getKey()), "loading")
     hwid = getHWID()
     if hwid == "" or hwid == "UNKNOWN" then
         log("Cannot determine HWID", "error"); integrityFail("HWID unknown"); return
     end
-    log("HWID: " .. tostring(hwid):sub(1, 28) .. "...", "info")
+    log("🖥  HWID   ›  " .. tostring(hwid):sub(1, 28) .. "...", "info")
     local callOk, raw
     for i = 1, 3 do
         log(("Connecting to API... (%d/3)"):format(i), "loading")
@@ -905,14 +891,17 @@ local _mainOk = xpcall(function()
     end
     _expiresAt_cached = expiresAt
     log("Key verified  —  Expires: " .. timeLeft, "success")
+    _div()
+    _bTop()
+    _bRow("✔  VERIFIED  ·  SpectreWare  v" .. CFG.loaderVersion)
+    _bMid()
+    _bRow("👤  Player   ›  " .. PL.Name)
     local _discordStr  = tostring(data.redeemed_by or "")
     local _discordName = _discordStr:match("^(.-)%s*%(%d+%)$") or _discordStr
-    _cardOpen("✔  VERIFIED  |  SpectreWare  v" .. CFG.loaderVersion)
-    _cardRow("Player",  PL.Name)
-    if _discordName ~= "" then _cardRow("Discord", _discordName) end
-    _cardRow("Expires", timeLeft)
-    _cardRow("PlaceId", tostring(game.PlaceId))
-    _cardClose()
+    if _discordName ~= "" then _bRow("💬  Discord  ›  " .. _discordName) end
+    _bRow("⏳  Expires  ›  " .. timeLeft)
+    _bRow("🎮  PlaceId  ›  " .. tostring(game.PlaceId))
+    _bBot()
     task.delay(1, function() _notifyWL(timeLeft, "KEY") end)
     task.spawn(function() sendWebhook("login", { key = _getKey(), hwid = hwid, timeLeft = timeLeft, expiresAt = expiresAt }) end)
     local scriptSrc
