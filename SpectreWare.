@@ -256,33 +256,33 @@ local STS = game:GetService("Stats")
 
 -- ── Logging / UI helpers ─────────────────────────────────────────────────────
 local NotificationLibrary
-local _BW = 52  -- horizontal rule width (no right cap → emoji-safe)
+local _BW = 52  -- separator width
 
--- Half-open box: left cap only, so emoji widths don't affect alignment
-local function _bRow(msg)  print("  ║  " .. msg) end
-local function _bTop()     print("  ╔" .. ("═"):rep(_BW)) end
-local function _bBot()     print("  ╚" .. ("═"):rep(_BW)) end
-local function _bMid()     print("  ╠" .. ("═"):rep(_BW)) end
+-- ASCII-safe separators (Roblox console does not render Unicode box-drawing chars)
+local function _div()  print(("="):rep(_BW)) end
+local function _sep()  print(("-"):rep(_BW)) end
 
--- Separator line between log sections
-local function _div()      print("  " .. ("─"):rep(_BW + 4)) end
+local function _bRow(msg)  print("  " .. msg) end
+local function _bTop()     _div() end
+local function _bBot()     _div() end
+local function _bMid()     _sep() end
 
--- Standalone header box (top ═ title ═ bottom)
 local function _banner(msg)
-    _bTop(); _bRow(msg); _bBot()
+    _div()
+    print("  " .. msg)
+    _div()
 end
 
--- Per-line logger with │ prefix
 local function log(msg, t)
     t = t or "info"
     local _icons = {
-        info    = "  ◇  ",
-        success = "  ✔  ",
-        error   = "  ✘  ",
-        loading = "  ⟳  ",
-        warn    = "  ⚠  ",
+        info    = " ◇  ",
+        success = " ✔  ",
+        error   = " ✘  ",
+        loading = " >>  ",
+        warn    = " !!  ",
     }
-    print("  │" .. (_icons[t] or "  ◇  ") .. msg)
+    print((_icons[t] or " ◇  ") .. msg)
 end
 local function try(fn, def) local ok, v = pcall(fn); return ok and v or def end
 local function new(cls, props, par)
