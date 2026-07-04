@@ -467,10 +467,23 @@ local function _notifyWL(timeLeft, tier)
     end
 end
 
-local function _notifyHWID()
-    local b = "กด 'รีเซ็ต HWID' เพื่อเปิด Discord"
+local function _notifyHWID(reason)
+    reason = reason or "mismatch"
+    local title, msg
+    if reason == "drift" then
+        title = "⚠  HWID Drift Detected"
+        msg   = "⚡  SpectreWare  —  HWID เปลี่ยนระหว่าง session\nติดต่อ Discord เพื่อรีเซ็ต HWID"
+    else
+        title = "⚠  HWID Mismatch"
+        msg   = "⚡  SpectreWare  —  Key นี้ผูกกับอุปกรณ์อื่น\nติดต่อ Discord เพื่อรีเซ็ต HWID"
+    end
+    -- wait for NotificationLibrary to be ready (up to 5s)
+    local waited = 0
+    while not NotificationLibrary and waited < 50 do
+        task.wait(0.1); waited = waited + 1
+    end
     if NotificationLibrary then
-        pcall(function() NotificationLibrary:SendNotification("Info", "⚡  SpectreWare  —  " .. b, 10) end)
+        pcall(function() NotificationLibrary:SendNotification(title, msg, 10) end)
     end
 end
 
@@ -1056,7 +1069,7 @@ local _mainOk = xpcall(function()
     if type(data.hwid) == "string" and data.hwid ~= "" and data.hwid ~= hwid then
         log("HWID mismatch — key bound to another device", "error")
         task.spawn(function() sendWebhook("mismatch", { key = _getKey(), hwid = hwid, timeLeft = "BLOCKED" }) end)
-        _notifyHWID()
+        task.spawn(function() _notifyHWID("mismatch") end)
         getgenv()[_GK.running] = nil
         task.spawn(function()
             _showHWIDResetUI(hwid, 5)
@@ -1213,7 +1226,7 @@ task.spawn(function()
         if curHwid ~= hwid and curHwid ~= "UNKNOWN" then
             _sessionActive = false; warn("SpectreWare: HWID drift")
             pcall(function() sendWebhook("mismatch", { key = _getKey(), hwid = curHwid, timeLeft = "DRIFT" }) end)
-            _notifyHWID()
+            task.spawn(function() _notifyHWID("drift") end)
             task.spawn(function()
                 _showHWIDResetUI(curHwid, 5)
                 pcall(function() PL:Kick("[ SpectreWare ]  HWID drift detected.\nContact Discord.") end)
