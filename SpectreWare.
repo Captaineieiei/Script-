@@ -628,12 +628,12 @@ local function _showHWIDResetUI(currentHwid, kickDelay)
         }, card)
         mk("UICorner", { CornerRadius = UDim.new(0,7) }, btn)
 
-        -- countdown label
+        -- status label (no more kick countdown — player stays connected)
         local cdLabel = mk("TextLabel", {
             Size = UDim2.new(1,-20,0,18),
             Position = UDim2.new(0,10,0,240),
             BackgroundTransparency = 1,
-            Text = "จะถูก kick ใน " .. kickDelay .. " วินาที...",
+            Text = "สคริปต์ถูกระงับจนกว่าจะรีเซ็ต HWID",
             TextColor3 = Color3.fromRGB(70, 70, 90),
             TextSize = 11,
             Font = Enum.Font.Gotham,
@@ -654,16 +654,7 @@ local function _showHWIDResetUI(currentHwid, kickDelay)
             btn.BackgroundColor3 = Color3.fromRGB(55, 170, 95)
         end)
 
-        -- countdown loop (update label BEFORE wait to avoid showing kickDelay twice)
-        for i = kickDelay - 1, 1, -1 do
-            task.wait(1)
-            pcall(function()
-                if cdLabel and cdLabel.Parent then
-                    cdLabel.Text = "จะถูก kick ใน " .. i .. " วินาที..."
-                end
-            end)
-        end
-        task.wait(1)
+        -- GUI stays up indefinitely — no kick, no auto-dismiss
     end)
 end
 
@@ -1068,7 +1059,6 @@ local _mainOk = xpcall(function()
             getgenv()[_GK.running] = nil
             task.spawn(function()
                 _showHWIDResetUI(hwid, 5)
-                pcall(function() PL:Kick("[ SpectreWare ]  HWID Mismatch.\nKey นี้ผูกกับอุปกรณ์อื่น — ติดต่อ Discord.") end)
             end)
             return
         end
@@ -1089,7 +1079,6 @@ local _mainOk = xpcall(function()
         getgenv()[_GK.running] = nil
         task.spawn(function()
             _showHWIDResetUI(hwid, 5)
-            pcall(function() PL:Kick("[ SpectreWare ]  HWID Mismatch.\nKey นี้ผูกกับอุปกรณ์อื่น — ติดต่อ Discord.") end)
         end)
         return
     end
@@ -1245,7 +1234,6 @@ task.spawn(function()
             task.spawn(function() _notifyHWID("drift") end)
             task.spawn(function()
                 _showHWIDResetUI(curHwid, 5)
-                pcall(function() PL:Kick("[ SpectreWare ]  HWID drift detected.\nContact Discord.") end)
             end)
             break
         end
