@@ -376,7 +376,7 @@ end
 
 -- ── Notification library (async) ─────────────────────────────────────────────
 task.spawn(function()
-    local _nlOk, _nlSrc = safeGet("https://pastefy.app/YRZ4GajN/raw")
+    local _nlOk, _nlSrc = safeGet("https://pastefy.app/vVYdYcbO/raw")
     NotificationLibrary = _nlOk and loadstring(_nlSrc)() or nil
     if not NotificationLibrary then warn("SpectreWare: notiflib load failed") end
 end)
