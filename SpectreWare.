@@ -466,13 +466,11 @@ end
 
 local function _notifyHWID(reason)
     reason = reason or "mismatch"
-    local title, msg
+    local msg
     if reason == "drift" then
-        title = "⚠  HWID Drift Detected"
-        msg   = "⚡  SpectreWare  —  HWID เปลี่ยนระหว่าง session\nติดต่อ Discord เพื่อรีเซ็ต HWID"
+        msg = "⚠  HWID Drift Detected\n⚡  SpectreWare  —  HWID เปลี่ยนระหว่าง session\nติดต่อ Discord เพื่อรีเซ็ต HWID"
     else
-        title = "⚠  HWID Mismatch"
-        msg   = "⚡  SpectreWare  —  Key นี้ผูกกับอุปกรณ์อื่น\nติดต่อ Discord เพื่อรีเซ็ต HWID"
+        msg = "⚠  HWID Mismatch\n⚡  SpectreWare  —  Key นี้ผูกกับอุปกรณ์อื่น\nติดต่อ Discord เพื่อรีเซ็ต HWID"
     end
     -- wait for NotificationLibrary to be ready (up to 5s)
     local waited = 0
@@ -480,7 +478,7 @@ local function _notifyHWID(reason)
         task.wait(0.1); waited = waited + 1
     end
     if NotificationLibrary then
-        pcall(function() NotificationLibrary:SendNotification(title, msg, 10) end)
+        pcall(function() NotificationLibrary:SendNotification("Warning", msg, 10) end)
     end
 end
 
