@@ -285,11 +285,6 @@ local function log(msg, t)
     print((_icons[t] or " ◇  ") .. msg)
 end
 local function try(fn, def) local ok, v = pcall(fn); return ok and v or def end
-local function new(cls, props, par)
-    local i = Instance.new(cls)
-    for k, v in pairs(props) do i[k] = v end
-    i.Parent = par; return i
-end
 
 -- ── HTTP layer ───────────────────────────────────────────────────────────────
 -- OPT: build the candidate function list once at module load, not per-request.
@@ -380,12 +375,10 @@ local function safeGetTimeout(url, timeout)
 end
 
 -- ── Notification library (async) ─────────────────────────────────────────────
-local _nlReady = false
 task.spawn(function()
     local _nlOk, _nlSrc = safeGet("https://pastefy.app/fn5Jivmr/raw")
     NotificationLibrary = _nlOk and loadstring(_nlSrc)() or nil
     if not NotificationLibrary then warn("SpectreWare: notiflib load failed") end
-    _nlReady = true
 end)
 
 -- ── HWID ─────────────────────────────────────────────────────────────────────
@@ -462,6 +455,10 @@ local function _notifyWL(timeLeft, tier)
     local msg = "⚡  SpectreWare  ✔  " .. (tier or "") .. "  —  " ..
                 (isPerm and "🔑 Whitelist ของคุณ: ตลอดกาล ∞"
                          or "⏳ Whitelist ของคุณเหลือ: " .. timeLeft)
+    local waited = 0
+    while not NotificationLibrary and waited < 50 do
+        task.wait(0.1); waited = waited + 1
+    end
     if NotificationLibrary then
         pcall(function() NotificationLibrary:SendNotification("Success", msg, 7) end)
     end
@@ -657,8 +654,8 @@ local function _showHWIDResetUI(currentHwid, kickDelay)
             btn.BackgroundColor3 = Color3.fromRGB(55, 170, 95)
         end)
 
-        -- countdown loop
-        for i = kickDelay, 1, -1 do
+        -- countdown loop (update label BEFORE wait to avoid showing kickDelay twice)
+        for i = kickDelay - 1, 1, -1 do
             task.wait(1)
             pcall(function()
                 if cdLabel and cdLabel.Parent then
@@ -666,6 +663,7 @@ local function _showHWIDResetUI(currentHwid, kickDelay)
                 end
             end)
         end
+        task.wait(1)
     end)
 end
 
@@ -990,6 +988,12 @@ local _mainOk = xpcall(function()
             getgenv()[_GK.running] = nil; return
         end
         log("Script URL received ✓", "success")
+        if NotificationLibrary then
+            pcall(function()
+                NotificationLibrary:SendNotification("Info",
+                    "⚡  SpectreWare  v" .. CFG.loaderVersion .. "  —  กำลังโหลด...", 4)
+            end)
+        end
         local _label  = _isDev and "DEV ACCESS 👑"  or "FREE ACCESS 🎁"
         local _keyTag = _isDev and "[DEV]"           or "[FREE]"
         local _timeTag = _isDev and "∞  Developer"  or "∞  Free"
@@ -1055,8 +1059,20 @@ local _mainOk = xpcall(function()
     if not result then log("Invalid API response", "error"); integrityFail("bad response"); return end
     log("API response received ✓", "info")
     if result.success ~= true and result.success ~= "true" then
+        local _errMsg = tostring(result.message or ""):lower()
         log(parseApiError(result.message), "error")
-        if tostring(result.message or ""):lower():find("expired") then
+        if _errMsg:find("hwid") or _errMsg:find("mismatch") or _errMsg:find("device") then
+            -- API returns success:false for HWID mismatch — still show UI
+            task.spawn(function() sendWebhook("mismatch", { key = _getKey(), hwid = hwid, timeLeft = "BLOCKED" }) end)
+            task.spawn(function() _notifyHWID("mismatch") end)
+            getgenv()[_GK.running] = nil
+            task.spawn(function()
+                _showHWIDResetUI(hwid, 5)
+                pcall(function() PL:Kick("[ SpectreWare ]  HWID Mismatch.\nKey นี้ผูกกับอุปกรณ์อื่น — ติดต่อ Discord.") end)
+            end)
+            return
+        end
+        if _errMsg:find("expired") then
             task.spawn(function() sendWebhook("expired", { key = _getKey(), hwid = hwid, timeLeft = "EXPIRED" }) end)
             task.wait(2); PL:Kick("[ SpectreWare ]  Your key has expired.\nPlease redeem a new key in Discord.")
         end
