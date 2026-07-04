@@ -923,10 +923,6 @@ end
 -- ══════════════════════════════════════════════════════════════════════════════
 local _mainOk = xpcall(function()
     task.wait(CFG.waitOnStart)
-    if NotificationLibrary then
-        NotificationLibrary:SendNotification("Info",
-            "⚡  SpectreWare  v" .. CFG.loaderVersion .. "  —  กำลังโหลด...", 4)
-    end
     local _uid = PL.UserId
     do
         local _uidOk, _uidErr = _checkUIDSanity()
@@ -1069,6 +1065,12 @@ local _mainOk = xpcall(function()
         return
     end
     log("HWID verified ✓", "success")
+    if NotificationLibrary then
+        pcall(function()
+            NotificationLibrary:SendNotification("Info",
+                "⚡  SpectreWare  v" .. CFG.loaderVersion .. "  —  กำลังโหลด...", 4)
+        end)
+    end
     local timeLeft, expiresAt = "Permanent", data.expiresAt
     if expiresAt ~= nil and expiresAt ~= -1 then
         local diff = _r_floor((expiresAt - os.time() * 1000) / 1000)
