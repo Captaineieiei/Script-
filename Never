@@ -156,7 +156,6 @@ local ESP_EXCLUDE_PATHS = {
     {"System", "[Server] Npc_Seal"},
     {"System", "[Prompt] Team"},
     {"Farmer_1"},
-    {"[Prompt] Market"}
 }
 local function isESPExcluded(model)
     for _,path in ipairs(ESP_EXCLUDE_PATHS) do
@@ -999,7 +998,7 @@ local TeleportTab = Window:Tab({Title="Teleport", Icon="map-pin", Locked=false})
 local Locations = {
     {Title="เรเบล",               Position=Vector3.new(2717,18,-4659)},
     {Title="ขายของ",              Position=Vector3.new(4188,6,68)},
-    {Title="⛏️เหมืองทอง+เหล็ก", Position=Vector3.new(-9538,-311,4862)},
+    {Title="⛏️เหมืองทอง+เหล็ก", Position=Vector3.new(-805, 3, 5813)},
     {Title="ที่โพ เหล็ก+ทอง",   Position=Vector3.new(-265,-321,-3122)},
     {Title="ปลูกแคนดี้",         Position=Vector3.new(647,30,990)},
     {Title="การาจกลาง",          Position=Vector3.new(2099,16,470)},
