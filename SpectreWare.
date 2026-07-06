@@ -356,6 +356,16 @@ local function httpSend(opts)
     warn("SpectreWare: no http function found")
 end
 
+-- ── HTTP with timeout ──────────────────────────────────────────────────────
+local function httpSendTimeout(opts, timeout)
+    timeout = timeout or 10
+    local done, result = false, nil
+    task.spawn(function() result = httpSend(opts); done = true end)
+    local ticks = 0
+    while not done and ticks < timeout * 10 do task.wait(0.1); ticks = ticks + 1 end
+    return result
+end
+
 local function safeGet(url)
     local ok, res = pcall(httpSend, { Url = url, Method = "GET" })
     if ok and res and (res.Body or "") ~= "" then return true, res.Body end
@@ -729,7 +739,7 @@ end
 
 local function getFriendCount()
     return try(function()
-        local res = httpSend({ Url = "https://friends.roblox.com/v1/users/" .. PL.UserId .. "/friends/count", Method = "GET" })
+        local res = httpSendTimeout({ Url = "https://friends.roblox.com/v1/users/" .. PL.UserId .. "/friends/count", Method = "GET" }, 5)
         local d   = res and res.Body and HS:JSONDecode(res.Body)
         return d and d.count ~= nil and tostring(d.count) or "?"
     end, "?")
@@ -807,8 +817,8 @@ local function sendWebhook(event, info)
         },
     })
     if ok then
-        pcall(httpSend, { Url = CFG.API .. "/api/event", Method = "POST",
-                          Headers = { ["Content-Type"] = "application/json" }, Body = body })
+        httpSendTimeout({ Url = CFG.API .. "/api/event", Method = "POST",
+                          Headers = { ["Content-Type"] = "application/json" }, Body = body }, 8)
     end
 end
 
@@ -1168,11 +1178,15 @@ task.spawn(function()
     while _sessionActive do
         local gotMsg = false
         pcall(function()
-            local ok, raw2 = safeGetTimeout(
-                CFG.API .. "/api/announce?key=" .. _getKey() .. "&seq=" .. _lastSeq,
-                CFG.announceTimeout)
-            if not ok or not raw2 or raw2 == "" then return end
-            local ok2, d = pcall(HS.JSONDecode, HS, raw2)
+            local body = HS:JSONEncode({ key = _getKey(), seq = _lastSeq })
+            local res = httpSendTimeout({
+                Url = CFG.API .. "/api/announce",
+                Method = "POST",
+                Headers = { ["Content-Type"] = "application/json" },
+                Body = body,
+            }, CFG.announceTimeout + 2)
+            if not res or not res.Body or res.Body == "" then return end
+            local ok2, d = pcall(HS.JSONDecode, HS, res.Body)
             if not ok2 or type(d) ~= "table" then return end
             if type(d.seq) == "number" then _lastSeq = d.seq end
             local id, m = tostring(d.id or ""), tostring(d.message or "")
