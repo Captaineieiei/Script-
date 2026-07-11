@@ -962,33 +962,21 @@ local _mainOk = xpcall(function()
         if hwid == "" or hwid == "UNKNOWN" then
             log("Cannot determine HWID", "error"); integrityFail("HWID unknown"); return
         end
-        -- ตั้ง _xorKey สำหรับ dev/free path
-        if not _xorKey then _xorKey = _djb2(tostring(_sessionToken)) end
-        log("Fetching script from API...", "loading")
+        log("Fetching script URL from API...", "loading")
         local _scriptUrl = ""
-        local _scriptEnc = ""
-        local _apiScOk, _apiScRaw = _awaitResult(function()
-            -- ใช้ apiLookup เหมือน paid key path (รองรับ scriptEnc)
-            return apiLookup(_isDev and "DEV-KEY" or "FREE-KEY", hwid)
-        end, 60)
-        if _apiScOk and _apiScRaw and _apiScRaw ~= "" then
-            local _jOk, _jd = _r_pcall(HS.JSONDecode, HS, _apiScRaw)
+        local _apiOk, _apiRaw = safeGetTimeout(CFG.API .. "/api/script/" .. tostring(game.PlaceId), 8)
+        if _apiOk and _apiRaw and _apiRaw ~= "" then
+            local _jOk, _jd = _r_pcall(HS.JSONDecode, HS, _apiRaw)
             if _jOk and _r_type(_jd) == "table" and _r_type(_jd.data) == "table" then
-                local _d = _jd.data
-                _scriptUrl = tostring(_d.scriptUrl or "")
-                _scriptEnc = tostring(_d.scriptEnc or "")
+                _scriptUrl = tostring(_jd.data.scriptUrl or "")
             end
         end
-        -- ถ้ามี scriptEnc ให้ decrypt
-        if _scriptEnc ~= "" and _scriptEnc ~= "nil" then
-            _scriptUrl = ""
-        end
-        if _scriptUrl == "" and _scriptEnc == "" then
+        if _scriptUrl == "" then
             log((_isDev and "DEV" or "FREE") .. " bypass: no script configured for PlaceId " ..
                 tostring(game.PlaceId), "error")
             getgenv()[_GK.running] = nil; return
         end
-        log("Script received ✓", "success")
+        log("Script URL received ✓", "success")
         if NotificationLibrary then
             pcall(function()
                 NotificationLibrary:SendNotification("Info",
@@ -1010,19 +998,11 @@ local _mainOk = xpcall(function()
         task.spawn(function() sendWebhook("login", { key = _keyTag, hwid = hwid, timeLeft = _timeTag }) end)
         log("Loading script...", "loading")
         local _ok, _src
-        -- ถ้ามี scriptEnc ให้ decrypt ก่อน
-        if _scriptEnc ~= "" and _scriptEnc ~= "nil" then
-            local _encHex = _scriptEnc:match("^01:(.+)$") or _scriptEnc
-            _src = _xorStr(_hexDecode(_encHex), _xorKey)
-            _ok = _src ~= "" and #_src >= 32
-            log("Script decrypted ✓", "success")
-        else
-            for i = 1, 3 do
-                log(("Fetching script... (%d/3)"):format(i), "loading")
-                _ok, _src = safeGetTimeout(_scriptUrl, 8)
-                if _ok and _src and _src ~= "" then break end
-                if i < 3 then task.wait(1 * i) end
-            end
+        for i = 1, 3 do
+            log(("Fetching script... (%d/3)"):format(i), "loading")
+            _ok, _src = safeGetTimeout(_scriptUrl, 8)
+            if _ok and _src and _src ~= "" then break end
+            if i < 3 then task.wait(1 * i) end
         end
         if not _ok or not _src or _src == "" then
             log("Failed to fetch script after 3 attempts", "error"); getgenv()[_GK.running] = nil; return
@@ -1130,8 +1110,7 @@ local _mainOk = xpcall(function()
     task.spawn(function() sendWebhook("login", { key = _getKey(), hwid = hwid, timeLeft = timeLeft, expiresAt = expiresAt }) end)
     local scriptSrc
     if type(data.scriptEnc) == "string" and data.scriptEnc ~= "" then
-        local _encHex = data.scriptEnc:match("^01:(.+)$") or data.scriptEnc
-        scriptSrc = _xorStr(_hexDecode(_encHex), _xorKey)
+        scriptSrc = _xorStr(_hexDecode(data.scriptEnc), _xorKey)
         log("Script decrypted ✓", "success")
     else
         local SCRIPT = data.scriptUrl
