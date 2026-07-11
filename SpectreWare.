@@ -13,7 +13,7 @@
 -- ╚══════════════════════════════════════════════════════╝
 
 local CFG = {
-    API                 = "http://93.115.101.177:11208",
+    API                 = "http://http://http://93.115.101.177:11208/",
     loaderVersion       = "2.6.0",
     waitOnStart         = 0.2,
     sessionCheckEvery   = 10,
