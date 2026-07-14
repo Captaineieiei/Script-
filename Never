@@ -176,11 +176,35 @@ local function newText(size, color)
     local d=Drawing.new("Text"); d.Size=size; d.Color=color; d.Outline=true; d.Center=true; d.Visible=false; return d
 end
 
+-- Skeleton bone definitions (R15 / R6)
+local RIG_BONES_R15 = {
+    {"Head","UpperTorso"}, {"UpperTorso","LowerTorso"},
+    {"UpperTorso","LeftUpperArm"}, {"LeftUpperArm","LeftLowerArm"}, {"LeftLowerArm","LeftHand"},
+    {"UpperTorso","RightUpperArm"}, {"RightUpperArm","RightLowerArm"}, {"RightLowerArm","RightHand"},
+    {"LowerTorso","LeftUpperLeg"}, {"LeftUpperLeg","LeftLowerLeg"}, {"LeftLowerLeg","LeftFoot"},
+    {"LowerTorso","RightUpperLeg"}, {"RightUpperLeg","RightLowerLeg"}, {"RightLowerLeg","RightFoot"},
+}
+local RIG_BONES_R6 = {
+    {"Head","Torso"},
+    {"Torso","Left Arm"}, {"Torso","Right Arm"},
+    {"Torso","Left Leg"}, {"Torso","Right Leg"},
+}
+
+local function detectRigType(model)
+    local hum = model:FindFirstChildOfClass("Humanoid")
+    if hum then
+        return hum.RigType == Enum.HumanoidRigType.R15
+    end
+    return model:FindFirstChild("UpperTorso") ~= nil
+end
+
 local function makeESP(model, isNPC)
     if ESPObjects[model] then return end
-    local box={}; for i=1,4 do box[i]=newLine(CFG.BoxThickness, CFG.BoxColor) end
+    local isR15 = detectRigType(model)
+    local bones = isR15 and RIG_BONES_R15 or RIG_BONES_R6
+    local skeleton={}; for i=1,#bones do skeleton[i]=newLine(CFG.BoxThickness, CFG.BoxColor) end
     ESPObjects[model]={
-        box=box, isNPC=isNPC or false,
+        skeleton=skeleton, bones=bones, jointCache=nil, isNPC=isNPC or false,
         hpBar    = newLine(CFG.HPBarWidth, Color3.new(0,1,0)),
         nameLabel= newText(CFG.NameSize,   Color3.new(1,1,1)),
         distLabel= newText(11,             Color3.fromRGB(200,200,200)),
@@ -193,7 +217,7 @@ end
 
 local function removeESP(model)
     local obj=ESPObjects[model]; if not obj then return end
-    for _,l in ipairs(obj.box) do pcall(function() l:Remove() end) end
+    for _,l in ipairs(obj.skeleton) do pcall(function() l:Remove() end) end
     for _,k in ipairs({"hpBar","nameLabel","distLabel","hpText"}) do
         pcall(function() obj[k]:Remove() end)
     end
@@ -203,7 +227,7 @@ local function removeESP(model)
 end
 
 local function setVisible(obj, v)
-    for _,l in ipairs(obj.box) do l.Visible=v end
+    for _,l in ipairs(obj.skeleton) do l.Visible=v end
     obj.hpBar.Visible=v; obj.nameLabel.Visible=v
     obj.distLabel.Visible=v; obj.hpText.Visible=v
 end
@@ -307,11 +331,32 @@ RunService.RenderStepped:Connect(function()
             local w  = h * 0.6
             local x1, x2 = cx - w/2, cx + w/2
 
-            for _, l in ipairs(obj.box) do l.Thickness=CFG.BoxThickness; l.Color=CFG.BoxColor end
-            obj.box[1].From=Vector2.new(x1,y1); obj.box[1].To=Vector2.new(x2,y1); obj.box[1].Visible=true
-            obj.box[2].From=Vector2.new(x1,y2); obj.box[2].To=Vector2.new(x2,y2); obj.box[2].Visible=true
-            obj.box[3].From=Vector2.new(x1,y1); obj.box[3].To=Vector2.new(x1,y2); obj.box[3].Visible=true
-            obj.box[4].From=Vector2.new(x2,y1); obj.box[4].To=Vector2.new(x2,y2); obj.box[4].Visible=true
+            -- Skeleton drawing: cache joint (BasePart) refs once per character, then
+            -- project each bone's two endpoints to the screen every frame.
+            local joints = obj.jointCache
+            if not joints then joints={}; obj.jointCache=joints end
+            for _,bone in ipairs(obj.bones) do
+                for _,jname in ipairs(bone) do
+                    if not joints[jname] then joints[jname]=model:FindFirstChild(jname) end
+                end
+            end
+            for i, bone in ipairs(obj.bones) do
+                local line = obj.skeleton[i]
+                local p1, p2 = joints[bone[1]], joints[bone[2]]
+                if p1 and p2 then
+                    local v1 = Camera:WorldToViewportPoint(p1.Position)
+                    local v2 = Camera:WorldToViewportPoint(p2.Position)
+                    if v1.Z > 0 and v2.Z > 0 then
+                        line.Thickness=CFG.BoxThickness; line.Color=CFG.BoxColor
+                        line.From=Vector2.new(v1.X,v1.Y); line.To=Vector2.new(v2.X,v2.Y)
+                        line.Visible=true
+                    else
+                        line.Visible=false
+                    end
+                else
+                    line.Visible=false
+                end
+            end
 
             local hpR = math.clamp(hum.Health / math.max(hum.MaxHealth, 1), 0, 1)
             local hpColor = hpR > 0.5
@@ -334,7 +379,7 @@ RunService.RenderStepped:Connect(function()
             obj.distLabel.Visible = CFG.ShowDist
 
             local hpPct = math.floor(hpR*100)
-            local dynSize = math.clamp(math.floor(28 - dist/12), 11, 28)
+            local dynSize = math.clamp(math.floor(22 - dist/14), 11, 22)
             obj.hpText.Text    = hpPct.."%  ("..math.floor(hum.Health).."/"..math.floor(hum.MaxHealth)..")"
             obj.hpText.Size    = dynSize
             obj.hpText.Color   = hpColor
@@ -996,12 +1041,17 @@ ESPMain:Slider({Title="ระยะสูงสุด", Desc="ไม่แสด
 local TeleportTab = Window:Tab({Title="Teleport", Icon="map-pin", Locked=false})
 
 local Locations = {
+    {Title="ปลูกแคนดี้",         Position=Vector3.new(647,30,990)},
     {Title="เรเบล",               Position=Vector3.new(2717,18,-4659)},
+    {Title="การาจกลาง",          Position=Vector3.new(2099,16,470)},
     {Title="ขายของ",              Position=Vector3.new(4188,6,68)},
     {Title="⛏️เหมืองทอง+เหล็ก", Position=Vector3.new(-805, 3, 5813)},
     {Title="ที่โพ เหล็ก+ทอง",   Position=Vector3.new(-265,-321,-3122)},
-    {Title="ปลูกแคนดี้",         Position=Vector3.new(647,30,990)},
-    {Title="การาจกลาง",          Position=Vector3.new(2099,16,470)},
+    {Title="กะหล่ำ",          Position=Vector3.new(-4175, 75, 1243)},
+    {Title="ข้าวโพด",          Position=Vector3.new(-4509, 118, 416)},
+    {Title="พีช",          Position=Vector3.new(555)},
+    {Title="องุ่น",          Position=Vector3.new(555)},
+    {Title="ส้ม",          Position=Vector3.new(555)},
 }
 local LocationTitles, LocationMap = {}, {}
 for _,loc in ipairs(Locations) do table.insert(LocationTitles,loc.Title); LocationMap[loc.Title]=loc end
