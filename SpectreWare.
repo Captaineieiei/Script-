@@ -16,7 +16,7 @@ local CFG = {
     API                 = "http://78.154.103.36:11208",
     loaderVersion       = "2.6.0",
     waitOnStart         = 0.2,
-    sessionCheckEvery   = 30,
+    sessionCheckEvery   = 10,
     clockDriftLimit     = 60,
     splashImageId       = "71815202801684",
     announceDisplayTime = 5,
@@ -757,13 +757,11 @@ local function getAvatar(uid)
     end, fb), fb
 end
 
--- OPT: cache PL.UserId + avatar once per session; avoids repeated HTTP calls
-local _avatarCache, _headshotCache
+-- OPT: cache PL.UserId once; avoids repeated property access in sendWebhook
 local function sendWebhook(event, info)
     info = info or {}
     local uid                           = PL.UserId   -- cached locally
-    if not _avatarCache then _avatarCache, _headshotCache = getAvatar(uid) end
-    local avatar, headshot              = _avatarCache, _headshotCache
+    local avatar, headshot              = getAvatar(uid)
     local gameName, gameCreator, maxP, placeVer = getGameInfo()
     local clockDrift
     pcall(function()
@@ -916,7 +914,7 @@ local function _awaitResult(fn, maxTicks)
     local done, r1, r2 = false, nil, nil
     task.spawn(function() r1, r2 = fn(); done = true end)
     local t = 0
-    while not done and t < maxTicks do task.wait(0.2); t = t + 1 end
+    while not done and t < maxTicks do task.wait(0.1); t = t + 1 end
     return r1, r2
 end
 
@@ -1162,8 +1160,10 @@ end)
 if not _mainOk or not _verified then return end
 
 -- ── Post-launch: announce poller ──────────────────────────────────────────────
--- OPT: announce poller with exponential backoff — silent timeout = wait longer
-local _announceWait = 4
+-- OPT: removed redundant leading task.wait() (no-arg = 1 frame, served no purpose)
+local _sessionActive = true
+local _lastSeq, _lastId, _rotationTick, _rotationEvery = 0, "", 0, 3
+
 task.spawn(function()
     while _sessionActive do
         local gotMsg = false
@@ -1180,9 +1180,7 @@ task.spawn(function()
                 _lastId = id; gotMsg = true; showAnnounce(m)
             end
         end)
-        if gotMsg then _announceWait = 3; task.wait(3)
-        else _announceWait = math.min(_announceWait + 2, 12); task.wait(_announceWait)
-        end
+        task.wait(gotMsg and 2 or 4)
     end
 end)
 
