@@ -20,7 +20,7 @@ local _pgBefore = {}
 for _,c in ipairs(LP.PlayerGui:GetChildren()) do _pgBefore[c]=true end
 local WindUI
 local ok, err = pcall(function()
-    WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Captaineieiei/Script-/refs/heads/main/main-1.lua", true))()
+    WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua", true))()
 end)
 if not ok or not WindUI then
     LP:Kick("Failed to load WindUI library. Rejoin!")
@@ -33,21 +33,35 @@ for _,c in ipairs(LP.PlayerGui:GetChildren()) do
 end
 _pgBefore = nil
 
+-- ── SpectreTheme v2 — matched to Spectre logo palette ──
+-- Logo palette:  top-left = #7B8EC8 (slate-blue)  →  bottom-right = #6B2FA0 (deep violet)
+-- Mid-stop:      #8B5CF6 (violet-500) — the bright bridge between both ends
 local SpectreAccent = Color3.fromRGB(139,92,246)
 pcall(function()
     if WindUI.Gradient then
         SpectreAccent = WindUI:Gradient({
-            ["0"]   = {Color=Color3.fromRGB(139,92,246), Transparency=0},
-            ["100"] = {Color=Color3.fromRGB(91,33,182),  Transparency=0},
-        }, {Rotation=45})
+            ["0"]   = {Color=Color3.fromRGB(123,142,200), Transparency=0},   -- slate-blue (logo top)
+            ["50"]  = {Color=Color3.fromRGB(139,92,246),  Transparency=0},   -- violet-500 (bridge)
+            ["100"] = {Color=Color3.fromRGB(107,47,160),  Transparency=0},   -- deep violet (logo bottom)
+        }, {Rotation=135})
     end
 end)
 pcall(function()
     WindUI:AddTheme({
-        Name="SpectreTheme", Accent=SpectreAccent,
-        Outline=Color3.fromRGB(95,82,130),        Text=Color3.fromRGB(248,250,252),
-        Placeholder=Color3.fromRGB(160,148,200),  Background=Color3.fromRGB(15,12,22),
-        Button=Color3.fromRGB(62,52,95),           Icon=Color3.fromRGB(210,196,255),
+        Name        = "SpectreTheme",
+        Accent      = SpectreAccent,
+        -- Background: near-black with the faintest blue-violet tint (matches logo dark edge)
+        Background  = Color3.fromRGB(10, 8, 18),
+        -- Outline: muted slate-violet — same hue as logo highlight stripe
+        Outline     = Color3.fromRGB(80, 70, 120),
+        -- Button: deep indigo — one step lighter than background, keeps panels readable
+        Button      = Color3.fromRGB(28, 22, 50),
+        -- Text: near-white with a cool blue cast
+        Text        = Color3.fromRGB(235, 232, 252),
+        -- Placeholder: desaturated violet matching the logo's mid-grey diagonal stripe
+        Placeholder = Color3.fromRGB(140, 130, 175),
+        -- Icon: soft lavender — brighter than placeholder, dimmer than accent
+        Icon        = Color3.fromRGB(185, 170, 240),
     })
 end)
 
@@ -99,10 +113,12 @@ local Window = WindUI:CreateWindow({
 })
 Window:EditOpenButton({
     Title="SpectreWare", Icon="monitor", CornerRadius=UDim.new(0,16),
-    StrokeThickness=2, Color=ColorSequence.new(Color3.fromRGB(139,92,246),Color3.fromRGB(91,33,182)),
+    StrokeThickness=2,
+    -- Gradient matches logo: slate-blue → deep violet
+    Color=ColorSequence.new(Color3.fromRGB(123,142,200), Color3.fromRGB(107,47,160)),
     OnlyMobile=true, Enabled=true, Draggable=true,
 })
-Window:Tag({Title="v1.6.12", Icon="github", Color=Color3.fromRGB(139,92,246), Radius=13})
+Window:Tag({Title="v1.6.12", Icon="github", Color=Color3.fromRGB(123,142,200), Radius=13})
 Window:SetIconSize(80)
 
 task.spawn(function()
@@ -144,6 +160,122 @@ local AmountDescLabel
 local function setAmount(text)
     if AmountDescLabel and AmountDescLabel.Parent then
         pcall(function() AmountDescLabel.Text=tostring(text) end)
+    end
+end
+
+local SafeDescLabel
+
+local function getSafeQty(itemName)
+    local ok, qty = pcall(function()
+        local sf = LP:FindFirstChild("Safe")
+        if not sf then return 0 end
+        local v = sf:FindFirstChild(itemName)
+        return v and math.floor(v.Value) or 0
+    end)
+    return (ok and qty) or 0
+end
+
+-- ── Floating Safe HUD (วงกลมในรูป) ──
+local _hudGui, _hudIcon, _hudName, _hudCount
+
+local function buildSafeHud()
+    if _hudGui and _hudGui.Parent then return end
+
+    _hudGui = Instance.new("ScreenGui")
+    _hudGui.Name            = "SW_SafeHUD"
+    _hudGui.ResetOnSpawn    = false
+    _hudGui.IgnoreGuiInset  = true
+    _hudGui.ZIndexBehavior  = Enum.ZIndexBehavior.Sibling
+    _hudGui.Parent          = LP.PlayerGui
+
+    local card = Instance.new("Frame")
+    card.Name               = "Card"
+    card.Size               = UDim2.fromOffset(172, 64)
+    card.AnchorPoint        = Vector2.new(0.5, 0.5)
+    card.Position           = UDim2.new(0.12, 0, 0.78, 0)
+    card.BackgroundColor3   = Color3.fromRGB(10, 8, 18)   -- theme Background
+    card.BackgroundTransparency = 0.08
+    card.BorderSizePixel    = 0
+    card.Visible            = false
+    card.Parent             = _hudGui
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 16)
+    corner.Parent = card
+
+    -- Stroke: logo-gradient diagonal slate-blue → deep violet
+    local stroke = Instance.new("UIStroke")
+    stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    stroke.Color        = Color3.fromRGB(123, 142, 200)   -- slate-blue end of logo
+    stroke.Thickness    = 1.8
+    stroke.Transparency = 0.15
+    stroke.Parent       = card
+
+    -- Card background gradient: dark indigo top-left → near-black bottom-right (logo feel)
+    local grad = Instance.new("UIGradient")
+    grad.Color    = ColorSequence.new({
+        ColorSequenceKeypoint.new(0,   Color3.fromRGB(22, 18, 42)),   -- indigo
+        ColorSequenceKeypoint.new(0.55, Color3.fromRGB(14, 11, 26)),  -- mid-deep
+        ColorSequenceKeypoint.new(1,   Color3.fromRGB(10,  8, 18)),   -- near-black
+    })
+    grad.Rotation = 135
+    grad.Parent   = card
+
+    -- Icon background: matches Button color from theme
+    local iconBg = Instance.new("Frame")
+    iconBg.Size               = UDim2.fromOffset(48, 48)
+    iconBg.Position           = UDim2.new(0, 8, 0.5, -24)
+    iconBg.BackgroundColor3   = Color3.fromRGB(28, 22, 50)  -- theme Button
+    iconBg.BorderSizePixel    = 0
+    iconBg.ZIndex             = 2
+    iconBg.Parent             = card
+    Instance.new("UICorner", iconBg).CornerRadius = UDim.new(0, 11)
+
+    -- Subtle inner glow on icon bg
+    local iconStroke = Instance.new("UIStroke")
+    iconStroke.Color        = Color3.fromRGB(107, 47, 160)  -- deep violet
+    iconStroke.Thickness    = 1
+    iconStroke.Transparency = 0.45
+    iconStroke.Parent       = iconBg
+
+    _hudIcon = Instance.new("ImageLabel")
+    _hudIcon.Size                  = UDim2.fromOffset(36, 36)
+    _hudIcon.AnchorPoint           = Vector2.new(0.5, 0.5)
+    _hudIcon.Position              = UDim2.new(0.5, 0, 0.5, 0)
+    _hudIcon.BackgroundTransparency = 1
+    _hudIcon.ScaleType             = Enum.ScaleType.Fit
+    _hudIcon.ZIndex                = 3
+    _hudIcon.Parent                = iconBg
+
+    -- Item name: theme Icon color (soft lavender)
+    _hudName = Instance.new("TextLabel")
+    _hudName.Size               = UDim2.new(1, -66, 0, 22)
+    _hudName.Position           = UDim2.new(0, 62, 0, 7)
+    _hudName.BackgroundTransparency = 1
+    _hudName.TextColor3         = Color3.fromRGB(185, 170, 240)  -- theme Icon
+    _hudName.Font               = Enum.Font.GothamBold
+    _hudName.TextSize           = 12
+    _hudName.TextXAlignment     = Enum.TextXAlignment.Left
+    _hudName.TextTruncate       = Enum.TextTruncate.AtEnd
+    _hudName.ZIndex             = 2
+    _hudName.Parent             = card
+
+    -- Count value: bright mint-green for contrast (unchanged — good readability)
+    _hudCount = Instance.new("TextLabel")
+    _hudCount.Size               = UDim2.new(1, -66, 0, 22)
+    _hudCount.Position           = UDim2.new(0, 62, 0, 30)
+    _hudCount.BackgroundTransparency = 1
+    _hudCount.TextColor3         = Color3.fromRGB(110, 255, 165)
+    _hudCount.Font               = Enum.Font.GothamMedium
+    _hudCount.TextSize           = 13
+    _hudCount.TextXAlignment     = Enum.TextXAlignment.Left
+    _hudCount.ZIndex             = 2
+    _hudCount.Parent             = card
+end
+
+local function getHudCard()
+    if _hudGui and _hudGui.Parent then
+        return _hudGui:FindFirstChild("Card")
     end
 end
 
@@ -206,9 +338,9 @@ local function makeESP(model, isNPC)
     ESPObjects[model]={
         skeleton=skeleton, bones=bones, jointCache=nil, isNPC=isNPC or false,
         hpBar    = newLine(CFG.HPBarWidth, Color3.new(0,1,0)),
-        nameLabel= newText(CFG.NameSize,   Color3.new(1,1,1)),
-        distLabel= newText(11,             Color3.fromRGB(200,200,200)),
-        hpText   = newText(16,             Color3.fromRGB(200,255,200)),
+        nameLabel= newText(CFG.NameSize,   Color3.fromRGB(185,170,240)),  -- soft lavender (theme Icon)
+        distLabel= newText(11,             Color3.fromRGB(140,130,175)),  -- muted violet (theme Placeholder)
+        hpText   = newText(16,             Color3.fromRGB(110,255,165)),  -- mint-green (matches HUD count)
         lastPos3 = nil,
         lastTopPos3 = nil,
         lastBotPos3 = nil,
@@ -489,6 +621,8 @@ local ITEM_THAI = {
     ["Orange"]       = "ส้ม",
     ["Cauliflower"]  = "กะหล่ำดอก",
     ["Corn"]         = "ข้าวโพด",
+    ["Gold"]         = "ทอง",
+    ["Iron"]         = "เหล็ก",
 }
 
 local BLOCKED_ITEMS = {
@@ -548,7 +682,7 @@ local function loadBackpackItems()
     if #titles==0 then
         titles={"(ไม่พบไอเทม)"}; itemMap["(ไม่พบไอเทม)"]={Title="(ไม่พบไอเทม)", value="", max=0}
     end
-    local PINNED_ORDER = {"Cauliflower","Corn","Peach","Grape","Orange"}
+    local PINNED_ORDER = {"Cauliflower","Corn","Peach","Grape","Orange","Gold","Iron"}
     local pinnedSet, rest = {}, {}
     for _, t in ipairs(titles) do
         local entry = itemMap[t]
@@ -577,8 +711,33 @@ local CustomMax      = 60
 local CustomMaxSet   = false
 local UserSelectedItem = false
 local ItemDropdown   = nil
+local _suppressItemCallback = false
 local FarmSection    = FarmTab:Section({Title="⚙️ ตั้งค่าของที่จะเก็บใส่ตู้", Opened=true})
 local AutoFarmToggle
+
+-- ย้าย setInSafe + refreshSafePreview มาไว้ที่นี่ หลัง SelectedItem/UserSelectedItem ถูก declare แล้ว
+local function setInSafe(text)
+    if SafeDescLabel and SafeDescLabel.Parent then
+        pcall(function() SafeDescLabel.Text = tostring(text) end)
+    end
+end
+
+local function refreshSafePreview()
+    buildSafeHud()
+    local card = getHudCard()
+    if not SelectedItem or SelectedItem.value == "" or not UserSelectedItem then
+        setInSafe("-- ยังไม่ได้เลือกไอเทม")
+        if card then card.Visible = false end
+        return
+    end
+    local qty  = getSafeQty(SelectedItem.value)
+    local icon = SelectedItem.icon or ""
+    setInSafe(SelectedItem.value .. "  ×  " .. tostring(qty) .. "  ในตู้")
+    if _hudIcon  then _hudIcon.Image = icon end
+    if _hudName  then _hudName.Text  = SelectedItem.value end
+    if _hudCount then _hudCount.Text = "×" .. tostring(qty) .. " ในตู้" end
+    if card then card.Visible = true end
+end
 
 local _injectPending = false
 
@@ -640,18 +799,51 @@ local function createItemDropdown(titles, itemMap)
     end
     if ItemDropdown then
         local ok=pcall(function() ItemDropdown:Refresh(values) end)
-        if not ok then pcall(function() ItemDropdown:Destroy() end); ItemDropdown=nil end
+        if ok then
+            -- หลัง Refresh: แค่ set ค่าเริ่มต้นบน dropdown ไม่โชว์ HUD
+            local firstKey = optionKey(values[1])
+            SelectedItem = itemMap[firstKey]
+            if SelectedItem then CustomMax = SelectedItem.max end
+            -- UserSelectedItem ยังเป็น false (set โดย reloadItems) → HUD ซ่อนอยู่
+            task.delay(0.05, function()
+                -- set ข้อความบน dropdown header ตรงๆ ไม่ผ่าน :Set() เพื่อไม่ให้ Callback ยิง
+                pcall(function()
+                    local dd = ItemDropdown.UIElements and ItemDropdown.UIElements.Dropdown
+                    if not dd then return end
+                    local inner = dd.Frame.Frame
+                    local lbl   = inner.TextLabel
+                    lbl.Text = firstKey
+                end)
+            end)
+        else
+            pcall(function() ItemDropdown:Destroy() end); ItemDropdown=nil
+        end
     end
     if not ItemDropdown then
         ItemDropdown=FarmSection:Dropdown({
             Title="เลือกของที่จะเก็บ", Desc="อ่านจาก Backpack ของคุณโดยตรง",
             Values=values, Value=values[1],
             Callback=function(option)
+                if _suppressItemCallback then return end
                 local key=optionKey(option)
+                -- กดซ้ำบน item เดิม = deselect
+                if UserSelectedItem and SelectedItem and SelectedItem.Title==key then
+                    UserSelectedItem=false
+                    SelectedItem=FarmItemMap[PLACEHOLDER]
+                    refreshSafePreview()
+                    task.delay(0.05, function()
+                        pcall(function()
+                            local dd=ItemDropdown.UIElements and ItemDropdown.UIElements.Dropdown
+                            if dd then dd.Frame.Frame.TextLabel.Text="-- ยังไม่ได้เลือก --" end
+                        end)
+                    end)
+                    return
+                end
                 SelectedItem=FarmItemMap[key]
                 if SelectedItem then CustomMax=SelectedItem.max end
                 UserSelectedItem=true
                 injectIconsIntoDropdown()
+                refreshSafePreview()
             end,
         })
         task.delay(0.1, function()
@@ -669,9 +861,12 @@ local function createItemDropdown(titles, itemMap)
                         if img then
                             img:Destroy()
                             if iconShifted then
-                                lbl.Size = UDim2.new(lbl.Size.X.Scale,
+                                lbl.Size     = UDim2.new(lbl.Size.X.Scale,
                                     lbl.Size.X.Offset + 38,
                                     lbl.Size.Y.Scale, lbl.Size.Y.Offset)
+                                lbl.Position = UDim2.new(lbl.Position.X.Scale,
+                                    lbl.Position.X.Offset - 38,
+                                    lbl.Position.Y.Scale, lbl.Position.Y.Offset)
                                 iconShifted = false
                             end
                         end
@@ -679,17 +874,21 @@ local function createItemDropdown(titles, itemMap)
                     end
                     if not img then
                         img = Instance.new("ImageLabel")
-                        img.Name                 = "SW_SelIcon"
+                        img.Name                  = "SW_SelIcon"
                         img.BackgroundTransparency = 1
-                        img.Size                 = UDim2.fromOffset(30, 30)
-                        img.LayoutOrder          = -1   
-                        img.ZIndex               = lbl.ZIndex + 1
-                        img.Parent               = inner
+                        img.Size                  = UDim2.fromOffset(30, 30)
+                        img.Position              = UDim2.new(0, 4, 0.5, -15) -- ชิดซ้าย, กลาง Y
+                        img.LayoutOrder           = -1
+                        img.ZIndex                = lbl.ZIndex + 1
+                        img.Parent                = inner
                         if not iconShifted then
-                            iconShifted = true
-                            lbl.Size = UDim2.new(lbl.Size.X.Scale,
+                            iconShifted  = true
+                            lbl.Size     = UDim2.new(lbl.Size.X.Scale,
                                 lbl.Size.X.Offset - 38,
                                 lbl.Size.Y.Scale, lbl.Size.Y.Offset)
+                            lbl.Position = UDim2.new(lbl.Position.X.Scale,
+                                lbl.Position.X.Offset + 38,
+                                lbl.Position.Y.Scale, lbl.Position.Y.Offset)
                         end
                     end
                     img.Image = entry.icon
@@ -705,6 +904,9 @@ end
 
 local function reloadItems()
     task.spawn(function()
+        -- ซ่อน HUD ระหว่าง reload
+        UserSelectedItem = false
+        refreshSafePreview()
         local titles, itemMap
         for _=1,5 do
             titles,itemMap=loadBackpackItems()
@@ -726,10 +928,27 @@ FarmSection:Input({
 })
 FarmSection:Button({Title="Reload Items", Desc="กดถ้า Dropdown ยังแสดง placeholder", Icon="refresh-cw", Callback=reloadItems})
 FarmSection:Paragraph({Title="📦 จำนวนปัจจุบัน", Desc="__AMOUNT_INIT__"})
-
 task.spawn(function()
     task.wait(0.5); AmountDescLabel=findLabelByText("__AMOUNT_INIT__")
     if AmountDescLabel then AmountDescLabel.Text="-- รอเลือกไอเทม..." end
+end)
+
+task.spawn(function()
+    -- watch Safe folder → update HUD live
+    pcall(function()
+        local safeFolder = LP:WaitForChild("Safe", 5)
+        if not safeFolder then return end
+        local function hookVal(v)
+            v:GetPropertyChangedSignal("Value"):Connect(function()
+                if SelectedItem and SelectedItem.value ~= "" and UserSelectedItem
+                and v.Name == SelectedItem.value then
+                    refreshSafePreview()
+                end
+            end)
+        end
+        for _, v in ipairs(safeFolder:GetChildren()) do hookVal(v) end
+        safeFolder.ChildAdded:Connect(function(v) task.wait(0.1); hookVal(v) end)
+    end)
 end)
 
 local slotLabelCache=setmetatable({}, {__mode="k"})
@@ -1103,8 +1322,8 @@ task.spawn(function() while true do task.wait(20); if AntiAFKEnabled then doAnti
 local FullbrightEnabled = false
 local _origLighting     = {}
 local _fbProps   = {"Ambient","OutdoorAmbient","Brightness","ClockTime","FogEnd","FogStart","GlobalShadows"}
-local _fbVals    = {Color3.new(1,1,1), Color3.new(1,1,1), 2, 14, 1e6, 1e6, false}
-local _fbFxTypes = {"Atmosphere","BloomEffect","ColorCorrectionEffect","SunRaysEffect","DepthOfFieldEffect"}
+local _fbVals    = {Color3.fromRGB(178,178,178), Color3.fromRGB(155,155,180), 1, 14, 1e6, 1e6, false}
+local _fbFxTypes = {"SunRaysEffect","DepthOfFieldEffect"}
 local _fbConn    = nil   
 local _fbGuard   = false 
 
