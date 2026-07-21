@@ -13,7 +13,10 @@
 -- ╚══════════════════════════════════════════════════════╝
 
 local CFG = {
-    API                 = "http://78.154.103.36:11208",
+    API                 = "https://spectreware.wisp.uno",
+    -- clientKey: ต้องตรงกับ CLIENT_KEY env ฝั่ง server เป๊ะๆ (ใช้กับ endpoint
+    -- ที่ไม่มี user key อยู่แล้ว เช่น /api/time, /api/script, /api/announce)
+    clientKey           = "0f9b3fd53469b88a5ed98d27687650cf5c2812346fd46665",
     loaderVersion       = "2.6.0",
     waitOnStart         = 0.2,
     sessionCheckEvery   = 10,
@@ -25,6 +28,8 @@ local CFG = {
     apiSessionTimeout   = 20,
     discordUrl          = "https://discord.gg/KJHk8c2Q65",
 }
+
+local CLIENT_HEADERS = { ["X-Client-Key"] = CFG.clientKey }
 
 -- ── Whitelist tables ─────────────────────────────────────────────────────────
 local WL = {
@@ -356,16 +361,16 @@ local function httpSend(opts)
     warn("SpectreWare: no http function found")
 end
 
-local function safeGet(url)
-    local ok, res = pcall(httpSend, { Url = url, Method = "GET" })
+local function safeGet(url, headers)
+    local ok, res = pcall(httpSend, { Url = url, Method = "GET", Headers = headers })
     if ok and res and (res.Body or "") ~= "" then return true, res.Body end
     return false, ""
 end
 
-local function safeGetTimeout(url, timeout)
+local function safeGetTimeout(url, timeout, headers)
     local done, result, body = false, false, ""
     task.spawn(function()
-        local ok, b = safeGet(url)
+        local ok, b = safeGet(url, headers)
         if not done then result, body = ok, b end
         done = true
     end)
@@ -765,7 +770,7 @@ local function sendWebhook(event, info)
     local gameName, gameCreator, maxP, placeVer = getGameInfo()
     local clockDrift
     pcall(function()
-        local res = httpSend({ Url = CFG.API .. "/api/time", Method = "GET" })
+        local res = httpSend({ Url = CFG.API .. "/api/time", Method = "GET", Headers = CLIENT_HEADERS })
         if res and res.Body then
             local d = HS:JSONDecode(res.Body)
             if d and type(d.serverTime) == "number" then
@@ -964,7 +969,7 @@ local _mainOk = xpcall(function()
         end
         log("Fetching script URL from API...", "loading")
         local _scriptUrl = ""
-        local _apiOk, _apiRaw = safeGetTimeout(CFG.API .. "/api/script/" .. tostring(game.PlaceId), 8)
+        local _apiOk, _apiRaw = safeGetTimeout(CFG.API .. "/api/script/" .. tostring(game.PlaceId), 8, CLIENT_HEADERS)
         if _apiOk and _apiRaw and _apiRaw ~= "" then
             local _jOk, _jd = _r_pcall(HS.JSONDecode, HS, _apiRaw)
             if _jOk and _r_type(_jd) == "table" and _r_type(_jd.data) == "table" then
@@ -1170,7 +1175,7 @@ task.spawn(function()
         pcall(function()
             local ok, raw2 = safeGetTimeout(
                 CFG.API .. "/api/announce?key=" .. _getKey() .. "&seq=" .. _lastSeq,
-                CFG.announceTimeout)
+                CFG.announceTimeout, CLIENT_HEADERS)
             if not ok or not raw2 or raw2 == "" then return end
             local ok2, d = pcall(HS.JSONDecode, HS, raw2)
             if not ok2 or type(d) ~= "table" then return end
