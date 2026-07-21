@@ -13,7 +13,7 @@
 -- ╚══════════════════════════════════════════════════════╝
 
 local CFG = {
-    API                 = "https://spectreware.wisp.uno",
+    API                 = "https://luasyncxz.wisp.uno",
     -- clientKey: ต้องตรงกับ CLIENT_KEY env ฝั่ง server เป๊ะๆ (ใช้กับ endpoint
     -- ที่ไม่มี user key อยู่แล้ว เช่น /api/time, /api/script, /api/announce)
     clientKey           = "0f9b3fd53469b88a5ed98d27687650cf5c2812346fd46665",
