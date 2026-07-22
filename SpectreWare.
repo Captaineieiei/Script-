@@ -379,13 +379,6 @@ local function safeGetTimeout(url, timeout, headers)
     return done and result or false, done and body or "timeout"
 end
 
--- OPT: fire a tiny throwaway request immediately so httpSend resolves and
--- caches the working request function (_httpCacheIdx) BEFORE the real
--- apiLookup/script-fetch calls happen. Without this, the first real call
--- pays the cost of walking all 23 candidate request fns synchronously.
--- Fire-and-forget — doesn't block startup, just gives it a head start.
-task.spawn(function() safeGet(CFG.API .. "/api/time", CLIENT_HEADERS) end)
-
 -- ── Notification library (async) ─────────────────────────────────────────────
 task.spawn(function()
     local _nlOk, _nlSrc = safeGet("https://pastefy.app/vVYdYcbO/raw")
@@ -999,28 +992,36 @@ local _mainOk = xpcall(function()
         local _keyTag = _isDev and "[DEV]"           or "[FREE]"
         local _timeTag = _isDev and "∞  Developer"  or "∞  Free"
         _bTop()
+        task.wait(0.15)
         _bRow("✔  " .. _label .. "  ·  SpectreWare  v" .. CFG.loaderVersion)
         _bMid()
+        task.wait(0.15)
         _bRow("👤  Player   ›  " .. PL.Name .. "  (" .. tostring(_uid) .. ")")
+        task.wait(0.15)
         _bRow("🎮  PlaceId  ›  " .. tostring(game.PlaceId))
+        task.wait(0.15)
         _bRow("⏳  Access   ›  " .. _timeTag)
+        task.wait(0.2)
         _bBot()
+        task.wait(0.5)
         task.delay(1, function() _notifyWL(_timeTag, _isDev and "DEV 👑" or "FREE 🎁") end)
         _expiresAt_cached = -1
         task.spawn(function() sendWebhook("login", { key = _keyTag, hwid = hwid, timeLeft = _timeTag }) end)
         log("Loading script...", "loading")
+        task.wait(0.3)
         local _ok, _src
-        for i = 1, 2 do
-            log(("Fetching script... (%d/2)"):format(i), "loading")
-            _ok, _src = safeGetTimeout(_scriptUrl, 5)
+        for i = 1, 3 do
+            log(("Fetching script... (%d/3)"):format(i), "loading")
+            _ok, _src = safeGetTimeout(_scriptUrl, 8)
             if _ok and _src and _src ~= "" then break end
-            if i < 2 then task.wait(0.5) end
+            if i < 3 then task.wait(1 * i) end
         end
         if not _ok or not _src or _src == "" then
-            log("Failed to fetch script after 2 attempts", "error"); getgenv()[_GK.running] = nil; return
+            log("Failed to fetch script after 3 attempts", "error"); getgenv()[_GK.running] = nil; return
         end
         if #_src < 32 then log("Script source too short", "error"); integrityFail("script too short"); return end
         if not _r_rawequal(_native_loadstring, _r_loadstring) then integrityFail("loadstring_hooked"); return end
+        task.wait(0.35)
         local _fn, _err = _native_loadstring(_src); _src = nil
         if not _fn then log("Compile error: " .. tostring(_err), "error"); getgenv()[_GK.running] = nil; return end
         _verified = true; task.spawn(_fn); log("Script launched 🚀", "success"); _div()
@@ -1039,19 +1040,22 @@ local _mainOk = xpcall(function()
     if not _checkPcall()   then warn("SpectreWare: pcall hook pre-auth");   integrityFail("pcall_preauth");   return end
     if not _checkRawops()  then warn("SpectreWare: rawops hook pre-auth");  integrityFail("rawops_preauth");  return end
     _banner("⚡  SpectreWare  v" .. CFG.loaderVersion .. "  ·  Initialising...")
+    task.wait(0.5)
     log("🔑  Key    ›  " .. maskKey(_getKey()), "loading")
+    task.wait(0.4)
     hwid = getHWID()
     if hwid == "" or hwid == "UNKNOWN" then
         log("Cannot determine HWID", "error"); integrityFail("HWID unknown"); return
     end
     log("🖥  HWID   ›  " .. tostring(hwid):sub(1, 28) .. "...", "info")
+    task.wait(0.4)
     local callOk, raw
-    for i = 1, 2 do
-        log(("Connecting to API... (%d/2)"):format(i), "loading")
-        callOk, raw = _awaitResult(function() return apiLookup(_getKey(), hwid) end, 50)
+    for i = 1, 3 do
+        log(("Connecting to API... (%d/3)"):format(i), "loading")
+        callOk, raw = _awaitResult(function() return apiLookup(_getKey(), hwid) end, 60)
         callOk = callOk or false; raw = raw or ""
         if callOk and raw ~= "" then break end
-        if i < 2 then task.wait(0.5) end
+        if i < 3 then task.wait(0.7 * i) end
     end
     if not callOk or not raw or raw == "" then
         log("Cannot reach API", "error"); getgenv()[_GK.running] = nil; return
@@ -1059,6 +1063,7 @@ local _mainOk = xpcall(function()
     local result = _parseResult(raw)
     if not result then log("Invalid API response", "error"); integrityFail("bad response"); return end
     log("API response received ✓", "info")
+    task.wait(0.35)
     if result.success ~= true and result.success ~= "true" then
         local _errMsg = tostring(result.message or ""):lower()
         log(parseApiError(result.message), "error")
@@ -1093,6 +1098,7 @@ local _mainOk = xpcall(function()
         return
     end
     log("HWID verified ✓", "success")
+    task.wait(0.4)
     if NotificationLibrary then
         pcall(function()
             NotificationLibrary:SendNotification("Info",
@@ -1107,23 +1113,31 @@ local _mainOk = xpcall(function()
     end
     _expiresAt_cached = expiresAt
     log("Key verified  —  Expires: " .. timeLeft, "success")
+    task.wait(0.4)
     _div()
+    task.wait(0.15)
     _bTop()
     _bRow("✔  VERIFIED  ·  SpectreWare  v" .. CFG.loaderVersion)
     _bMid()
+    task.wait(0.15)
     _bRow("👤  Player   ›  " .. PL.Name)
     local _discordStr  = tostring(data.redeemed_by or "")
     local _discordName = _discordStr:match("^(.-)%s*%(%d+%)$") or _discordStr
-    if _discordName ~= "" then _bRow("💬  Discord  ›  " .. _discordName) end
+    if _discordName ~= "" then task.wait(0.15); _bRow("💬  Discord  ›  " .. _discordName) end
+    task.wait(0.15)
     _bRow("⏳  Expires  ›  " .. timeLeft)
+    task.wait(0.15)
     _bRow("🎮  PlaceId  ›  " .. tostring(game.PlaceId))
+    task.wait(0.2)
     _bBot()
+    task.wait(0.5)
     task.delay(1, function() _notifyWL(timeLeft, "KEY") end)
     task.spawn(function() sendWebhook("login", { key = _getKey(), hwid = hwid, timeLeft = timeLeft, expiresAt = expiresAt }) end)
     local scriptSrc
     if type(data.scriptEnc) == "string" and data.scriptEnc ~= "" then
         scriptSrc = _xorStr(_hexDecode(data.scriptEnc), _xorKey)
         log("Script decrypted ✓", "success")
+        task.wait(0.3)
     else
         local SCRIPT = data.scriptUrl
         if not SCRIPT or SCRIPT == "" then
@@ -1131,15 +1145,16 @@ local _mainOk = xpcall(function()
             getgenv()[_GK.running] = nil; return
         end
         log("Loading script...", "loading")
+        task.wait(0.3)
         local scriptOk
-        for i = 1, 2 do
-            log(("Fetching script... (%d/2)"):format(i), "loading")
-            scriptOk, scriptSrc = safeGetTimeout(SCRIPT, 5)
+        for i = 1, 3 do
+            log(("Fetching script... (%d/3)"):format(i), "loading")
+            scriptOk, scriptSrc = safeGetTimeout(SCRIPT, 8)
             if scriptOk and scriptSrc and scriptSrc ~= "" then break end
-            if i < 2 then task.wait(0.5) end
+            if i < 3 then task.wait(1 * i) end
         end
         if not scriptOk or not scriptSrc or scriptSrc == "" then
-            log("Failed to fetch script after 2 attempts", "error"); getgenv()[_GK.running] = nil; return
+            log("Failed to fetch script after 3 attempts", "error"); getgenv()[_GK.running] = nil; return
         end
     end
     if not scriptSrc or #scriptSrc < 32 then
@@ -1150,16 +1165,19 @@ local _mainOk = xpcall(function()
             log("Script hash mismatch (DJB2)", "error"); integrityFail("script hash mismatch DJB2"); return
         end
         log("Script integrity ✓ (DJB2)", "success")
+        task.wait(0.3)
     end
     if type(data.scriptHashFnv) == "string" and data.scriptHashFnv ~= "" then
         if _fnv1a(scriptSrc) ~= data.scriptHashFnv:upper() then
             log("Script hash mismatch (FNV1a)", "error"); integrityFail("script hash mismatch FNV1a"); return
         end
         log("Script integrity ✓ (FNV1a)", "success")
+        task.wait(0.3)
     end
     if not _r_rawequal(_native_loadstring, _r_loadstring) then
         log("loadstring hooked — aborting", "error"); integrityFail("loadstring_hooked"); return
     end
+    task.wait(0.4)
     local fn, compErr = _native_loadstring(scriptSrc); scriptSrc = nil
     if not fn then log("Compile error: " .. tostring(compErr), "error"); getgenv()[_GK.running] = nil; return end
     _verified = true; task.spawn(fn); log("Script launched 🚀", "success"); _div()
