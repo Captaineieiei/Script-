@@ -25,7 +25,7 @@ local CFG = {
     announceDisplayTime = 5,
     announceSound       = "6518811702",
     announceTimeout     = 6,
-    apiSessionTimeout   = 20,
+    apiSessionTimeout   = 10,
     discordUrl          = "https://discord.gg/KJHk8c2Q65",
 }
 
@@ -361,21 +361,35 @@ local function httpSend(opts)
     warn("SpectreWare: no http function found")
 end
 
-local function safeGet(url, headers)
-    local ok, res = pcall(httpSend, { Url = url, Method = "GET", Headers = headers })
+local function safeGet(url, headers, timeout)
+    -- OPT: pass Timeout/timeout through so executors that support native
+    -- request-cancellation (syn.request, http_request, request, etc.)
+    -- actually abort the socket instead of leaving it open forever.
+    local ok, res = pcall(httpSend, {
+        Url = url, Method = "GET", Headers = headers,
+        Timeout = timeout, timeout = timeout,
+    })
     if ok and res and (res.Body or "") ~= "" then return true, res.Body end
     return false, ""
 end
 
 local function safeGetTimeout(url, timeout, headers)
     local done, result, body = false, false, ""
-    task.spawn(function()
-        local ok, b = safeGet(url, headers)
+    local co = task.spawn(function()
+        local ok, b = safeGet(url, headers, timeout)
         if not done then result, body = ok, b end
         done = true
     end)
-    local ticks, max = 0, timeout * 10
-    while not done and ticks < max do task.wait(0.1); ticks = ticks + 1 end
+    -- OPT: 0.05s poll step instead of 0.1s so a slow/hung request is
+    -- detected and control is returned to the caller sooner.
+    local ticks, max = 0, timeout * 20
+    while not done and ticks < max do task.wait(0.05); ticks = ticks + 1 end
+    if not done then
+        -- Can't force an executor's C-side socket closed from Lua, but we
+        -- CAN stop waiting on it so the caller is never blocked longer
+        -- than `timeout`, and detach the coroutine.
+        pcall(task.cancel, co)
+    end
     return done and result or false, done and body or "timeout"
 end
 
@@ -412,11 +426,24 @@ local function getHWID()
     push("AG:", function() return tostring(PL.AccountAge) end)
 
     if not _hwidSeedCache then
+        -- OPT: some (mostly mobile) executors have a slow/flaky filesystem
+        -- layer where isfile/readfile can stall for several seconds. Bound
+        -- it the same way HTTP calls are bounded so it can never hang
+        -- getHWID() (and therefore the whole login sequence) indefinitely.
         _hwidSeedCache = try(function()
-            if isfile and isfile(_SEED_FILE) then
-                local s = readfile(_SEED_FILE)
-                if s and s ~= "" then return s end
-            end
+            local done, out = false, nil
+            task.spawn(function()
+                local ok = pcall(function()
+                    if isfile and isfile(_SEED_FILE) then
+                        local s = readfile(_SEED_FILE)
+                        if s and s ~= "" then out = s end
+                    end
+                end)
+                done = true
+            end)
+            local t = 0
+            while not done and t < 30 do task.wait(0.1); t = t + 1 end
+            return out
         end, nil)
         if not _hwidSeedCache then
             _hwidSeedCache = try(function()
@@ -898,7 +925,7 @@ end
 local _verified      = false
 local _expiresAt_cached
 
-local function apiLookup(key, hwidStr)
+local function apiLookup(key, hwidStr, timeout)
     local ok, body = pcall(HS.JSONEncode, HS, {
         key           = key,
         hwid          = hwidStr,
@@ -907,19 +934,25 @@ local function apiLookup(key, hwidStr)
         loaderXk      = _xorKey,
     })
     if not ok then return false, "" end
+    -- OPT: pass Timeout through to httpSend so a hung server can't keep the
+    -- underlying socket (and thus the polling coroutine below) open forever.
     local res = httpSend({ Url = CFG.API .. "/api/lookup", Method = "POST",
                            Headers = { ["Content-Type"] = "application/json",
                                        ["X-Loader-Version"] = CFG.loaderVersion },
-                           Body = body })
+                           Body = body, Timeout = timeout, timeout = timeout })
     if res and res.Body and res.Body ~= "" then return true, res.Body end
     return false, ""
 end
 
-local function _awaitResult(fn, maxTicks)
+-- timeoutSec = wall-clock seconds to wait, NOT ticks (was ticks before —
+-- easy to accidentally pass the wrong unit, which is part of why the old
+-- 60 at the call site below actually meant 6s, not 60s).
+local function _awaitResult(fn, timeoutSec)
     local done, r1, r2 = false, nil, nil
-    task.spawn(function() r1, r2 = fn(); done = true end)
-    local t = 0
-    while not done and t < maxTicks do task.wait(0.1); t = t + 1 end
+    local co = task.spawn(function() r1, r2 = fn(); done = true end)
+    local t, max = 0, (timeoutSec or 5) * 10
+    while not done and t < max do task.wait(0.1); t = t + 1 end
+    if not done then pcall(task.cancel, co) end
     return r1, r2
 end
 
@@ -1052,7 +1085,7 @@ local _mainOk = xpcall(function()
     local callOk, raw
     for i = 1, 3 do
         log(("Connecting to API... (%d/3)"):format(i), "loading")
-        callOk, raw = _awaitResult(function() return apiLookup(_getKey(), hwid) end, 60)
+        callOk, raw = _awaitResult(function() return apiLookup(_getKey(), hwid, 5) end, 5)
         callOk = callOk or false; raw = raw or ""
         if callOk and raw ~= "" then break end
         if i < 3 then task.wait(0.7 * i) end
@@ -1286,7 +1319,7 @@ task.spawn(function()
         local _skipRemote = _expiresAt_cached == -1 or
             (_expiresAt_cached ~= nil and (_expiresAt_cached - os.time() * 1000) > 30000)
         if not _skipRemote then
-            local ok2, raw3 = _awaitResult(function() return apiLookup(_getKey(), hwid) end, CFG.apiSessionTimeout)
+            local ok2, raw3 = _awaitResult(function() return apiLookup(_getKey(), hwid, CFG.apiSessionTimeout) end, CFG.apiSessionTimeout)
             if ok2 and raw3 and raw3 ~= "" then
                 local ok3, cr = pcall(HS.JSONDecode, HS, raw3)
                 if ok3 and type(cr) == "table" then
