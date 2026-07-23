@@ -131,12 +131,15 @@ task.spawn(function()
     task.wait(0.5); buildWaterPickDropdown()
 end)
 
+-- FIX A: yield every 200 items ป้องกัน sync freeze ตอนสแกน GUI ใหญ่
 local function findLabelByText(text)
     for _,root in ipairs({game:GetService("CoreGui"), LP.PlayerGui}) do
         local found
         pcall(function()
-            for _,v in ipairs(root:GetDescendants()) do
-                if v:IsA("TextLabel") and v.Text==text then found=v end
+            local descendants = root:GetDescendants()
+            for i,v in ipairs(descendants) do
+                if i % 200 == 0 then task.wait() end
+                if v:IsA("TextLabel") and v.Text == text then found = v; break end
             end
         end)
         if found then return found end
@@ -587,20 +590,30 @@ function esp:Clear()
 end
 esp.RemoveAll = esp.Clear
 
+-- FIX B: workspace.DescendantAdded ต้อง early-exit สำหรับ non-Model ก่อน
+-- เดิม: NPC spawn (30+ parts) → fire 30+ ครั้ง → spawn 30+ coroutines → freeze
+-- ใหม่: กรอง IsA("Model") ก่อนเลย + debounce set ป้องกัน process ซ้ำ
 task.spawn(function()
+    local _npcDescDebounce = setmetatable({}, {__mode = "k"})
     workspace.DescendantAdded:Connect(function(desc)
         if not CFG.Enabled or not CFG.NPCSESP then return end
-        task.wait(1)
-        if desc:IsA("Model") and desc:FindFirstChildOfClass("Humanoid") 
-        and not Players:GetPlayerFromCharacter(desc) and desc~=LP.Character
-        and not isESPExcluded(desc) and not ESPObjects[desc] then
-            makeESP(desc, true)
-            if not _npcConns[desc] then
-                _npcConns[desc] = desc.AncestryChanged:Connect(function(_,p)
-                    if not p then removeESP(desc); _espPartCache[desc]=nil; if _npcConns[desc] then _npcConns[desc]:Disconnect(); _npcConns[desc]=nil end end
-                end)
+        if not desc:IsA("Model") then return end          -- early exit: ไม่ใช่ Model ออกทันที
+        if _npcDescDebounce[desc] then return end         -- กำลัง process อยู่แล้ว skip
+        _npcDescDebounce[desc] = true
+        task.delay(1, function()
+            _npcDescDebounce[desc] = nil
+            if not desc.Parent then return end
+            if desc:FindFirstChildOfClass("Humanoid")
+            and not Players:GetPlayerFromCharacter(desc) and desc ~= LP.Character
+            and not isESPExcluded(desc) and not ESPObjects[desc] then
+                makeESP(desc, true)
+                if not _npcConns[desc] then
+                    _npcConns[desc] = desc.AncestryChanged:Connect(function(_,p)
+                        if not p then removeESP(desc); _espPartCache[desc]=nil; if _npcConns[desc] then _npcConns[desc]:Disconnect(); _npcConns[desc]=nil end end
+                    end)
+                end
             end
-        end
+        end)
     end)
 end)
 
@@ -778,14 +791,20 @@ local function injectIconsIntoDropdown()
     end)
 end
 
+-- FIX C: ใช้ weak-key table ป้องกัน GetPropertyChangedSignal("Text") ถูก connect ซ้ำ
+-- เดิม: ทุก TextLabel ที่เพิ่มใน WindUI จะได้รับ connection ใหม่ทุกครั้ง → สะสมเป็นพัน connections
+-- ใหม่: ถ้า label นี้ connect ไปแล้วก็ข้ามไปเลย (weak table ป้องกัน memory leak ด้วย)
 task.spawn(function()
+    local _labelConnected = setmetatable({}, {__mode = "k"})
     LP.PlayerGui.DescendantAdded:Connect(function(obj)
         if not obj:IsA("TextLabel") then return end
-        local sg=obj:FindFirstAncestorWhichIsA("ScreenGui")
+        local sg = obj:FindFirstAncestorWhichIsA("ScreenGui")
         if not sg then return end
-        local n=sg.Name
-        if not (n=="WindUI" or n:sub(1,7)=="WindUI/") then return end
+        local n = sg.Name
+        if not (n == "WindUI" or n:sub(1,7) == "WindUI/") then return end
         if FarmItemMap[obj.Text] then task.delay(0.05, injectIconsIntoDropdown) end
+        if _labelConnected[obj] then return end   -- connect ไปแล้ว skip
+        _labelConnected[obj] = true
         obj:GetPropertyChangedSignal("Text"):Connect(function()
             if FarmItemMap[obj.Text] then task.delay(0.05, injectIconsIntoDropdown) end
         end)
