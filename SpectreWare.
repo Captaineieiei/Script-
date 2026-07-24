@@ -1105,6 +1105,7 @@ local _mainOk = xpcall(function()
         -- an anti-bypass kick should be reserved for cases we can actually
         -- attribute to hook/tamper detection, not "server sent garbage".
         log("Invalid API response after 3 attempts — server issue?", "error")
+        warn("SpectreWare: raw response was → " .. tostring(raw):sub(1, 300))
         getgenv()[_GK.running] = nil; return
     end
     log("API response received ✓", "info")
