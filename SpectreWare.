@@ -229,9 +229,9 @@ end
 _writeSentinel(_sessionToken); _plantCanary()
 
 do
-    local _raw = getgenv().KEY or ""
-    getgenv().KEY = _r_char(0):rep(#(getgenv().KEY or ""))
-    getgenv().KEY = nil
+    local _raw = luasyncx_key or ""
+    luasyncx_key = _r_char(0):rep(#(luasyncx_key or ""))
+    luasyncx_key = nil
     _setKey(_raw); _raw = nil
 end
 
@@ -1062,7 +1062,7 @@ local _mainOk = xpcall(function()
     end
 
     if _getKey() == "" then
-        log("No key — set getgenv().KEY before running", "error"); getgenv()[_GK.running] = nil; return
+        log("No key — set luasyncx_key before running", "error"); getgenv()[_GK.running] = nil; return
     end
     local sentOk, sentErr = _verifySentinel(_sessionToken)
     if not sentOk then
@@ -1266,7 +1266,7 @@ _conn = game:GetService("Players").PlayerRemoving:Connect(function(p)
     if p == PL then
         _sessionActive = false; _clearSentinel()
         local gev = getgenv()
-        gev[_GK.running] = nil; gev[_GK.stime] = nil; gev[_GK.canary] = nil; gev.KEY = nil
+        gev[_GK.running] = nil; gev[_GK.stime] = nil; gev[_GK.canary] = nil; luasyncx_key = nil
         _conn:Disconnect()
     end
 end)
@@ -1366,6 +1366,6 @@ task.spawn(function()
 
     _clearSentinel()
     local gev = getgenv()
-    gev[_GK.running] = nil; gev[_GK.stime] = nil; gev[_GK.canary] = nil; gev.KEY = nil
+    gev[_GK.running] = nil; gev[_GK.stime] = nil; gev[_GK.canary] = nil; luasyncx_key = nil
     if _conn then _conn:Disconnect() end
 end)
