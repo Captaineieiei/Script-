@@ -1088,23 +1088,39 @@ local _mainOk = xpcall(function()
         callOk, raw = _awaitResult(function() return apiLookup(_getKey(), hwid, 5) end, 5)
         callOk = callOk or false; raw = raw or ""
         if callOk and raw ~= "" then
-            result = _parseResult(raw)
-            -- OPT-FIX: malformed/unparseable JSON is often a transient
-            -- proxy/host hiccup (502 page, rate-limit HTML, etc.), NOT proof
-            -- of tampering — retry it exactly like a connection failure
-            -- instead of instantly firing integrityFail on attempt #1.
-            if result then break end
+            -- Host is cold/sleeping (wisp.uno) → it serves a static HTML
+            -- placeholder page instead of proxying to the Node API. This is
+            -- not malformed JSON to patiently retry on the same cadence —
+            -- give it real time to finish waking up before trying again.
+            local _isHtml = raw:sub(1, 1) == "<" or raw:find("<!DOCTYPE", 1, true) ~= nil
+            if _isHtml then
+                log(("Server กำลังตื่น (%d/3)... รอสักครู่"):format(i), "loading")
+                if i < 3 then task.wait(4 * i) end
+            else
+                result = _parseResult(raw)
+                -- OPT-FIX: malformed/unparseable JSON is often a transient
+                -- proxy/host hiccup (502 page, rate-limit HTML, etc.), NOT proof
+                -- of tampering — retry it exactly like a connection failure
+                -- instead of instantly firing integrityFail on attempt #1.
+                if result then break end
+                if i < 3 then task.wait(0.7 * i) end
+            end
+        elseif i < 3 then
+            task.wait(0.7 * i)
         end
-        if i < 3 then task.wait(0.7 * i) end
     end
     if not callOk or not raw or raw == "" then
         log("Cannot reach API", "error"); getgenv()[_GK.running] = nil; return
     end
     if not result then
-        -- Still unparseable after 3 attempts. Soft-fail instead of kicking —
-        -- an anti-bypass kick should be reserved for cases we can actually
-        -- attribute to hook/tamper detection, not "server sent garbage".
-        log("Invalid API response after 3 attempts — server issue?", "error")
+        if raw:sub(1, 1) == "<" or raw:find("<!DOCTYPE", 1, true) ~= nil then
+            log("Server ยังไม่พร้อม (offline/sleeping) — กรุณาลองใหม่อีกครั้ง", "error")
+        else
+            -- Still unparseable after 3 attempts. Soft-fail instead of kicking —
+            -- an anti-bypass kick should be reserved for cases we can actually
+            -- attribute to hook/tamper detection, not "server sent garbage".
+            log("Invalid API response after 3 attempts — server issue?", "error")
+        end
         warn("SpectreWare: raw response was → " .. tostring(raw):sub(1, 300))
         getgenv()[_GK.running] = nil; return
     end
