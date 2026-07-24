@@ -1082,19 +1082,31 @@ local _mainOk = xpcall(function()
     end
     log("🖥  HWID   ›  " .. tostring(hwid):sub(1, 28) .. "...", "info")
     task.wait(0.4)
-    local callOk, raw
+    local callOk, raw, result
     for i = 1, 3 do
         log(("Connecting to API... (%d/3)"):format(i), "loading")
         callOk, raw = _awaitResult(function() return apiLookup(_getKey(), hwid, 5) end, 5)
         callOk = callOk or false; raw = raw or ""
-        if callOk and raw ~= "" then break end
+        if callOk and raw ~= "" then
+            result = _parseResult(raw)
+            -- OPT-FIX: malformed/unparseable JSON is often a transient
+            -- proxy/host hiccup (502 page, rate-limit HTML, etc.), NOT proof
+            -- of tampering — retry it exactly like a connection failure
+            -- instead of instantly firing integrityFail on attempt #1.
+            if result then break end
+        end
         if i < 3 then task.wait(0.7 * i) end
     end
     if not callOk or not raw or raw == "" then
         log("Cannot reach API", "error"); getgenv()[_GK.running] = nil; return
     end
-    local result = _parseResult(raw)
-    if not result then log("Invalid API response", "error"); integrityFail("bad response"); return end
+    if not result then
+        -- Still unparseable after 3 attempts. Soft-fail instead of kicking —
+        -- an anti-bypass kick should be reserved for cases we can actually
+        -- attribute to hook/tamper detection, not "server sent garbage".
+        log("Invalid API response after 3 attempts — server issue?", "error")
+        getgenv()[_GK.running] = nil; return
+    end
     log("API response received ✓", "info")
     task.wait(0.35)
     if result.success ~= true and result.success ~= "true" then
