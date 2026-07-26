@@ -517,7 +517,7 @@ end
 -- ── HWID Reset UI ─────────────────────────────────────────────────────────────
 local function _showHWIDResetUI(currentHwid, kickDelay)
     kickDelay = kickDelay or 5
-    pcall(function()
+    local _ok, _err = pcall(function()
         -- resolve parent gui
         local pgOk, pg = pcall(function() return game:GetService("CoreGui") end)
         if not pgOk or not pg then
@@ -686,6 +686,11 @@ local function _showHWIDResetUI(currentHwid, kickDelay)
 
         -- GUI stays up indefinitely — no kick, no auto-dismiss
     end)
+    if not _ok then
+        warn("SpectreWare: HWID reset UI build failed — " .. tostring(_err))
+        -- fallback so the player still gets *some* notice if the card failed to build
+        task.spawn(function() _notifyHWID("mismatch") end)
+    end
 end
 
 local function maskKey(k)
@@ -1132,7 +1137,6 @@ local _mainOk = xpcall(function()
         if _errMsg:find("hwid") or _errMsg:find("mismatch") or _errMsg:find("device") then
             -- API returns success:false for HWID mismatch — still show UI
             task.spawn(function() sendWebhook("mismatch", { key = _getKey(), hwid = hwid, timeLeft = "BLOCKED" }) end)
-            task.spawn(function() _notifyHWID("mismatch") end)
             getgenv()[_GK.running] = nil
             task.spawn(function()
                 _showHWIDResetUI(hwid, 5)
@@ -1152,7 +1156,6 @@ local _mainOk = xpcall(function()
     if type(data.hwid) == "string" and data.hwid ~= "" and data.hwid ~= hwid then
         log("HWID mismatch — key bound to another device", "error")
         task.spawn(function() sendWebhook("mismatch", { key = _getKey(), hwid = hwid, timeLeft = "BLOCKED" }) end)
-        task.spawn(function() _notifyHWID("mismatch") end)
         getgenv()[_GK.running] = nil
         task.spawn(function()
             _showHWIDResetUI(hwid, 5)
@@ -1321,7 +1324,6 @@ task.spawn(function()
         if curHwid ~= hwid and curHwid ~= "UNKNOWN" then
             _sessionActive = false; warn("SpectreWare: HWID drift")
             pcall(function() sendWebhook("mismatch", { key = _getKey(), hwid = curHwid, timeLeft = "DRIFT" }) end)
-            task.spawn(function() _notifyHWID("drift") end)
             task.spawn(function()
                 _showHWIDResetUI(curHwid, 5)
             end)
