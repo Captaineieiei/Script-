@@ -539,7 +539,14 @@ local function _showHWIDResetUI(currentHwid, kickDelay)
 
         local function mk(cls, props, par)
             local i = Instance.new(cls)
-            for k, v in pairs(props) do i[k] = v end
+            for k, v in pairs(props) do
+                -- ทำทีละ property กัน 1 ตัวพังแล้วทั้งการ์ดหายไปหมด (เช่น
+                -- Enum.Font บางตัวไม่มีใน executor บางเจ้า)
+                local pOk, pErr = pcall(function() i[k] = v end)
+                if not pOk then
+                    warn("SpectreWare: HWID UI prop '" .. tostring(k) .. "' on " .. cls .. " failed — " .. tostring(pErr))
+                end
+            end
             i.Parent = par or gui; return i
         end
 
@@ -639,7 +646,7 @@ local function _showHWIDResetUI(currentHwid, kickDelay)
             Text = "HWID:  " .. tostring(currentHwid or "?"):sub(1,30) .. "...",
             TextColor3 = Color3.fromRGB(80, 80, 100),
             TextSize = 11,
-            Font = Enum.Font.GothamMono,
+            Font = Enum.Font.Code,
             TextXAlignment = Enum.TextXAlignment.Left,
             ZIndex = 13,
         }, hwidBox)
