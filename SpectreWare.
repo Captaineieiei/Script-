@@ -713,7 +713,15 @@ local ERR_MAP = {
     ["not activated"]= "Key not activated",
     already          = "Key already redeemed",
 }
-local function parseApiError(msg)
+-- API ตอบ message: "Unauthorized" เหมือนกันหมดตอนนี้ (anti-enumeration) เลย
+-- keyword-match ข้างบนไม่ match อะไรแล้ว ใช้ data.code (ที่ยังจำเพาะเจาะจงอยู่)
+-- แทนสำหรับ log message ให้คนอ่านไม่งงว่า "คีย์ผิด" ทั้งที่จริงคือ HWID ไม่ตรง
+local CODE_MAP = {
+    EXPIRED       = "Key has expired",
+    HWID_MISMATCH = "HWID mismatch — bound to another device",
+}
+local function parseApiError(msg, code)
+    if code and CODE_MAP[code] then return CODE_MAP[code] end
     local m = tostring(msg or ""):lower()
     for k, v in pairs(ERR_MAP) do if m:find(k) then return v end end
     return "Invalid key: " .. tostring(msg or "unknown")
@@ -1140,7 +1148,7 @@ local _mainOk = xpcall(function()
     task.wait(0.35)
     if result.success ~= true and result.success ~= "true" then
         local _code = (type(result.data) == "table" and tostring(result.data.code or "")) or ""
-        log(parseApiError(result.message), "error")
+        log(parseApiError(result.message, _code), "error")
         if _code == "HWID_MISMATCH" then
             -- API ตอบ message: "Unauthorized" เหมือนกันหมดตอนนี้ (anti-enumeration)
             -- เลยต้องเช็คจาก data.code แทน ไม่ใช่ text-match ในตัว message แล้ว
