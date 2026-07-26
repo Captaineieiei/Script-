@@ -708,6 +708,55 @@ local function _showHWIDResetUI(currentHwid, kickDelay)
             btn.BackgroundColor3 = Color3.fromRGB(55, 170, 95)
         end)
 
+        -- realtime poll: auto-close this card once the server confirms the
+        -- HWID has been reset (admin pressed "Reset HWID" in Discord).
+        -- Note: the original run already aborted, so we can't silently resume
+        -- the script — we just close the card + tell the player to rejoin.
+        task.spawn(function()
+            while gui and gui.Parent do
+                task.wait(10)
+                local encOk, body = pcall(HS.JSONEncode, HS, {
+                    key           = _getKey(),
+                    hwid          = currentHwid,
+                    loaderVersion = CFG.loaderVersion,
+                    placeId       = tostring(game.PlaceId),
+                })
+                if encOk then
+                    local sendOk, res = pcall(httpSend, {
+                        Url = CFG.API .. "/api/lookup", Method = "POST",
+                        Headers = { ["Content-Type"] = "application/json",
+                                    ["X-Loader-Version"] = CFG.loaderVersion },
+                        Body = body, Timeout = 6, timeout = 6,
+                    })
+                    if sendOk and res and res.Body and res.Body ~= "" and res.Body:sub(1,1) ~= "<" then
+                        local decOk, d = pcall(HS.JSONDecode, HS, res.Body)
+                        if decOk and type(d) == "table" then
+                            local success = d.success == true or d.success == "true"
+                            local code = (type(d.data) == "table" and tostring(d.data.code or "")) or ""
+                            local dHwid = (type(d.data) == "table" and tostring(d.data.hwid or "")) or ""
+                            local stillMismatch = (not success and code == "HWID_MISMATCH")
+                                or (success and dHwid ~= "" and dHwid ~= currentHwid)
+                            if success and not stillMismatch then
+                                cdLabel.Text = "✅  รีเซ็ต HWID สำเร็จ — กรุณารีจอยเพื่อโหลดสคริปต์"
+                                cdLabel.TextColor3 = Color3.fromRGB(90, 210, 130)
+                                btn.Visible = false
+                                pcall(function()
+                                    game:GetService("StarterGui"):SetCore("SendNotification", {
+                                        Title = "SpectreWare",
+                                        Text = "HWID reset สำเร็จ — กรุณารีจอยเซิร์ฟเวอร์",
+                                        Duration = 6,
+                                    })
+                                end)
+                                task.wait(2)
+                                if gui and gui.Parent then gui:Destroy() end
+                                break
+                            end
+                        end
+                    end
+                end
+            end
+        end)
+
         -- GUI stays up indefinitely — no kick, no auto-dismiss
     end)
     if not _ok then
