@@ -1132,10 +1132,11 @@ local _mainOk = xpcall(function()
     log("API response received ✓", "info")
     task.wait(0.35)
     if result.success ~= true and result.success ~= "true" then
-        local _errMsg = tostring(result.message or ""):lower()
+        local _code = (type(result.data) == "table" and tostring(result.data.code or "")) or ""
         log(parseApiError(result.message), "error")
-        if _errMsg:find("hwid") or _errMsg:find("mismatch") or _errMsg:find("device") then
-            -- API returns success:false for HWID mismatch — still show UI
+        if _code == "HWID_MISMATCH" then
+            -- API ตอบ message: "Unauthorized" เหมือนกันหมดตอนนี้ (anti-enumeration)
+            -- เลยต้องเช็คจาก data.code แทน ไม่ใช่ text-match ในตัว message แล้ว
             task.spawn(function() sendWebhook("mismatch", { key = _getKey(), hwid = hwid, timeLeft = "BLOCKED" }) end)
             getgenv()[_GK.running] = nil
             task.spawn(function()
@@ -1143,7 +1144,7 @@ local _mainOk = xpcall(function()
             end)
             return
         end
-        if _errMsg:find("expired") then
+        if _code == "EXPIRED" then
             task.spawn(function() sendWebhook("expired", { key = _getKey(), hwid = hwid, timeLeft = "EXPIRED" }) end)
             task.wait(2); PL:Kick("[ SpectreWare ]  Your key has expired.\nPlease redeem a new key in Discord.")
         end
