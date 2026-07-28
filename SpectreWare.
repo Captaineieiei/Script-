@@ -534,224 +534,216 @@ local function _showHWIDResetUI(currentHwid, kickDelay)
         mk("Frame", {
             Size = UDim2.new(1,0,1,0),
             BackgroundColor3 = Color3.fromRGB(0,0,0),
-            BackgroundTransparency = 0.45,
+            BackgroundTransparency = 0.5,
             ZIndex = 10,
         })
 
         local card = mk("Frame", {
-            Size        = UDim2.new(1,-32, 0, 524),
-            Position    = UDim2.new(0.5,0, 0.5,0),
-            AnchorPoint = Vector2.new(0.5,0.5),
-            BackgroundColor3 = Color3.fromRGB(16, 16, 23),
+            Size        = UDim2.new(0.9, 0, 0, 420), 
+            Position    = UDim2.new(0.5, 0, 0.5, 0),
+            AnchorPoint = Vector2.new(0.5, 0.5),
+            BackgroundColor3 = Color3.fromRGB(20, 20, 27),
             BorderSizePixel  = 0,
             ZIndex = 11,
         }, gui)
         mk("UISizeConstraint", {
-            MinSize = Vector2.new(260, 340),
-            MaxSize = Vector2.new(420, 524),
+            MaxSize = Vector2.new(380, 440),
         }, card)
-
-        -- [FIXED] ใช้ UIScale ที่คำนวณจาก ViewportSize เพื่อบังคับย่อ UI บนจอเล็ก
-        local uiScale = mk("UIScale", { Scale = 1 }, card)
-        local function _updateScale()
-            local viewHeight = workspace.CurrentCamera.ViewportSize.Y
-            local requiredHeight = 524 + 64 -- ความสูงการ์ด + ระยะขอบ
-            if viewHeight < requiredHeight then
-                uiScale.Scale = math.max(0.1, viewHeight / requiredHeight)
-            else
-                uiScale.Scale = 1
-            end
-        end
-        _updateScale()
-        workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(_updateScale)
-
-        mk("UICorner", { CornerRadius = UDim.new(0,16) }, card)
+        mk("UICorner", { CornerRadius = UDim.new(0, 12) }, card)
         mk("UIStroke", {
-            Color = Color3.fromRGB(220, 60, 60),
+            Color = Color3.fromRGB(60, 60, 75),
             Thickness = 1,
-            Transparency = 0.55,
+            Transparency = 0.5,
         }, card)
 
-        local accentClip = mk("Frame", {
-            Size = UDim2.new(1,0,0,16),
-            BackgroundTransparency = 1,
-            ClipsDescendants = true,
-            ZIndex = 12,
+        local layout = mk("UIListLayout", {
+            Padding = UDim.new(0, 12),
+            HorizontalAlignment = Enum.HorizontalAlignment.Center,
+            SortOrder = Enum.SortOrder.LayoutOrder,
         }, card)
-        local accentBar = mk("Frame", {
-            Size = UDim2.new(1,0,0,16),
+        
+        local padding = mk("UIPadding", {
+            PaddingTop = UDim.new(0, 20),
+            PaddingBottom = UDim.new(0, 20),
+            PaddingLeft = UDim.new(0, 20),
+            PaddingRight = UDim.new(0, 20),
+        }, card)
+
+        mk("Frame", {
+            Size = UDim2.new(1, 0, 0, 4),
             BackgroundColor3 = Color3.fromRGB(235, 70, 70),
             BorderSizePixel = 0,
-            ZIndex = 12,
-        }, accentClip)
-        mk("UIGradient", {
-            Color = ColorSequence.new(
-                Color3.fromRGB(235, 70, 70), Color3.fromRGB(255, 140, 60)),
-        }, accentBar)
-        mk("UICorner", { CornerRadius = UDim.new(0,16) }, accentBar)
-
-        local iconBadge = mk("Frame", {
-            Size = UDim2.new(0,44,0,44),
-            Position = UDim2.new(0,20,0,24),
-            BackgroundColor3 = Color3.fromRGB(48, 22, 26),
-            BorderSizePixel = 0,
-            ZIndex = 12,
+            LayoutOrder = 1,
         }, card)
-        mk("UICorner", { CornerRadius = UDim.new(1,0) }, iconBadge)
-        mk("TextLabel", {
-            Size = UDim2.new(1,0,1,0),
+        mk("UIGradient", {
+            Color = ColorSequence.new(Color3.fromRGB(235, 70, 70), Color3.fromRGB(255, 140, 60)),
+        }, card:FindFirstChildWhichIsA("Frame"))
+
+        local headerFrame = mk("Frame", {
+            Size = UDim2.new(1, 0, 0, 40),
             BackgroundTransparency = 1,
-            Text = "⚠",
-            TextColor3 = Color3.fromRGB(255, 90, 90),
-            TextSize = 22,
-            Font = Enum.Font.GothamBold,
-            ZIndex = 13,
-        }, iconBadge)
+            LayoutOrder = 2,
+        }, card)
+        mk("UIListLayout", {
+            FillDirection = Enum.FillDirection.Horizontal,
+            VerticalAlignment = Enum.VerticalAlignment.Center,
+            Padding = UDim.new(0, 10),
+        }, headerFrame)
 
         mk("TextLabel", {
-            Size = UDim2.new(1,-96,0,24),
-            Position = UDim2.new(0,76,0,24),
+            Size = UDim2.new(0, 30, 0, 30),
+            BackgroundColor3 = Color3.fromRGB(45, 20, 25),
+            Text = "⚠",
+            TextColor3 = Color3.fromRGB(255, 100, 100),
+            TextSize = 18,
+            Font = Enum.Font.GothamBold,
+            LayoutOrder = 1,
+        }, headerFrame)
+        mk("UICorner", { CornerRadius = UDim.new(1, 0) }, headerFrame:GetChildren()[1])
+
+        local titleBox = mk("Frame", {
+            Size = UDim2.new(1, -40, 1, 0),
+            BackgroundTransparency = 1,
+            LayoutOrder = 2,
+        }, headerFrame)
+        mk("UIListLayout", {
+            Padding = UDim.new(0, 2),
+            VerticalAlignment = Enum.VerticalAlignment.Center,
+        }, titleBox)
+
+        mk("TextLabel", {
+            Size = UDim2.new(1, 0, 0, 20),
             BackgroundTransparency = 1,
             Text = "HWID Mismatch",
             TextColor3 = Color3.fromRGB(255, 255, 255),
-            TextSize = 19,
+            TextSize = 17,
             Font = Enum.Font.GothamBold,
             TextXAlignment = Enum.TextXAlignment.Left,
-            ZIndex = 12,
-        }, card)
+            LayoutOrder = 1,
+        }, titleBox)
         mk("TextLabel", {
-            Size = UDim2.new(1,-96,0,18),
-            Position = UDim2.new(0,76,0,48),
+            Size = UDim2.new(1, 0, 0, 14),
             BackgroundTransparency = 1,
-            Text = "SpectreWare v" .. CFG.loaderVersion .. " · ติดต่อ Discord เพื่อรีเซ็ต",
-            TextColor3 = Color3.fromRGB(120, 120, 140),
-            TextSize = 12,
+            Text = "SpectreWare v" .. CFG.loaderVersion,
+            TextColor3 = Color3.fromRGB(140, 140, 160),
+            TextSize = 11,
             Font = Enum.Font.Gotham,
             TextXAlignment = Enum.TextXAlignment.Left,
-            ZIndex = 12,
-        }, card)
-
-        mk("Frame", {
-            Size = UDim2.new(1,-40,0,1),
-            Position = UDim2.new(0,20,0,82),
-            BackgroundColor3 = Color3.fromRGB(38, 38, 50),
-            BorderSizePixel = 0, ZIndex = 12,
-        }, card)
+            LayoutOrder = 2,
+        }, titleBox)
 
         mk("TextLabel", {
-            Size = UDim2.new(1,-40,0,14),
-            Position = UDim2.new(0,20,0,96),
+            Size = UDim2.new(1, 0, 0, 14),
             BackgroundTransparency = 1,
-            Text = "รหัสอุปกรณ์ (HWID)",
-            TextColor3 = Color3.fromRGB(110, 110, 130),
+            Text = "รหัสอุปกรณ์ของคุณ (HWID)",
+            TextColor3 = Color3.fromRGB(120, 120, 140),
             TextSize = 11,
-            Font = Enum.Font.GothamBold,
+            Font = Enum.Font.GothamMedium,
             TextXAlignment = Enum.TextXAlignment.Left,
-            ZIndex = 12,
+            LayoutOrder = 3,
         }, card)
 
         local hwidBox = mk("Frame", {
-            Size = UDim2.new(1,-40,0,36),
-            Position = UDim2.new(0,20,0,114),
-            BackgroundColor3 = Color3.fromRGB(11, 11, 16),
-            BorderSizePixel = 0, ZIndex = 12,
+            Size = UDim2.new(1, 0, 0, 36),
+            BackgroundColor3 = Color3.fromRGB(12, 12, 17),
+            BorderSizePixel = 0,
+            LayoutOrder = 4,
         }, card)
-        mk("UICorner", { CornerRadius = UDim.new(0,8) }, hwidBox)
+        mk("UICorner", { CornerRadius = UDim.new(0, 6) }, hwidBox)
         mk("UIStroke", {
-            Color = Color3.fromRGB(40, 40, 54), Thickness = 1, Transparency = 0.3,
+            Color = Color3.fromRGB(45, 45, 60), Thickness = 1, Transparency = 0.2,
         }, hwidBox)
         mk("Frame", {
-            Size = UDim2.new(0,3,1,-12), Position = UDim2.new(0,0,0,6),
-            BackgroundColor3 = Color3.fromRGB(235, 70, 70), BorderSizePixel = 0, ZIndex = 13,
+            Size = UDim2.new(0, 3, 1, -12), Position = UDim2.new(0, 0, 0.5, 0),
+            AnchorPoint = Vector2.new(0, 0.5),
+            BackgroundColor3 = Color3.fromRGB(235, 70, 70), BorderSizePixel = 0,
         }, hwidBox)
         mk("TextLabel", {
-            Size = UDim2.new(1,-24,1,0),
-            Position = UDim2.new(0,14,0,0),
+            Size = UDim2.new(1, -20, 1, 0),
+            Position = UDim2.new(0, 10, 0, 0),
             BackgroundTransparency = 1,
-            Text = tostring(currentHwid or "?"):sub(1,30) .. "...",
-            TextColor3 = Color3.fromRGB(160, 160, 185),
+            Text = tostring(currentHwid or "?"):sub(1, 28) .. "...",
+            TextColor3 = Color3.fromRGB(170, 170, 195),
             TextSize = 12,
             Font = Enum.Font.Code,
             TextXAlignment = Enum.TextXAlignment.Left,
-            ZIndex = 13,
+            TextYAlignment = Enum.TextYAlignment.Center,
         }, hwidBox)
 
         local btn = mk("TextButton", {
-            Size = UDim2.new(1,-40,0,46),
-            Position = UDim2.new(0,20,0,166),
+            Size = UDim2.new(1, 0, 0, 42),
             BackgroundColor3 = Color3.fromRGB(88, 101, 242),
             AutoButtonColor = false,
             BorderSizePixel = 0,
-            Text = "💬   คัดลอก Discord Link",
+            Text = "💬  คัดลอก Discord Link",
             TextColor3 = Color3.fromRGB(255, 255, 255),
             TextSize = 14,
             Font = Enum.Font.GothamBold,
-            ZIndex = 12,
+            LayoutOrder = 5,
         }, card)
-        mk("UICorner", { CornerRadius = UDim.new(0,10) }, btn)
+        mk("UICorner", { CornerRadius = UDim.new(0, 8) }, btn)
         mk("UIGradient", {
             Rotation = 90,
-            Color = ColorSequence.new(
-                Color3.fromRGB(98, 111, 250), Color3.fromRGB(69, 78, 205)),
+            Color = ColorSequence.new(Color3.fromRGB(98, 111, 250), Color3.fromRGB(69, 78, 205)),
         }, btn)
-        btn.MouseEnter:Connect(function() btn.BackgroundColor3 = Color3.fromRGB(78, 91, 232) end)
+        btn.MouseEnter:Connect(function() btn.BackgroundColor3 = Color3.fromRGB(110, 120, 255) end)
         btn.MouseLeave:Connect(function() btn.BackgroundColor3 = Color3.fromRGB(88, 101, 242) end)
 
         local statusPill = mk("Frame", {
-            Size = UDim2.new(1,-40,0,28),
-            Position = UDim2.new(0,20,0,224),
-            BackgroundColor3 = Color3.fromRGB(28, 24, 20),
-            BorderSizePixel = 0, ZIndex = 12,
+            Size = UDim2.new(1, 0, 0, 28),
+            BackgroundColor3 = Color3.fromRGB(30, 25, 20),
+            BorderSizePixel = 0,
+            LayoutOrder = 6,
         }, card)
-        mk("UICorner", { CornerRadius = UDim.new(0,14) }, statusPill)
+        mk("UICorner", { CornerRadius = UDim.new(0, 14) }, statusPill)
+        mk("UIStroke", {
+            Color = Color3.fromRGB(80, 65, 40), Thickness = 1, Transparency = 0.5,
+        }, statusPill)
         local cdLabel = mk("TextLabel", {
-            Size = UDim2.new(1,-16,1,0),
-            Position = UDim2.new(0,8,0,0),
+            Size = UDim2.new(1, -10, 1, 0),
+            Position = UDim2.new(0, 5, 0, 0),
             BackgroundTransparency = 1,
-            Text = "●  สคริปต์ถูกระงับจนกว่าจะรีเซ็ต HWID",
-            TextColor3 = Color3.fromRGB(235, 180, 90),
-            TextSize = 12,
+            Text = "●  สคริปต์ถูกระงับจนกว่าจะรีเซ็ต",
+            TextColor3 = Color3.fromRGB(255, 200, 100),
+            TextSize = 11,
             Font = Enum.Font.GothamMedium,
-            ZIndex = 12,
+            TextXAlignment = Enum.TextXAlignment.Center,
         }, statusPill)
 
         mk("Frame", {
-            Size = UDim2.new(1,-40,0,1),
-            Position = UDim2.new(0,20,0,266),
-            BackgroundColor3 = Color3.fromRGB(38, 38, 50),
-            BorderSizePixel = 0, ZIndex = 12,
+            Size = UDim2.new(1, 0, 0, 1),
+            BackgroundColor3 = Color3.fromRGB(40, 40, 55),
+            BorderSizePixel = 0,
+            LayoutOrder = 7,
         }, card)
 
         mk("TextLabel", {
-            Size = UDim2.new(1,-40,0,18),
-            Position = UDim2.new(0,20,0,282),
+            Size = UDim2.new(1, 0, 0, 16),
             BackgroundTransparency = 1,
-            Text = "📋   วิธีรีเซ็ต HWID ผ่าน Discord",
+            Text = "📋  วิธีรีเซ็ต HWID ผ่าน Discord",
             TextColor3 = Color3.fromRGB(180, 180, 205),
-            TextSize = 13,
+            TextSize = 12,
             Font = Enum.Font.GothamBold,
             TextXAlignment = Enum.TextXAlignment.Left,
-            ZIndex = 12,
+            LayoutOrder = 8,
         }, card)
 
         local guideBox = mk("Frame", {
-            Size = UDim2.new(1,-40,0,196),
-            Position = UDim2.new(0,20,0,308),
-            BackgroundColor3 = Color3.fromRGB(11, 11, 16),
+            Size = UDim2.new(1, 0, 0, 120), 
+            BackgroundColor3 = Color3.fromRGB(12, 12, 17),
             BorderSizePixel = 0,
-            ZIndex = 12,
+            LayoutOrder = 9,
         }, card)
-        mk("UICorner", { CornerRadius = UDim.new(0,10) }, guideBox)
+        mk("UICorner", { CornerRadius = UDim.new(0, 8) }, guideBox)
         mk("UIStroke", {
-            Color = Color3.fromRGB(40, 40, 54), Thickness = 1, Transparency = 0.3,
+            Color = Color3.fromRGB(45, 45, 60), Thickness = 1, Transparency = 0.2,
         }, guideBox)
         mk("ImageLabel", {
-            Size = UDim2.new(1,-10,1,-10),
-            Position = UDim2.new(0,5,0,5),
+            Size = UDim2.new(1, -10, 1, -10),
+            Position = UDim2.new(0, 5, 0, 5),
             BackgroundTransparency = 1,
             Image = "rbxassetid://137221357132370",
             ScaleType = Enum.ScaleType.Fit,
-            ZIndex = 13,
         }, guideBox)
 
         local parented = false
@@ -762,8 +754,14 @@ local function _showHWIDResetUI(currentHwid, kickDelay)
 
         btn.MouseButton1Click:Connect(function()
             pcall(function() setclipboard(CFG.discordUrl) end)
-            btn.Text = "✔   Copied!  (" .. CFG.discordUrl .. ")"
+            btn.Text = "✔  คัดลอกลิงก์แล้ว!"
             btn.BackgroundColor3 = Color3.fromRGB(55, 170, 95)
+            task.delay(2, function()
+                if btn and btn.Parent then
+                    btn.Text = "💬  คัดลอก Discord Link"
+                    btn.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+                end
+            end)
         end)
 
         task.spawn(function()
@@ -791,7 +789,7 @@ local function _showHWIDResetUI(currentHwid, kickDelay)
                             local stillMismatch = (not success and code == "HWID_MISMATCH")
                                 or (success and dHwid ~= "" and dHwid ~= currentHwid)
                             if success and not stillMismatch then
-                                cdLabel.Text = "✅  รีเซ็ต HWID สำเร็จ — กรุณารีจอยเพื่อโหลดสคริปต์"
+                                cdLabel.Text = "✅  รีเซ็ต HWID สำเร็จ — กรุณารีจอย"
                                 cdLabel.TextColor3 = Color3.fromRGB(90, 210, 130)
                                 btn.Visible = false
                                 pcall(function()
