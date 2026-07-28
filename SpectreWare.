@@ -362,9 +362,6 @@ local function httpSend(opts)
 end
 
 local function safeGet(url, headers, timeout)
-    -- OPT: pass Timeout/timeout through so executors that support native
-    -- request-cancellation (syn.request, http_request, request, etc.)
-    -- actually abort the socket instead of leaving it open forever.
     local ok, res = pcall(httpSend, {
         Url = url, Method = "GET", Headers = headers,
         Timeout = timeout, timeout = timeout,
@@ -380,14 +377,9 @@ local function safeGetTimeout(url, timeout, headers)
         if not done then result, body = ok, b end
         done = true
     end)
-    -- OPT: 0.05s poll step instead of 0.1s so a slow/hung request is
-    -- detected and control is returned to the caller sooner.
     local ticks, max = 0, timeout * 20
     while not done and ticks < max do task.wait(0.05); ticks = ticks + 1 end
     if not done then
-        -- Can't force an executor's C-side socket closed from Lua, but we
-        -- CAN stop waiting on it so the caller is never blocked longer
-        -- than `timeout`, and detach the coroutine.
         pcall(task.cancel, co)
     end
     return done and result or false, done and body or "timeout"
@@ -426,10 +418,6 @@ local function getHWID()
     push("AG:", function() return tostring(PL.AccountAge) end)
 
     if not _hwidSeedCache then
-        -- OPT: some (mostly mobile) executors have a slow/flaky filesystem
-        -- layer where isfile/readfile can stall for several seconds. Bound
-        -- it the same way HTTP calls are bounded so it can never hang
-        -- getHWID() (and therefore the whole login sequence) indefinitely.
         _hwidSeedCache = try(function()
             local done, out = false, nil
             task.spawn(function()
@@ -464,7 +452,6 @@ local function getHWID()
     if #parts == 0 then return "UNKNOWN" end
 
     local combined = table.concat(parts, "|")
-    -- OPT: reuse _djb2 logic inline via the shared function (defined below)
     local h = 5381
     for i = 1, #combined do h = ((h * 33) + combined:byte(i)) % 0x100000000 end
     return combined .. "#" .. _r_format("%08X", h)
@@ -504,7 +491,6 @@ local function _notifyHWID(reason)
     else
         msg = "⚠  HWID Mismatch\n⚡  SpectreWare  —  Key นี้ผูกกับอุปกรณ์อื่น\nติดต่อ Discord เพื่อรีเซ็ต HWID"
     end
-    -- wait for NotificationLibrary to be ready (up to 5s)
     local waited = 0
     while not NotificationLibrary and waited < 50 do
         task.wait(0.1); waited = waited + 1
@@ -518,18 +504,15 @@ end
 local function _showHWIDResetUI(currentHwid, kickDelay)
     kickDelay = kickDelay or 5
     local _ok, _err = pcall(function()
-        -- resolve parent gui
         local pgOk, pg = pcall(function() return game:GetService("CoreGui") end)
         if not pgOk or not pg then
             pg = PL:WaitForChild("PlayerGui", 3)
             if not pg then return end
         end
 
-        -- remove stale instance
         local existing = pg:FindFirstChild("SW_HWIDGui")
         if existing then existing:Destroy() end
 
-        -- ScreenGui
         local gui = Instance.new("ScreenGui")
         gui.Name            = "SW_HWIDGui"
         gui.ResetOnSpawn    = false
@@ -540,8 +523,6 @@ local function _showHWIDResetUI(currentHwid, kickDelay)
         local function mk(cls, props, par)
             local i = Instance.new(cls)
             for k, v in pairs(props) do
-                -- ทำทีละ property กัน 1 ตัวพังแล้วทั้งการ์ดหายไปหมด (เช่น
-                -- Enum.Font บางตัวไม่มีใน executor บางเจ้า)
                 local pOk, pErr = pcall(function() i[k] = v end)
                 if not pOk then
                     warn("SpectreWare: HWID UI prop '" .. tostring(k) .. "' on " .. cls .. " failed — " .. tostring(pErr))
@@ -550,7 +531,6 @@ local function _showHWIDResetUI(currentHwid, kickDelay)
             i.Parent = par or gui; return i
         end
 
-        -- dim overlay
         mk("Frame", {
             Size = UDim2.new(1,0,1,0),
             BackgroundColor3 = Color3.fromRGB(0,0,0),
@@ -558,7 +538,6 @@ local function _showHWIDResetUI(currentHwid, kickDelay)
             ZIndex = 10,
         })
 
-        -- main card
         local card = mk("Frame", {
             Size        = UDim2.new(1,-32, 0, 524),
             Position    = UDim2.new(0.5,0, 0.5,0),
@@ -571,6 +550,21 @@ local function _showHWIDResetUI(currentHwid, kickDelay)
             MinSize = Vector2.new(260, 340),
             MaxSize = Vector2.new(420, 524),
         }, card)
+
+        -- [FIXED] ใช้ UIScale ที่คำนวณจาก ViewportSize เพื่อบังคับย่อ UI บนจอเล็ก
+        local uiScale = mk("UIScale", { Scale = 1 }, card)
+        local function _updateScale()
+            local viewHeight = workspace.CurrentCamera.ViewportSize.Y
+            local requiredHeight = 524 + 64 -- ความสูงการ์ด + ระยะขอบ
+            if viewHeight < requiredHeight then
+                uiScale.Scale = math.max(0.1, viewHeight / requiredHeight)
+            else
+                uiScale.Scale = 1
+            end
+        end
+        _updateScale()
+        workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(_updateScale)
+
         mk("UICorner", { CornerRadius = UDim.new(0,16) }, card)
         mk("UIStroke", {
             Color = Color3.fromRGB(220, 60, 60),
@@ -578,7 +572,6 @@ local function _showHWIDResetUI(currentHwid, kickDelay)
             Transparency = 0.55,
         }, card)
 
-        -- red→orange accent bar (top, follows card's rounded corners)
         local accentClip = mk("Frame", {
             Size = UDim2.new(1,0,0,16),
             BackgroundTransparency = 1,
@@ -597,7 +590,6 @@ local function _showHWIDResetUI(currentHwid, kickDelay)
         }, accentBar)
         mk("UICorner", { CornerRadius = UDim.new(0,16) }, accentBar)
 
-        -- header: icon badge + title/subtitle
         local iconBadge = mk("Frame", {
             Size = UDim2.new(0,44,0,44),
             Position = UDim2.new(0,20,0,24),
@@ -639,7 +631,6 @@ local function _showHWIDResetUI(currentHwid, kickDelay)
             ZIndex = 12,
         }, card)
 
-        -- divider
         mk("Frame", {
             Size = UDim2.new(1,-40,0,1),
             Position = UDim2.new(0,20,0,82),
@@ -647,7 +638,6 @@ local function _showHWIDResetUI(currentHwid, kickDelay)
             BorderSizePixel = 0, ZIndex = 12,
         }, card)
 
-        -- HWID caption
         mk("TextLabel", {
             Size = UDim2.new(1,-40,0,14),
             Position = UDim2.new(0,20,0,96),
@@ -660,7 +650,6 @@ local function _showHWIDResetUI(currentHwid, kickDelay)
             ZIndex = 12,
         }, card)
 
-        -- HWID display box (with left accent strip)
         local hwidBox = mk("Frame", {
             Size = UDim2.new(1,-40,0,36),
             Position = UDim2.new(0,20,0,114),
@@ -687,7 +676,6 @@ local function _showHWIDResetUI(currentHwid, kickDelay)
             ZIndex = 13,
         }, hwidBox)
 
-        -- Discord button (gradient)
         local btn = mk("TextButton", {
             Size = UDim2.new(1,-40,0,46),
             Position = UDim2.new(0,20,0,166),
@@ -709,7 +697,6 @@ local function _showHWIDResetUI(currentHwid, kickDelay)
         btn.MouseEnter:Connect(function() btn.BackgroundColor3 = Color3.fromRGB(78, 91, 232) end)
         btn.MouseLeave:Connect(function() btn.BackgroundColor3 = Color3.fromRGB(88, 101, 242) end)
 
-        -- status pill (no more kick countdown — player stays connected)
         local statusPill = mk("Frame", {
             Size = UDim2.new(1,-40,0,28),
             Position = UDim2.new(0,20,0,224),
@@ -728,7 +715,6 @@ local function _showHWIDResetUI(currentHwid, kickDelay)
             ZIndex = 12,
         }, statusPill)
 
-        -- divider 2
         mk("Frame", {
             Size = UDim2.new(1,-40,0,1),
             Position = UDim2.new(0,20,0,266),
@@ -736,7 +722,6 @@ local function _showHWIDResetUI(currentHwid, kickDelay)
             BorderSizePixel = 0, ZIndex = 12,
         }, card)
 
-        -- guide caption
         mk("TextLabel", {
             Size = UDim2.new(1,-40,0,18),
             Position = UDim2.new(0,20,0,282),
@@ -749,7 +734,6 @@ local function _showHWIDResetUI(currentHwid, kickDelay)
             ZIndex = 12,
         }, card)
 
-        -- guide image (how to press "Reset HWID" in the Discord app)
         local guideBox = mk("Frame", {
             Size = UDim2.new(1,-40,0,196),
             Position = UDim2.new(0,20,0,308),
@@ -770,24 +754,18 @@ local function _showHWIDResetUI(currentHwid, kickDelay)
             ZIndex = 13,
         }, guideBox)
 
-        -- parent to CoreGui with fallback
         local parented = false
         pcall(function() gui.Parent = game:GetService("CoreGui"); parented = true end)
         if not parented then
             pcall(function() gui.Parent = PL:WaitForChild("PlayerGui", 3) end)
         end
 
-        -- button click → copy discord link
         btn.MouseButton1Click:Connect(function()
             pcall(function() setclipboard(CFG.discordUrl) end)
             btn.Text = "✔   Copied!  (" .. CFG.discordUrl .. ")"
             btn.BackgroundColor3 = Color3.fromRGB(55, 170, 95)
         end)
 
-        -- realtime poll: auto-close this card once the server confirms the
-        -- HWID has been reset (admin pressed "Reset HWID" in Discord).
-        -- Note: the original run already aborted, so we can't silently resume
-        -- the script — we just close the card + tell the player to rejoin.
         task.spawn(function()
             while gui and gui.Parent do
                 task.wait(10)
@@ -832,12 +810,9 @@ local function _showHWIDResetUI(currentHwid, kickDelay)
                 end
             end
         end)
-
-        -- GUI stays up indefinitely — no kick, no auto-dismiss
     end)
     if not _ok then
         warn("SpectreWare: HWID reset UI build failed — " .. tostring(_err))
-        -- fallback so the player still gets *some* notice if the card failed to build
         task.spawn(function() _notifyHWID("mismatch") end)
     end
 end
@@ -855,9 +830,6 @@ local ERR_MAP = {
     ["not activated"]= "Key not activated",
     already          = "Key already redeemed",
 }
--- API ตอบ message: "Unauthorized" เหมือนกันหมดตอนนี้ (anti-enumeration) เลย
--- keyword-match ข้างบนไม่ match อะไรแล้ว ใช้ data.code (ที่ยังจำเพาะเจาะจงอยู่)
--- แทนสำหรับ log message ให้คนอ่านไม่งงว่า "คีย์ผิด" ทั้งที่จริงคือ HWID ไม่ตรง
 local CODE_MAP = {
     EXPIRED       = "Key has expired",
     HWID_MISMATCH = "HWID mismatch — bound to another device",
@@ -886,7 +858,6 @@ local function getPlayerCount()
     return try(function() return tostring(#game:GetService("Players"):GetPlayers()) end, "?")
 end
 
--- OPT: executor detection table built once (not inside try() closure every call)
 local _EXEC_GLOBALS = {
     WISPBYTE="WispByte", WispByte="WispByte", ARCEUS_X="Arceus X", arceus="Arceus X",
     Delta="Delta", DELTA_LOADED="Delta", HYDROGEN="Hydrogen", hydrogen="Hydrogen",
@@ -951,10 +922,9 @@ local function getAvatar(uid)
     end, fb), fb
 end
 
--- OPT: cache PL.UserId once; avoids repeated property access in sendWebhook
 local function sendWebhook(event, info)
     info = info or {}
-    local uid                           = PL.UserId   -- cached locally
+    local uid                           = PL.UserId
     local avatar, headshot              = getAvatar(uid)
     local gameName, gameCreator, maxP, placeVer = getGameInfo()
     local clockDrift
@@ -1055,10 +1025,8 @@ local function _hexDecode(h)
     return _r_concat(b)
 end
 
--- OPT: O(1) set lookup instead of O(n) loop
 local function _wlHas(set, val) return set[val] == true end
 
--- OPT: executor check uses pre-built _exSet hash-set
 local function _checkExecutorWL()
     if #WL.EXECUTORS == 0 then return true, nil end
     local ex = getExecutor():lower()
@@ -1096,8 +1064,6 @@ local function apiLookup(key, hwidStr, timeout)
         loaderXk      = _xorKey,
     })
     if not ok then return false, "" end
-    -- OPT: pass Timeout through to httpSend so a hung server can't keep the
-    -- underlying socket (and thus the polling coroutine below) open forever.
     local res = httpSend({ Url = CFG.API .. "/api/lookup", Method = "POST",
                            Headers = { ["Content-Type"] = "application/json",
                                        ["X-Loader-Version"] = CFG.loaderVersion },
@@ -1106,9 +1072,6 @@ local function apiLookup(key, hwidStr, timeout)
     return false, ""
 end
 
--- timeoutSec = wall-clock seconds to wait, NOT ticks (was ticks before —
--- easy to accidentally pass the wrong unit, which is part of why the old
--- 60 at the call site below actually meant 6s, not 60s).
 local function _awaitResult(fn, timeoutSec)
     local done, r1, r2 = false, nil, nil
     local co = task.spawn(function() r1, r2 = fn(); done = true end)
@@ -1148,7 +1111,6 @@ local _mainOk = xpcall(function()
         end
     end
 
-    -- OPT: use pre-built sets instead of _wlHas loop
     local _isDev  = _wlHas(_devSet,  _uid)
     local _isFree = not _isDev and _wlHas(_freeSet, _uid)
 
@@ -1250,20 +1212,12 @@ local _mainOk = xpcall(function()
         callOk, raw = _awaitResult(function() return apiLookup(_getKey(), hwid, 5) end, 5)
         callOk = callOk or false; raw = raw or ""
         if callOk and raw ~= "" then
-            -- Host is cold/sleeping (wisp.uno) → it serves a static HTML
-            -- placeholder page instead of proxying to the Node API. This is
-            -- not malformed JSON to patiently retry on the same cadence —
-            -- give it real time to finish waking up before trying again.
             local _isHtml = raw:sub(1, 1) == "<" or raw:find("<!DOCTYPE", 1, true) ~= nil
             if _isHtml then
                 log(("Server กำลังตื่น (%d/3)... รอสักครู่"):format(i), "loading")
                 if i < 3 then task.wait(4 * i) end
             else
                 result = _parseResult(raw)
-                -- OPT-FIX: malformed/unparseable JSON is often a transient
-                -- proxy/host hiccup (502 page, rate-limit HTML, etc.), NOT proof
-                -- of tampering — retry it exactly like a connection failure
-                -- instead of instantly firing integrityFail on attempt #1.
                 if result then break end
                 if i < 3 then task.wait(0.7 * i) end
             end
@@ -1278,9 +1232,6 @@ local _mainOk = xpcall(function()
         if raw:sub(1, 1) == "<" or raw:find("<!DOCTYPE", 1, true) ~= nil then
             log("Server ยังไม่พร้อม (offline/sleeping) — กรุณาลองใหม่อีกครั้ง", "error")
         else
-            -- Still unparseable after 3 attempts. Soft-fail instead of kicking —
-            -- an anti-bypass kick should be reserved for cases we can actually
-            -- attribute to hook/tamper detection, not "server sent garbage".
             log("Invalid API response after 3 attempts — server issue?", "error")
         end
         warn("SpectreWare: raw response was → " .. tostring(raw):sub(1, 300))
@@ -1292,8 +1243,6 @@ local _mainOk = xpcall(function()
         local _code = (type(result.data) == "table" and tostring(result.data.code or "")) or ""
         log(parseApiError(result.message, _code), "error")
         if _code == "HWID_MISMATCH" then
-            -- API ตอบ message: "Unauthorized" เหมือนกันหมดตอนนี้ (anti-enumeration)
-            -- เลยต้องเช็คจาก data.code แทน ไม่ใช่ text-match ในตัว message แล้ว
             task.spawn(function() sendWebhook("mismatch", { key = _getKey(), hwid = hwid, timeLeft = "BLOCKED" }) end)
             getgenv()[_GK.running] = nil
             task.spawn(function()
@@ -1413,7 +1362,6 @@ end)
 if not _mainOk or not _verified then return end
 
 -- ── Post-launch: announce poller ──────────────────────────────────────────────
--- OPT: removed redundant leading task.wait() (no-arg = 1 frame, served no purpose)
 local _sessionActive = true
 local _lastSeq, _lastId, _rotationTick, _rotationEvery = 0, "", 0, 3
 
@@ -1453,7 +1401,6 @@ task.spawn(function()
     while _sessionActive and task.wait(CFG.sessionCheckEvery) do
         if not PL or not PL.Parent then _sessionActive = false; break end
 
-        -- integrityFail hook check
         if not _r_rawequal(integrityFail, _integrityFail_ref) or _r_type(integrityFail) ~= "function" then
             _sessionActive = false; warn("SpectreWare: integrityFail hooked")
             _clearSentinel(); getgenv()[_GK.running] = nil
