@@ -14,8 +14,6 @@
 
 local CFG = {
     API                 = "https://luasyncxz.wisp.uno",
-    -- clientKey: ต้องตรงกับ CLIENT_KEY env ฝั่ง server เป๊ะๆ (ใช้กับ endpoint
-    -- ที่ไม่มี user key อยู่แล้ว เช่น /api/time, /api/script, /api/announce)
     clientKey           = "0f9b3fd53469b88a5ed98d27687650cf5c2812346fd46665",
     loaderVersion       = "2.6.0",
     waitOnStart         = 0.2,
@@ -43,12 +41,10 @@ local WL = {
     MIN_ACCOUNT_AGE = 7,
 }
 
--- OPT: pre-build O(1) UID sets so _wlHas is a table index, not a loop
 local _devSet, _freeSet = {}, {}
 for _, v in ipairs(WL.DEVS)  do _devSet[v]  = true end
 for _, v in ipairs(WL.FREE)  do _freeSet[v] = true end
 
--- OPT: pre-build O(1) executor whitelist set (lowercase keys)
 local _exSet = {}
 for _, v in ipairs(WL.EXECUTORS) do _exSet[v] = true end
 
@@ -79,7 +75,6 @@ local _r_bxor = (bit32 and bit32.bxor) or (function()
     end
 end)()
 
--- ── Stdlib presence check ────────────────────────────────────────────────────
 do
     local _n  = { _r_pcall, _r_rawget, _r_type, _r_loadstring, _r_bxor }
     local _nm = { "pcall", "rawget", "type", "loadstring", "bxor" }
@@ -112,7 +107,7 @@ local function _checkRawops()
     return _r_rawget(t, "__sw_chk") == 91 and _r_rawget(t, "__sw_miss") == nil
 end
 
--- ── Global key symbols (obfuscated via char codes) ──────────────────────────
+-- ── Global key symbols ──────────────────────────────────────────────────────
 local _GK = (function()
     local c = _r_char
     return {
@@ -139,19 +134,19 @@ local function _xorStr(s, k)
     return _r_concat(r)
 end
 
--- ── Sentinel helpers (OPT: cache getgenv() once per call) ───────────────────
+-- ── Sentinel helpers ───────────────────────────────────────────────────────
 local function _writeSentinel(tok, xk)
     xk = xk or _xorKey
     if not xk then return end
     local e   = _xorStr(tok, xk)
-    local gev = getgenv()              -- single call
+    local gev = getgenv()
     gev[_GK.s1] = e; gev[_GK.s2] = e; gev[_GK.s3] = e; gev[_GK.xk] = xk
 end
 
 local function _verifySentinel(tok, xk)
     xk = xk or _xorKey
     if not xk then return false, "no_xk" end
-    local gev = getgenv()              -- single call
+    local gev = getgenv()
     local v1, v2, v3 = gev[_GK.s1], gev[_GK.s2], gev[_GK.s3]
     if not v1 or v1 ~= v2 or v2 ~= v3 then return false, "split" end
     if _xorStr(v1, xk) ~= tok then return false, "mismatch" end
@@ -159,7 +154,7 @@ local function _verifySentinel(tok, xk)
 end
 
 local function _clearSentinel()
-    local gev = getgenv()              -- single call
+    local gev = getgenv()
     gev[_GK.s1] = nil; gev[_GK.s2] = nil; gev[_GK.s3] = nil; gev[_GK.xk] = nil
 end
 
@@ -261,12 +256,10 @@ local STS = game:GetService("Stats")
 
 -- ── Logging / UI helpers ─────────────────────────────────────────────────────
 local NotificationLibrary
-local _BW = 52  -- separator width
+local _BW = 52
 
--- ASCII-safe separators (Roblox console does not render Unicode box-drawing chars)
 local function _div()  print(("="):rep(_BW)) end
 local function _sep()  print(("-"):rep(_BW)) end
-
 local function _bRow(msg)  print("  " .. msg) end
 local function _bTop()     _div() end
 local function _bBot()     _div() end
@@ -292,8 +285,6 @@ end
 local function try(fn, def) local ok, v = pcall(fn); return ok and v or def end
 
 -- ── HTTP layer ───────────────────────────────────────────────────────────────
--- OPT: build the candidate function list once at module load, not per-request.
--- The cache index (_httpCacheIdx) still fast-paths the winning function.
 local _httpFns = {
     function(o) return syn       and syn.request      and syn.request(o)             end,
     function(o) return http      and http.request     and http.request(o)            end,
@@ -321,14 +312,12 @@ local _httpFns = {
     function(o) return getgenv().request and getgenv().request(o)                     end,
 }
 
--- OPT: simplified _normalizeRes (avoids redundant mirroring assignments)
 local function _normalizeRes(res)
     if not res then return nil end
     local body = res.Body or res.body
     local code = res.StatusCode or res.statusCode
     if type(body) == "table" then body = tostring(body) end
     if not body or body == "" then return nil end
-    -- expose both casings for callers that use either
     res.Body = body; res.body = body
     res.StatusCode = code; res.statusCode = code
     return res
@@ -343,7 +332,7 @@ local function httpSend(opts)
         local ok, res = pcall(_httpFns[_httpCacheIdx], opts)
         local nr = ok and _normalizeRes(res)
         if nr then return nr end
-        if not ok then _httpCacheIdx = nil end  -- evict stale cache entry
+        if not ok then _httpCacheIdx = nil end
     end
 
     for i = 1, #_httpFns do
@@ -538,8 +527,9 @@ local function _showHWIDResetUI(currentHwid, kickDelay)
             ZIndex = 10,
         })
 
+        -- ขยายการ์ดให้ใหญ่ขึ้นเพื่อรองรับรูปภาพที่ใหญ่ขึ้น
         local card = mk("Frame", {
-            Size        = UDim2.new(0.9, 0, 0, 420), 
+            Size        = UDim2.new(0.9, 0, 0, 500), 
             Position    = UDim2.new(0.5, 0, 0.5, 0),
             AnchorPoint = Vector2.new(0.5, 0.5),
             BackgroundColor3 = Color3.fromRGB(20, 20, 27),
@@ -547,8 +537,23 @@ local function _showHWIDResetUI(currentHwid, kickDelay)
             ZIndex = 11,
         }, gui)
         mk("UISizeConstraint", {
-            MaxSize = Vector2.new(380, 440),
+            MaxSize = Vector2.new(380, 520),
         }, card)
+        
+        -- ระบบย่อ-ขยายอัตโนมัติขนาดตามจอ (ถ้าจอเล็กกว่าการ์ด จะย่อลงมาพอดี)
+        local uiScale = mk("UIScale", { Scale = 1 }, card)
+        local function _updateScale()
+            local requiredH = 520
+            local viewH = workspace.CurrentCamera.ViewportSize.Y
+            if viewH < requiredH then
+                uiScale.Scale = math.max(0.1, viewH / requiredH)
+            else
+                uiScale.Scale = 1
+            end
+        end
+        _updateScale()
+        workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(_updateScale)
+
         mk("UICorner", { CornerRadius = UDim.new(0, 12) }, card)
         mk("UIStroke", {
             Color = Color3.fromRGB(60, 60, 75),
@@ -728,8 +733,9 @@ local function _showHWIDResetUI(currentHwid, kickDelay)
             LayoutOrder = 8,
         }, card)
 
+        -- ขยายขนาดรูปภาพ Guide จาก 120px เป็น 180px ให้เห็นชัดเจนขึ้น
         local guideBox = mk("Frame", {
-            Size = UDim2.new(1, 0, 0, 120), 
+            Size = UDim2.new(1, 0, 0, 180), 
             BackgroundColor3 = Color3.fromRGB(12, 12, 17),
             BorderSizePixel = 0,
             LayoutOrder = 9,
