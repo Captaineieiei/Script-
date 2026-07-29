@@ -1152,8 +1152,7 @@ local _mainOk = xpcall(function()
                 tostring(game.PlaceId), "error")
             getgenv()[_GK.running] = nil
             pcall(function()
-                PL:Kick("[ LuaSyncX ]  This game is not supported.\nNo script configured for PlaceId " ..
-                        tostring(game.PlaceId) .. ".")
+                PL:Kick("[ LuaSyncX ]  This game is not supported.")
             end)
             return
         end
@@ -1294,6 +1293,16 @@ local _mainOk = xpcall(function()
     log("HWID verified ✓", "success")
     print("[ LuaSyncX ]: Authenticated in " .. tostring(os.clock() - _authStart) .. "s")
     task.wait(0.4)
+    local _hasScript = (type(data.scriptEnc) == "string" and data.scriptEnc ~= "") or
+                        (type(data.scriptUrl) == "string" and data.scriptUrl ~= "")
+    if not _hasScript then
+        log("API did not return scriptUrl for PlaceId " .. tostring(game.PlaceId), "error")
+        getgenv()[_GK.running] = nil
+        pcall(function()
+            PL:Kick("[ LuaSyncX ]  This game is not supported.")
+        end)
+        return
+    end
     if NotificationLibrary then
         pcall(function()
             NotificationLibrary:SendNotification("Info",
@@ -1339,8 +1348,7 @@ local _mainOk = xpcall(function()
             log("API did not return scriptUrl for PlaceId " .. tostring(game.PlaceId), "error")
             getgenv()[_GK.running] = nil
             pcall(function()
-                PL:Kick("[ LuaSyncX ]  This game is not supported.\nNo script configured for PlaceId " ..
-                        tostring(game.PlaceId) .. ".")
+                PL:Kick("[ LuaSyncX ]  This game is not supported.")
             end)
             return
         end
