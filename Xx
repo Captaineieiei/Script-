@@ -1,0 +1,533 @@
+-- SpectreWare | Safe Viewer v6.2 (Compressed)
+-- Original design by Verity | Compressed build
+
+local Players, TweenService, UIS = game:GetService("Players"), game:GetService("TweenService"), game:GetService("UserInputService")
+local LP = Players.LocalPlayer
+local PG = LP:WaitForChild("PlayerGui")
+
+local C = {
+    bg=Color3.fromRGB(9,9,16), surface=Color3.fromRGB(17,17,27), surface2=Color3.fromRGB(23,23,36),
+    card=Color3.fromRGB(19,19,30), cardHover=Color3.fromRGB(28,28,46),
+    accent=Color3.fromRGB(138,128,255), accentDim=Color3.fromRGB(62,52,165), accentGlow=Color3.fromRGB(190,182,255),
+    accentDark=Color3.fromRGB(42,32,102), accent2=Color3.fromRGB(90,200,255),
+    green=Color3.fromRGB(90,255,150), greenDim=Color3.fromRGB(28,118,60),
+    red=Color3.fromRGB(255,90,108), orange=Color3.fromRGB(255,180,60),
+    text=Color3.fromRGB(248,248,255), textMuted=Color3.fromRGB(158,158,188), textDim=Color3.fromRGB(92,92,122),
+    border=Color3.fromRGB(48,48,76), borderGlow=Color3.fromRGB(92,82,175),
+    white=Color3.fromRGB(255,255,255), black=Color3.fromRGB(0,0,0),
+}
+local SHADOW_IMG = "rbxassetid://5028857084"
+
+-- ========== Core Helpers ==========
+local function New(class, props)
+    local inst = Instance.new(class)
+    for k, v in pairs(props or {}) do inst[k] = v end
+    return inst
+end
+
+local function tween(obj, props, t, style, dir)
+    if not obj then return end
+    TweenService:Create(obj, TweenInfo.new(t or 0.2, style or Enum.EasingStyle.Quart, dir or Enum.EasingDirection.Out), props):Play()
+end
+
+local function autoText(lbl, maxSize)
+    if not lbl then return end
+    lbl.TextScaled = true
+    New("UITextSizeConstraint", {MaxTextSize = maxSize or 12, Parent = lbl})
+end
+
+local function makeGradient(parent, c1, c2, rot)
+    return New("UIGradient", {Color = ColorSequence.new({ColorSequenceKeypoint.new(0,c1), ColorSequenceKeypoint.new(1,c2)}), Rotation = rot or 90, Parent = parent})
+end
+
+local function makeGlow(parent, color, thickness, transparency)
+    return New("UIStroke", {Color=color, Thickness=thickness or 1, Transparency=transparency or 0, ApplyStrokeMode=Enum.ApplyStrokeMode.Border, Parent=parent})
+end
+
+local function makeShadow(parent, sizeOffset, transparency)
+    return New("ImageLabel", {
+        Name="Shadow", BackgroundTransparency=1, Image=SHADOW_IMG, ImageColor3=C.black,
+        ImageTransparency=transparency or 0.55, ScaleType=Enum.ScaleType.Slice, SliceCenter=Rect.new(24,24,276,276),
+        Size=UDim2.new(1, sizeOffset or 40, 1, sizeOffset or 40), Position=UDim2.new(0.5,0,0.5,6),
+        AnchorPoint=Vector2.new(0.5,0.5), ZIndex=(parent.ZIndex or 1)-1, Parent=parent.Parent, LayoutOrder=-1,
+    })
+end
+
+local function clearScroll(scrollObj)
+    if typeof(scrollObj) ~= "Instance" then return end
+    for _, v in ipairs(scrollObj:GetChildren()) do
+        if (v:IsA("Frame") or v:IsA("TextLabel") or v:IsA("TextButton")) and v.Name ~= "EmptyLabel" then
+            v:Destroy()
+        end
+    end
+end
+
+local function getItemImage(itemName)
+    local ok, img = pcall(function()
+        local scroller = PG:FindFirstChild("Backpack_Never")
+        scroller = scroller and scroller:FindFirstChild("BG")
+        scroller = scroller and scroller:FindFirstChild("item")
+        scroller = scroller and scroller:FindFirstChild("Scrollingitem")
+        local slot = scroller and scroller:FindFirstChild(itemName)
+        local imgLabel = slot and slot:FindFirstChild("ItemImage")
+        return imgLabel and imgLabel:IsA("ImageLabel") and imgLabel.Image or nil
+    end)
+    return (ok and img) or ""
+end
+
+-- ========== ScreenGui / Main ==========
+local sg = New("ScreenGui", {Name="SW_SafeViewer", ResetOnSpawn=false, ZIndexBehavior=Enum.ZIndexBehavior.Sibling, IgnoreGuiInset=true, ScreenInsets=Enum.ScreenInsets.DeviceSafeInsets, Parent=PG})
+
+local main = New("Frame", {
+    Name="Main", AnchorPoint=Vector2.new(0.5,0.5), Size=UDim2.new(0.9,0,0.75,0), Position=UDim2.new(0.5,0,0.5,0),
+    BackgroundColor3=C.bg, BorderSizePixel=0, ClipsDescendants=true, ZIndex=2, Parent=sg,
+})
+New("UICorner", {CornerRadius=UDim.new(0,20), Parent=main})
+New("UISizeConstraint", {MaxSize=Vector2.new(540,480), MinSize=Vector2.new(300,360), Parent=main})
+makeShadow(main, 60, 0.5)
+New("UIStroke", {Color=C.borderGlow, Thickness=1.2, Transparency=0.35, Parent=main})
+makeGradient(main, Color3.fromRGB(18,18,29), Color3.fromRGB(9,9,16), 115)
+
+-- ========== Header ==========
+local header = New("Frame", {Name="Header", Size=UDim2.new(1,0,0,58), BackgroundColor3=C.surface, BorderSizePixel=0, ZIndex=5, Parent=main})
+New("UICorner", {CornerRadius=UDim.new(0,20), Parent=header})
+New("Frame", {Size=UDim2.new(1,0,0,20), Position=UDim2.new(0,0,1,-20), BackgroundColor3=C.surface, BorderSizePixel=0, ZIndex=4, Parent=header})
+makeGradient(header, Color3.fromRGB(24,24,39), Color3.fromRGB(17,17,27), 90)
+
+local headerLine = New("Frame", {Size=UDim2.new(1,-24,0,2), Position=UDim2.new(0,12,1,-1), BorderSizePixel=0, ZIndex=6, Parent=header})
+New("UICorner", {CornerRadius=UDim.new(1,0), Parent=headerLine})
+makeGradient(headerLine, C.accent, C.accent2, 0)
+
+local logoBadge = New("Frame", {Size=UDim2.new(0,46,0,46), Position=UDim2.new(0,14,0.5,-23), BorderSizePixel=0, ZIndex=6, Parent=header})
+New("UICorner", {CornerRadius=UDim.new(0,12), Parent=logoBadge})
+makeGradient(logoBadge, C.accent, C.accentDark, 45)
+makeGlow(logoBadge, C.accentGlow, 1.4, 0.15)
+
+local logoIcon = New("ImageLabel", {
+    Size=UDim2.new(1,-6,1,-6), AnchorPoint=Vector2.new(0.5,0.5), Position=UDim2.new(0.5,0,0.5,0), BackgroundTransparency=1,
+    Image="rbxassetid://97884349665692", ScaleType=Enum.ScaleType.Fit, ZIndex=7, Parent=logoBadge,
+})
+New("UICorner", {CornerRadius=UDim.new(0,9), Parent=logoIcon})
+makeGlow(logoIcon, C.accentGlow, 1.6, 0.1)
+
+local titleLbl = New("TextLabel", {
+    Size=UDim2.new(1,-140,1,0), Position=UDim2.new(0,70,0,-2), BackgroundTransparency=1, TextColor3=C.text,
+    Font=Enum.Font.GothamBold, Text="SpectreWare", TextXAlignment=Enum.TextXAlignment.Left, ZIndex=6, Parent=header,
+})
+autoText(titleLbl, 17)
+
+local subtitleLbl = New("TextLabel", {
+    Size=UDim2.new(1,-140,0,14), Position=UDim2.new(0,70,0,34), BackgroundTransparency=1, TextColor3=C.accentGlow,
+    Font=Enum.Font.GothamMedium, Text="Safe Viewer v6.2", TextXAlignment=Enum.TextXAlignment.Left, ZIndex=6, Parent=header,
+})
+autoText(subtitleLbl, 10)
+
+-- ========== Draggable Logic ==========
+local dragging, dragInput, mousePos, framePos = false, nil, nil, nil
+
+header.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging, mousePos, framePos = true, input.Position, main.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then dragging = false end
+        end)
+    end
+end)
+
+header.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UIS.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - mousePos
+        main.Position = UDim2.new(framePos.X.Scale, framePos.X.Offset+delta.X, framePos.Y.Scale, framePos.Y.Offset+delta.Y)
+    end
+end)
+
+-- ========== Header Buttons ==========
+local function makeHeaderBtn(posX, imageId)
+    local btn = New("TextButton", {
+        Size=UDim2.new(0,34,0,34), AnchorPoint=Vector2.new(1,0.5), Position=UDim2.new(1,posX,0.5,0),
+        BorderSizePixel=0, Text="", ZIndex=6, Parent=header,
+    })
+    New("UICorner", {CornerRadius=UDim.new(0,11), Parent=btn})
+    makeGradient(btn, C.surface2, C.surface, 90)
+    local stroke = makeGlow(btn, C.border, 1, 0.3)
+
+    local iconLbl = New("ImageLabel", {
+        Size=UDim2.new(0,17,0,17), AnchorPoint=Vector2.new(0.5,0.5), Position=UDim2.new(0.5,0,0.5,0),
+        BackgroundTransparency=1, Image=imageId, ImageColor3=C.textMuted, ScaleType=Enum.ScaleType.Fit, ZIndex=7, Parent=btn,
+    })
+
+    btn.MouseEnter:Connect(function()
+        tween(btn, {BackgroundColor3=C.cardHover}, 0.15); tween(stroke, {Color=C.accent, Transparency=0}, 0.15)
+        tween(iconLbl, {ImageColor3=C.white}, 0.15); tween(btn, {Size=UDim2.new(0,36,0,36)}, 0.15)
+    end)
+    btn.MouseLeave:Connect(function()
+        tween(btn, {BackgroundColor3=C.surface}, 0.15); tween(stroke, {Color=C.border, Transparency=0.3}, 0.15)
+        tween(iconLbl, {ImageColor3=C.textMuted}, 0.15); tween(btn, {Size=UDim2.new(0,34,0,34)}, 0.15)
+    end)
+    return btn, iconLbl
+end
+
+local refreshBtn = makeHeaderBtn(-58, "rbxassetid://78079498300325")
+local closeBtn, closeIcon = makeHeaderBtn(-16, "rbxassetid://130978589342831")
+
+closeBtn.MouseEnter:Connect(function() tween(closeIcon, {ImageColor3=C.red}, 0.15) end)
+closeBtn.MouseLeave:Connect(function() tween(closeIcon, {ImageColor3=C.textMuted}, 0.15) end)
+closeBtn.Activated:Connect(function()
+    main.ClipsDescendants = true
+    tween(main, {Size=UDim2.new(0.9,0,0,0)}, 0.25, Enum.EasingStyle.Back, Enum.EasingDirection.In)
+    task.delay(0.27, function() sg:Destroy() end)
+end)
+
+-- ========== Status Bar ==========
+local statusBar = New("Frame", {Size=UDim2.new(1,-16,0,34), Position=UDim2.new(0,8,0,66), BackgroundColor3=C.surface2, BorderSizePixel=0, ZIndex=3, Parent=main})
+New("UICorner", {CornerRadius=UDim.new(0,10), Parent=statusBar})
+
+local statusDot = New("Frame", {Size=UDim2.new(0,8,0,8), Position=UDim2.new(0,12,0.5,-4), BorderSizePixel=0, ZIndex=4, Parent=statusBar})
+New("UICorner", {CornerRadius=UDim.new(1,0), Parent=statusDot})
+local dotGlow = makeGlow(statusDot, C.green, 2, 0)
+
+local statusLbl = New("TextLabel", {
+    Size=UDim2.new(1,-30,1,0), Position=UDim2.new(0,28,0,0), BackgroundTransparency=1, TextColor3=C.textMuted,
+    Font=Enum.Font.GothamMedium, Text="กำลังโหลด...", TextXAlignment=Enum.TextXAlignment.Left, ZIndex=4, Parent=statusBar,
+})
+autoText(statusLbl, 12)
+
+-- ========== Scroll Area ==========
+local scroll = New("ScrollingFrame", {
+    Size=UDim2.new(1,-16,1,-114), Position=UDim2.new(0,8,0,108), BackgroundTransparency=1, BorderSizePixel=0,
+    ScrollBarThickness=4, ScrollBarImageColor3=C.accent, ScrollBarImageTransparency=0.15, CanvasSize=UDim2.new(0,0,0,0),
+    AutomaticCanvasSize=Enum.AutomaticSize.Y, ScrollingDirection=Enum.ScrollingDirection.Y, ZIndex=2, Parent=main,
+})
+New("UIGridLayout", {CellSize=UDim2.new(0,102,0,126), CellPadding=UDim2.new(0,9,0,9), HorizontalAlignment=Enum.HorizontalAlignment.Center, SortOrder=Enum.SortOrder.Name, Parent=scroll})
+New("UIPadding", {PaddingTop=UDim.new(0,4), PaddingBottom=UDim.new(0,10), Parent=scroll})
+
+local emptyLbl = New("TextLabel", {
+    Name="EmptyLabel", Size=UDim2.new(1,0,1,0), BackgroundTransparency=1, TextColor3=C.textDim,
+    Font=Enum.Font.GothamMedium, Text="📦 ตู้เซฟว่างเปล่า", Visible=false, ZIndex=2, Parent=scroll,
+})
+autoText(emptyLbl, 14)
+
+-- ========== Forward Declarations ==========
+local openWithdrawPopup, closeWithdrawPopup, renderSafe, doConfirm
+
+-- ========== Card Builder ==========
+local function buildItemCard(item, folderName)
+    local imgId = getItemImage(item.name)
+
+    local card = New("Frame", {Name=item.name, BackgroundColor3=C.card, BorderSizePixel=0, Parent=scroll})
+    New("UICorner", {CornerRadius=UDim.new(0,14), Parent=card})
+    local cs = makeGlow(card, C.border, 1, 0.45)
+
+    local imgBg = New("Frame", {Size=UDim2.new(1,-14,0,72), Position=UDim2.new(0,7,0,7), BackgroundColor3=C.surface2, BorderSizePixel=0, Parent=card})
+    New("UICorner", {CornerRadius=UDim.new(0,11), Parent=imgBg})
+    makeGradient(imgBg, Color3.fromRGB(30,30,47), Color3.fromRGB(19,19,31), 90)
+
+    if imgId ~= "" then
+        New("ImageLabel", {
+            Size=UDim2.new(0,54,0,54), AnchorPoint=Vector2.new(0.5,0.5), Position=UDim2.new(0.5,0,0.5,0),
+            BackgroundTransparency=1, Image=imgId, ScaleType=Enum.ScaleType.Fit, ZIndex=4, Parent=imgBg,
+        })
+    else
+        local ph = New("TextLabel", {Size=UDim2.new(1,0,1,0), BackgroundTransparency=1, TextColor3=C.textDim, Font=Enum.Font.GothamBold, Text="📦", ZIndex=4, Parent=imgBg})
+        autoText(ph, 30)
+    end
+
+    local amtBadge = New("Frame", {
+        Size=UDim2.new(0,0,0,22), AutomaticSize=Enum.AutomaticSize.X, Position=UDim2.new(1,-6,0,6),
+        AnchorPoint=Vector2.new(1,0), BorderSizePixel=0, ZIndex=5, Parent=imgBg,
+    })
+    New("UICorner", {CornerRadius=UDim.new(1,0), Parent=amtBadge})
+    makeGradient(amtBadge, C.greenDim, Color3.fromRGB(18,78,40), 90)
+    New("UIPadding", {PaddingLeft=UDim.new(0,8), PaddingRight=UDim.new(0,8), Parent=amtBadge})
+    New("TextLabel", {
+        Size=UDim2.new(1,0,1,0), AutomaticSize=Enum.AutomaticSize.X, BackgroundTransparency=1, TextColor3=C.green,
+        Font=Enum.Font.GothamBold, TextSize=11, Text="×"..tostring(item.amount), Parent=amtBadge,
+    })
+
+    local tapHint = New("Frame", {Size=UDim2.new(0,24,0,24), AnchorPoint=Vector2.new(0,1), Position=UDim2.new(0,5,1,-5), BorderSizePixel=0, ZIndex=6, Parent=imgBg})
+    New("UICorner", {CornerRadius=UDim.new(0,8), Parent=tapHint})
+    makeGradient(tapHint, C.accent, C.accent2, 45)
+    makeGlow(tapHint, C.accentGlow, 1.1, 0.25)
+    New("TextLabel", {Size=UDim2.new(1,0,1,0), BackgroundTransparency=1, Text="−", TextColor3=C.white, Font=Enum.Font.GothamBold, TextSize=15, ZIndex=7, Parent=tapHint})
+
+    local nameLbl = New("TextLabel", {
+        Size=UDim2.new(1,-8,0,36), Position=UDim2.new(0,4,0,84), BackgroundTransparency=1, TextColor3=C.text,
+        Font=Enum.Font.GothamMedium, Text=item.name, TextWrapped=true, TextXAlignment=Enum.TextXAlignment.Center, Parent=card,
+    })
+    autoText(nameLbl, 11)
+
+    local imgBtn = New("TextButton", {Size=UDim2.new(1,0,1,0), BackgroundTransparency=1, Text="", ZIndex=8, Parent=imgBg})
+
+    card.MouseEnter:Connect(function()
+        tween(card, {BackgroundColor3=C.cardHover}, 0.18); tween(cs, {Color=C.accent, Transparency=0}, 0.18)
+        tween(imgBg, {BackgroundColor3=Color3.fromRGB(37,37,58)}, 0.18)
+    end)
+    card.MouseLeave:Connect(function()
+        tween(card, {BackgroundColor3=C.card}, 0.18); tween(cs, {Color=C.border, Transparency=0.45}, 0.18)
+        tween(imgBg, {BackgroundColor3=C.surface2}, 0.18)
+    end)
+
+    local capturedName, capturedAmount = item.name, item.amount
+    imgBtn.Activated:Connect(function() openWithdrawPopup(capturedName, capturedAmount) end)
+
+    card.BackgroundTransparency = 1
+    return card
+end
+
+-- ========== Popup Backdrop ==========
+local backdrop = New("Frame", {Name="Backdrop", Size=UDim2.new(1,0,1,0), BackgroundColor3=C.black, BackgroundTransparency=1, BorderSizePixel=0, ZIndex=19, Visible=false, Parent=main})
+
+-- ========== Withdraw Popup ==========
+local popup = New("Frame", {
+    Name="WithdrawPopup", Size=UDim2.new(0,284,0,224), AnchorPoint=Vector2.new(0.5,0.5), Position=UDim2.new(0.5,0,0.5,0),
+    BackgroundColor3=C.surface, BorderSizePixel=0, ZIndex=20, Visible=false, Parent=main,
+})
+New("UICorner", {CornerRadius=UDim.new(0,18), Parent=popup})
+makeGlow(popup, C.accent, 1.6, 0.25)
+makeGradient(popup, Color3.fromRGB(24,24,39), Color3.fromRGB(13,13,22), 90)
+
+local popupHeader = New("Frame", {Size=UDim2.new(1,0,0,50), BorderSizePixel=0, ZIndex=21, Parent=popup})
+New("UICorner", {CornerRadius=UDim.new(0,18), Parent=popupHeader})
+makeGradient(popupHeader, C.accent, C.accentDark, 45)
+New("Frame", {Size=UDim2.new(1,0,0,18), Position=UDim2.new(0,0,1,-18), BackgroundColor3=C.accentDark, BorderSizePixel=0, ZIndex=21, Parent=popupHeader})
+
+local popupTitle = New("TextLabel", {
+    Size=UDim2.new(1,-50,1,0), Position=UDim2.new(0,15,0,0), BackgroundTransparency=1, TextColor3=C.white,
+    Font=Enum.Font.GothamBold, Text="📤 เอาของออก", TextXAlignment=Enum.TextXAlignment.Left, ZIndex=22, Parent=popupHeader,
+})
+autoText(popupTitle, 15)
+
+local popupCloseBtn = New("TextButton", {
+    Size=UDim2.new(0,30,0,30), AnchorPoint=Vector2.new(1,0.5), Position=UDim2.new(1,-10,0.5,0),
+    BackgroundColor3=C.white, BackgroundTransparency=0.85, TextColor3=C.white, Font=Enum.Font.GothamBold,
+    TextSize=14, Text="✕", BorderSizePixel=0, ZIndex=22, Parent=popupHeader,
+})
+New("UICorner", {CornerRadius=UDim.new(1,0), Parent=popupCloseBtn})
+popupCloseBtn.MouseEnter:Connect(function() tween(popupCloseBtn, {BackgroundTransparency=0.6}, 0.15) end)
+popupCloseBtn.MouseLeave:Connect(function() tween(popupCloseBtn, {BackgroundTransparency=0.85}, 0.15) end)
+
+local popupItemName = New("TextLabel", {
+    Size=UDim2.new(1,-24,0,28), Position=UDim2.new(0,12,0,62), BackgroundTransparency=1, TextColor3=C.accentGlow,
+    Font=Enum.Font.GothamBold, Text="ItemName", TextXAlignment=Enum.TextXAlignment.Center, ZIndex=21, Parent=popup,
+})
+autoText(popupItemName, 14)
+
+local popupMaxLbl = New("TextLabel", {
+    Size=UDim2.new(1,-24,0,20), Position=UDim2.new(0,12,0,90), BackgroundTransparency=1, TextColor3=C.textMuted,
+    Font=Enum.Font.GothamMedium, Text="มีในตู้: 0", TextXAlignment=Enum.TextXAlignment.Center, ZIndex=21, Parent=popup,
+})
+autoText(popupMaxLbl, 11)
+
+local amtBox = New("TextBox", {
+    Size=UDim2.new(1,-24,0,40), Position=UDim2.new(0,12,0,116), BackgroundColor3=C.surface2, TextColor3=C.text,
+    Font=Enum.Font.GothamBold, TextSize=17, PlaceholderText="จำนวน...", PlaceholderColor3=C.textDim, Text="",
+    ClearTextOnFocus=true, BorderSizePixel=0, ZIndex=21, Parent=popup,
+})
+New("UICorner", {CornerRadius=UDim.new(0,11), Parent=amtBox})
+local amtStroke = makeGlow(amtBox, C.border, 1.5, 0.2)
+
+amtBox.Focused:Connect(function()
+    tween(amtStroke, {Color=C.accent, Transparency=0}, 0.15)
+    tween(amtBox, {BackgroundColor3=C.cardHover}, 0.15)
+end)
+amtBox.FocusLost:Connect(function(enterPressed)
+    tween(amtStroke, {Color=C.border, Transparency=0.2}, 0.15)
+    tween(amtBox, {BackgroundColor3=C.surface2}, 0.15)
+    local num = tonumber(amtBox.Text)
+    amtBox.Text = (num and num > 0 and math.floor(num) == num) and tostring(math.floor(num)) or ""
+    if enterPressed and doConfirm then task.spawn(doConfirm) end
+end)
+
+local confirmBtn = New("TextButton", {
+    Size=UDim2.new(1,-24,0,40), Position=UDim2.new(0,12,0,168), BorderSizePixel=0, TextColor3=Color3.fromRGB(10,30,15),
+    Font=Enum.Font.GothamBold, TextSize=15, Text="✅ ยืนยันเอาออก", ZIndex=21, Parent=popup,
+})
+New("UICorner", {CornerRadius=UDim.new(0,11), Parent=confirmBtn})
+makeGradient(confirmBtn, C.green, C.greenDim, 45)
+local confirmGlow = makeGlow(confirmBtn, C.green, 1.5, 0.3)
+
+confirmBtn.MouseEnter:Connect(function()
+    tween(confirmGlow, {Transparency=0}, 0.15); tween(confirmBtn, {Size=UDim2.new(1,-24,0,42)}, 0.15)
+end)
+confirmBtn.MouseLeave:Connect(function()
+    tween(confirmGlow, {Transparency=0.3}, 0.15); tween(confirmBtn, {Size=UDim2.new(1,-24,0,40)}, 0.15)
+end)
+
+local popupItem = {name="", maxAmt=0}
+
+-- ========== Popup Functions ==========
+openWithdrawPopup = function(itemName, maxAmt)
+    popupItem.name, popupItem.maxAmt = itemName, maxAmt
+    popupItemName.Text = "🧩 " .. itemName
+    popupMaxLbl.Text = "มีในตู้: " .. tostring(maxAmt)
+    amtBox.Text = ""
+    backdrop.Visible, popup.Visible = true, true
+    popup.Size = UDim2.new(0,284,0,0)
+    tween(backdrop, {BackgroundTransparency=0.45}, 0.2)
+    tween(popup, {Size=UDim2.new(0,284,0,224)}, 0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+end
+
+closeWithdrawPopup = function()
+    tween(backdrop, {BackgroundTransparency=1}, 0.15)
+    tween(popup, {Size=UDim2.new(0,284,0,0)}, 0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+    task.delay(0.16, function()
+        popup.Visible, backdrop.Visible = false, false
+        amtBox.Text = ""
+    end)
+end
+
+popupCloseBtn.Activated:Connect(closeWithdrawPopup)
+backdrop.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        closeWithdrawPopup()
+    end
+end)
+
+-- ========== Confirm Logic ==========
+local function flashConfirm(msg, delay)
+    confirmBtn.Text = msg
+    task.delay(delay, function()
+        if confirmBtn and confirmBtn.Parent then confirmBtn.Text = "✅ ยืนยันเอาออก" end
+    end)
+end
+
+doConfirm = function()
+    local amt = tonumber(amtBox.Text)
+    if not amt or amt <= 0 then return flashConfirm("❌ ใส่จำนวนให้ถูก!", 1.2) end
+    if amt > popupItem.maxAmt then return flashConfirm("❌ เกินจำนวนในตู้!", 1.2) end
+
+    local ok = pcall(function()
+        game:GetService("ReplicatedStorage"):WaitForChild("Game_Modules"):WaitForChild("RemoteEventSafe"):WaitForChild("WithdrawItem"):FireServer(popupItem.name, math.floor(amt))
+    end)
+
+    if ok then
+        flashConfirm("✅ สำเร็จ!", 1.0)
+        closeWithdrawPopup()
+        task.delay(0.3, function() renderSafe("Safe") end)
+    else
+        flashConfirm("❌ Error!", 1.5)
+    end
+end
+
+confirmBtn.Activated:Connect(doConfirm)
+
+-- ========== Render Safe ==========
+renderSafe = function(folderName)
+    clearScroll(scroll)
+    statusDot.BackgroundColor3 = C.orange
+    tween(dotGlow, {Color=C.orange}, 0.2)
+    statusLbl.Text = "⏳ กำลังโหลด " .. folderName .. "..."
+
+    local ok, safeFolder = pcall(function() return LP:WaitForChild(folderName, 3) end)
+    if not ok or typeof(safeFolder) ~= "Instance" then
+        emptyLbl.Text, emptyLbl.Visible = "❌ ไม่เจอ folder: " .. folderName, true
+        statusLbl.Text, statusDot.BackgroundColor3 = "❌ ไม่เจอ " .. folderName, C.red
+        tween(dotGlow, {Color=C.red}, 0.2)
+        return
+    end
+
+    local items = {}
+    for _, v in ipairs(safeFolder:GetChildren()) do
+        if v:IsA("DoubleConstrainedValue") or v:IsA("IntValue") or v:IsA("NumberValue") or v:IsA("IntConstrainedValue") then
+            local amt = math.floor(v.Value)
+            if amt > 0 then table.insert(items, {name=v.Name, amount=amt}) end
+        end
+    end
+
+    if #items == 0 then
+        emptyLbl.Text, emptyLbl.Visible = "📦 ตู้นี้ว่างเปล่า", true
+        statusLbl.Text, statusDot.BackgroundColor3 = "📦 " .. folderName .. " | ว่างเปล่า", C.textDim
+        tween(dotGlow, {Color=C.textDim}, 0.2)
+        return
+    end
+
+    emptyLbl.Visible = false
+    statusDot.BackgroundColor3 = C.green
+    tween(dotGlow, {Color=C.green}, 0.2)
+
+    local totalAmt = 0
+    table.sort(items, function(a,b) return a.name < b.name end)
+
+    for i, item in ipairs(items) do
+        totalAmt += item.amount
+        local card = buildItemCard(item, folderName)
+        card.BackgroundTransparency = 1
+        card.Position = UDim2.new(card.Position.X.Scale, card.Position.X.Offset, card.Position.Y.Scale, card.Position.Y.Offset + 6)
+        task.delay(i * 0.025, function()
+            if card and card.Parent then tween(card, {BackgroundTransparency=0}, 0.28, Enum.EasingStyle.Quart) end
+        end)
+    end
+
+    statusLbl.Text = string.format("✅ %s · %d ชนิด · รวม %d", folderName, #items, totalAmt)
+end
+
+-- ========== Watch for Value Changes ==========
+local watchedFolders, currentTab = {}, "Safe"
+
+local function watchSafe(folderName)
+    if watchedFolders[folderName] then return end
+    watchedFolders[folderName] = true
+
+    local ok, folder = pcall(function() return LP:WaitForChild(folderName, 3) end)
+    if not ok or typeof(folder) ~= "Instance" then return end
+
+    local function isValueType(v)
+        return v:IsA("DoubleConstrainedValue") or v:IsA("IntValue") or v:IsA("NumberValue") or v:IsA("IntConstrainedValue")
+    end
+
+    local function hookValue(v)
+        v:GetPropertyChangedSignal("Value"):Connect(function()
+            if currentTab == folderName then renderSafe(folderName) end
+        end)
+    end
+
+    for _, v in ipairs(folder:GetChildren()) do
+        if isValueType(v) then hookValue(v) end
+    end
+
+    folder.ChildAdded:Connect(function(v)
+        if isValueType(v) then
+            hookValue(v)
+            if currentTab == folderName then renderSafe(folderName) end
+        end
+    end)
+end
+
+task.spawn(watchSafe, "Safe")
+
+-- ========== Refresh ==========
+refreshBtn.Activated:Connect(function()
+    tween(refreshBtn, {Rotation = refreshBtn.Rotation + 180}, 0.4, Enum.EasingStyle.Quart)
+    renderSafe("Safe")
+end)
+
+-- ========== Open Animation ==========
+main.ClipsDescendants = true
+main.Size = UDim2.new(0.9,0,0,0)
+tween(main, {Size=UDim2.new(0.9,0,0.75,0)}, 0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+task.delay(0.4, function() main.ClipsDescendants = false end)
+
+-- ========== Pulsing Dot Animation ==========
+task.spawn(function()
+    while sg and sg.Parent do
+        if statusDot and statusDot.Parent then
+            if statusDot.BackgroundColor3 == C.green then
+                tween(dotGlow, {Transparency=0.6}, 0.6); task.wait(0.6)
+                tween(dotGlow, {Transparency=0}, 0.6); task.wait(0.6)
+            else
+                tween(dotGlow, {Transparency=0}, 0.2); task.wait(1.2)
+            end
+        else
+            break
+        end
+    end
+end)
+
+-- ========== Initial Load ==========
+task.delay(0.45, function() renderSafe("Safe") end)
