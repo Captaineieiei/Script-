@@ -12,6 +12,8 @@
 -- ║  · _normalizeRes simplified                          ║
 -- ╚══════════════════════════════════════════════════════╝
 
+print("[ LuaSyncX ]: Loading Luacx client...")
+
 local CFG = {
     API                 = "https://luasyncxz.wisp.uno",
     clientKey           = "0f9b3fd53469b88a5ed98d27687650cf5c2812346fd46665",
@@ -1088,6 +1090,8 @@ end
 -- ══════════════════════════════════════════════════════════════════════════════
 -- Main execution block
 -- ══════════════════════════════════════════════════════════════════════════════
+print("[ LuaSyncX ]: Connecting to Server...")
+
 local _mainOk = xpcall(function()
     task.wait(CFG.waitOnStart)
     local _uid = PL.UserId
@@ -1124,6 +1128,7 @@ local _mainOk = xpcall(function()
         if not _checkGetgenv() then integrityFail("getgenv_bypass");  return end
         if not _checkPcall()   then integrityFail("pcall_bypass");    return end
         if not _checkRawops()  then integrityFail("rawops_bypass");   return end
+        print("[ LuaSyncX ]: Checking HWID...")
         hwid = getHWID()
         if hwid == "" or hwid == "UNKNOWN" then
             log("Cannot determine HWID", "error"); integrityFail("HWID unknown"); return
@@ -1186,6 +1191,7 @@ local _mainOk = xpcall(function()
         local _fn, _err = _native_loadstring(_src); _src = nil
         if not _fn then log("Compile error: " .. tostring(_err), "error"); getgenv()[_GK.running] = nil; return end
         _verified = true; task.spawn(_fn); log("Script launched 🚀", "success"); _div()
+        print("[ LuaSyncX ]: Script loaded successfully!")
         return
     end
 
@@ -1204,12 +1210,14 @@ local _mainOk = xpcall(function()
     task.wait(0.5)
     log("🔑  Key    ›  " .. maskKey(_getKey()), "loading")
     task.wait(0.4)
+    print("[ LuaSyncX ]: Checking HWID...")
     hwid = getHWID()
     if hwid == "" or hwid == "UNKNOWN" then
         log("Cannot determine HWID", "error"); integrityFail("HWID unknown"); return
     end
     log("🖥  HWID   ›  " .. tostring(hwid):sub(1, 28) .. "...", "info")
     task.wait(0.4)
+    print("[ LuaSyncX ]: Verifying key...")
     local callOk, raw, result
     for i = 1, 3 do
         log(("Connecting to API... (%d/3)"):format(i), "loading")
@@ -1357,6 +1365,7 @@ local _mainOk = xpcall(function()
     local fn, compErr = _native_loadstring(scriptSrc); scriptSrc = nil
     if not fn then log("Compile error: " .. tostring(compErr), "error"); getgenv()[_GK.running] = nil; return end
     _verified = true; task.spawn(fn); log("Script launched 🚀", "success"); _div()
+    print("[ LuaSyncX ]: Script loaded successfully!")
 
 end, function(err)
     warn("SpectreWare: unexpected error — " .. tostring(err))
