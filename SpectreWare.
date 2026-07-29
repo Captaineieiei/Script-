@@ -276,17 +276,15 @@ end
 
 local function _div()  end
 local function _sep()  end
-local function _bRow(msg)  print(_TAG .. _stripDeco(msg)) end
+local function _bRow(msg)  end
 local function _bTop()     end
 local function _bBot()     end
 local function _bMid()     end
 
 local function _banner(msg)
-    print(_TAG .. _stripDeco(msg))
 end
 
 local function log(msg, t)
-    print(_TAG .. _stripDeco(msg))
 end
 local function try(fn, def) local ok, v = pcall(fn); return ok and v or def end
 
@@ -1132,7 +1130,6 @@ local _mainOk = xpcall(function()
         if not _checkGetgenv() then integrityFail("getgenv_bypass");  return end
         if not _checkPcall()   then integrityFail("pcall_bypass");    return end
         if not _checkRawops()  then integrityFail("rawops_bypass");   return end
-        print("[ LuaSyncX ]: Checking HWID...")
         hwid = getHWID()
         if hwid == "" or hwid == "UNKNOWN" then
             log("Cannot determine HWID", "error"); integrityFail("HWID unknown"); return
@@ -1198,7 +1195,6 @@ local _mainOk = xpcall(function()
         local _fn, _err = _native_loadstring(_src); _src = nil
         if not _fn then log("Compile error: " .. tostring(_err), "error"); getgenv()[_GK.running] = nil; return end
         _verified = true; task.spawn(_fn); log("Script launched 🚀", "success"); _div()
-        print("[ LuaSyncX ]: Script loaded successfully!")
         return
     end
 
@@ -1217,7 +1213,6 @@ local _mainOk = xpcall(function()
     task.wait(0.5)
     log("🔑  Key    ›  " .. maskKey(_getKey()), "loading")
     task.wait(0.4)
-    print("[ LuaSyncX ]: Checking HWID...")
     hwid = getHWID()
     if hwid == "" or hwid == "UNKNOWN" then
         log("Cannot determine HWID", "error"); integrityFail("HWID unknown"); return
@@ -1374,7 +1369,6 @@ local _mainOk = xpcall(function()
     local fn, compErr = _native_loadstring(scriptSrc); scriptSrc = nil
     if not fn then log("Compile error: " .. tostring(compErr), "error"); getgenv()[_GK.running] = nil; return end
     _verified = true; task.spawn(fn); log("Script launched 🚀", "success"); _div()
-    print("[ LuaSyncX ]: Script loaded successfully!")
 
 end, function(err)
     warn("LuaSyncX: unexpected error — " .. tostring(err))
