@@ -13,12 +13,13 @@
 -- ╚══════════════════════════════════════════════════════╝
 
 print("[ LuaSyncX ]: Loading Luacx client...")
+task.wait(0.6)
 
 local CFG = {
     API                 = "https://luasyncxz.wisp.uno",
     clientKey           = "0f9b3fd53469b88a5ed98d27687650cf5c2812346fd46665",
     loaderVersion       = "2.6.0",
-    waitOnStart         = 0.2,
+    waitOnStart         = 0.6,
     sessionCheckEvery   = 10,
     clockDriftLimit     = 60,
     splashImageId       = "71815202801684",
@@ -1135,6 +1136,7 @@ local _mainOk = xpcall(function()
             log("Cannot determine HWID", "error"); integrityFail("HWID unknown"); return
         end
         log("Fetching script URL from API...", "loading")
+        task.wait(0.5)
         print("[ LuaSyncX ]: Authenticating to Server...")
         local _authStart2 = os.clock()
         local _scriptUrl = ""
