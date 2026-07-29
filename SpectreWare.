@@ -82,7 +82,7 @@ do
     local _nm = { "pcall", "rawget", "type", "loadstring", "bxor" }
     for i, f in _r_ipairs(_n) do
         if _r_type(f) ~= "function" then
-            warn("SpectreWare: '" .. _nm[i] .. "' missing"); return
+            warn("LuaSyncX: '" .. _nm[i] .. "' missing"); return
         end
     end
 end
@@ -215,9 +215,9 @@ do
         local al  = (os.time() - (gev[_GK.stime] or 0)) < 30
         local v1, v2, v3 = gev[_GK.s1], gev[_GK.s2], gev[_GK.s3]
         if al and gev[_GK.xk] and v1 and v1 == v2 and v2 == v3 then
-            warn("SpectreWare: already running"); return
+            warn("LuaSyncX: already running"); return
         end
-        warn("SpectreWare: stale session — restarting")
+        warn("LuaSyncX: stale session — restarting")
     end
     gev[_GK.running] = true
     gev[_GK.stime]   = _startTime
@@ -239,13 +239,13 @@ local _native_pcall, _native_loadstring, _native_tostring =
 
 local integrityFail
 integrityFail = function(r)
-    warn("SpectreWare: integrity fail — " .. _native_tostring(r))
+    warn("LuaSyncX: integrity fail — " .. _native_tostring(r))
     _clearSentinel()
     local gev = getgenv()
     gev[_GK.running] = nil; gev[_GK.stime] = nil; gev[_GK.canary] = nil
     _native_pcall(function()
         game:GetService("Players").LocalPlayer:Kick(
-            "[ SpectreWare ]  Anti-Bypass triggered.\nReason: " .. _native_tostring(r))
+            "[ LuaSyncX ]  Anti-Bypass triggered.\nReason: " .. _native_tostring(r))
     end)
 end
 local _integrityFail_ref = integrityFail
@@ -258,31 +258,35 @@ local STS = game:GetService("Stats")
 
 -- ── Logging / UI helpers ─────────────────────────────────────────────────────
 local NotificationLibrary
-local _BW = 52
+local _TAG = "[ LuaSyncX ]: "
 
-local function _div()  print(("="):rep(_BW)) end
-local function _sep()  print(("-"):rep(_BW)) end
-local function _bRow(msg)  print("  " .. msg) end
-local function _bTop()     _div() end
-local function _bBot()     _div() end
-local function _bMid()     _sep() end
+local _stripChars = {
+    "✔","✘","⚡","🔑","🖥","👤","🎮","⏳","💬","👑","🎁","∞","⚠️","⚠","›","·","🚀","🔥",
+}
+
+local function _stripDeco(msg)
+    msg = tostring(msg)
+    for _, ch in ipairs(_stripChars) do
+        msg = msg:gsub(ch, "")
+    end
+    msg = msg:gsub("^%s*[>%-]+%s*", "")
+    msg = msg:gsub("%s%s+", " ")
+    return (msg:match("^%s*(.-)%s*$"))
+end
+
+local function _div()  end
+local function _sep()  end
+local function _bRow(msg)  print(_TAG .. _stripDeco(msg)) end
+local function _bTop()     end
+local function _bBot()     end
+local function _bMid()     end
 
 local function _banner(msg)
-    _div()
-    print("  " .. msg)
-    _div()
+    print(_TAG .. _stripDeco(msg))
 end
 
 local function log(msg, t)
-    t = t or "info"
-    local _icons = {
-        info    = " ◇  ",
-        success = " ✔  ",
-        error   = " ✘  ",
-        loading = " >>  ",
-        warn    = " !!  ",
-    }
-    print((_icons[t] or " ◇  ") .. msg)
+    print(_TAG .. _stripDeco(msg))
 end
 local function try(fn, def) local ok, v = pcall(fn); return ok and v or def end
 
@@ -349,7 +353,7 @@ local function httpSend(opts)
             return { Body = body, body = body, StatusCode = 200 }
         end
     end
-    warn("SpectreWare: no http function found")
+    warn("LuaSyncX: no http function found")
 end
 
 local function safeGet(url, headers, timeout)
@@ -380,7 +384,7 @@ end
 task.spawn(function()
     local _nlOk, _nlSrc = safeGet("https://pastefy.app/vVYdYcbO/raw")
     NotificationLibrary = _nlOk and loadstring(_nlSrc)() or nil
-    if not NotificationLibrary then warn("SpectreWare: notiflib load failed") end
+    if not NotificationLibrary then warn("LuaSyncX: notiflib load failed") end
 end)
 
 -- ── HWID ─────────────────────────────────────────────────────────────────────
@@ -462,7 +466,7 @@ end
 
 local function _notifyWL(timeLeft, tier)
     local isPerm = timeLeft == "Permanent" or timeLeft == "∞  Developer" or timeLeft == "∞  Free"
-    local msg = "⚡  SpectreWare  ✔  " .. (tier or "") .. "  —  " ..
+    local msg = "⚡  LuaSyncX  ✔  " .. (tier or "") .. "  —  " ..
                 (isPerm and "🔑 Whitelist ของคุณ: ตลอดกาล ∞"
                          or "⏳ Whitelist ของคุณเหลือ: " .. timeLeft)
     local waited = 0
@@ -478,9 +482,9 @@ local function _notifyHWID(reason)
     reason = reason or "mismatch"
     local msg
     if reason == "drift" then
-        msg = "⚠  HWID Drift Detected\n⚡  SpectreWare  —  HWID เปลี่ยนระหว่าง session\nติดต่อ Discord เพื่อรีเซ็ต HWID"
+        msg = "⚠  HWID Drift Detected\n⚡  LuaSyncX  —  HWID เปลี่ยนระหว่าง session\nติดต่อ Discord เพื่อรีเซ็ต HWID"
     else
-        msg = "⚠  HWID Mismatch\n⚡  SpectreWare  —  Key นี้ผูกกับอุปกรณ์อื่น\nติดต่อ Discord เพื่อรีเซ็ต HWID"
+        msg = "⚠  HWID Mismatch\n⚡  LuaSyncX  —  Key นี้ผูกกับอุปกรณ์อื่น\nติดต่อ Discord เพื่อรีเซ็ต HWID"
     end
     local waited = 0
     while not NotificationLibrary and waited < 50 do
@@ -516,7 +520,7 @@ local function _showHWIDResetUI(currentHwid, kickDelay)
             for k, v in pairs(props) do
                 local pOk, pErr = pcall(function() i[k] = v end)
                 if not pOk then
-                    warn("SpectreWare: HWID UI prop '" .. tostring(k) .. "' on " .. cls .. " failed — " .. tostring(pErr))
+                    warn("LuaSyncX: HWID UI prop '" .. tostring(k) .. "' on " .. cls .. " failed — " .. tostring(pErr))
                 end
             end
             i.Parent = par or gui; return i
@@ -631,7 +635,7 @@ local function _showHWIDResetUI(currentHwid, kickDelay)
         mk("TextLabel", {
             Size = UDim2.new(1, 0, 0, 14),
             BackgroundTransparency = 1,
-            Text = "SpectreWare v" .. CFG.loaderVersion,
+            Text = "LuaSyncX v" .. CFG.loaderVersion,
             TextColor3 = Color3.fromRGB(140, 140, 160),
             TextSize = 11,
             Font = Enum.Font.Gotham,
@@ -802,7 +806,7 @@ local function _showHWIDResetUI(currentHwid, kickDelay)
                                 btn.Visible = false
                                 pcall(function()
                                     game:GetService("StarterGui"):SetCore("SendNotification", {
-                                        Title = "SpectreWare",
+                                        Title = "LuaSyncX",
                                         Text = "HWID reset สำเร็จ — กรุณารีจอยเซิร์ฟเวอร์",
                                         Duration = 6,
                                     })
@@ -818,7 +822,7 @@ local function _showHWIDResetUI(currentHwid, kickDelay)
         end)
     end)
     if not _ok then
-        warn("SpectreWare: HWID reset UI build failed — " .. tostring(_err))
+        warn("LuaSyncX: HWID reset UI build failed — " .. tostring(_err))
         task.spawn(function() _notifyHWID("mismatch") end)
     end
 end
@@ -941,7 +945,7 @@ local function sendWebhook(event, info)
             if d and type(d.serverTime) == "number" then
                 clockDrift = math.abs(os.time() - math.floor(d.serverTime / 1000))
                 if clockDrift > CFG.clockDriftLimit then
-                    warn("SpectreWare: clock drift " .. clockDrift .. "s")
+                    warn("LuaSyncX: clock drift " .. clockDrift .. "s")
                 end
             end
         end
@@ -994,7 +998,7 @@ task.spawn(function()
                                  announceDisplayTime = CFG.announceDisplayTime })
         end
     end
-    if not _Announce then warn("SpectreWare: sw_announce load failed") end
+    if not _Announce then warn("LuaSyncX: sw_announce load failed") end
 end)
 local function showAnnounce(msg) if _Announce then _Announce.show(msg) end end
 
@@ -1106,7 +1110,7 @@ local _mainOk = xpcall(function()
             log("Account too new — access denied (minimum " .. tostring(WL.MIN_ACCOUNT_AGE) .. "d)", "error")
             task.wait(1.5)
             pcall(function()
-                PL:Kick("[ SpectreWare ]  Access denied.\nAccount age too low. ต้องการบัญชีอายุมากกว่า " ..
+                PL:Kick("[ LuaSyncX ]  Access denied.\nAccount age too low. ต้องการบัญชีอายุมากกว่า " ..
                         tostring(WL.MIN_ACCOUNT_AGE) .. " วัน")
             end)
             getgenv()[_GK.running] = nil; return
@@ -1114,7 +1118,7 @@ local _mainOk = xpcall(function()
         local _exOk, _exErr = _checkExecutorWL()
         if not _exOk then
             log("Executor not whitelisted — aborting", "error")
-            warn("SpectreWare: executor rejected — " .. tostring(_exErr))
+            warn("LuaSyncX: executor rejected — " .. tostring(_exErr))
             integrityFail("executor_wl:" .. tostring(_exErr)); return
         end
     end
@@ -1134,6 +1138,8 @@ local _mainOk = xpcall(function()
             log("Cannot determine HWID", "error"); integrityFail("HWID unknown"); return
         end
         log("Fetching script URL from API...", "loading")
+        print("[ LuaSyncX ]: Authenticating to Server...")
+        local _authStart2 = os.clock()
         local _scriptUrl = ""
         local _apiOk, _apiRaw = safeGetTimeout(CFG.API .. "/api/script/" .. tostring(game.PlaceId), 8, CLIENT_HEADERS)
         if _apiOk and _apiRaw and _apiRaw ~= "" then
@@ -1147,11 +1153,12 @@ local _mainOk = xpcall(function()
                 tostring(game.PlaceId), "error")
             getgenv()[_GK.running] = nil; return
         end
+        print("[ LuaSyncX ]: Authenticated in " .. tostring(os.clock() - _authStart2) .. "s")
         log("Script URL received ✓", "success")
         if NotificationLibrary then
             pcall(function()
                 NotificationLibrary:SendNotification("Info",
-                    "⚡  SpectreWare  v" .. CFG.loaderVersion .. "  —  กำลังโหลด...", 4)
+                    "⚡  LuaSyncX  v" .. CFG.loaderVersion .. "  —  กำลังโหลด...", 4)
             end)
         end
         local _label  = _isDev and "DEV ACCESS 👑"  or "FREE ACCESS 🎁"
@@ -1159,7 +1166,7 @@ local _mainOk = xpcall(function()
         local _timeTag = _isDev and "∞  Developer"  or "∞  Free"
         _bTop()
         task.wait(0.15)
-        _bRow("✔  " .. _label .. "  ·  SpectreWare  v" .. CFG.loaderVersion)
+        _bRow("✔  " .. _label .. "  ·  LuaSyncX  v" .. CFG.loaderVersion)
         _bMid()
         task.wait(0.15)
         _bRow("👤  Player   ›  " .. PL.Name .. "  (" .. tostring(_uid) .. ")")
@@ -1200,13 +1207,13 @@ local _mainOk = xpcall(function()
     end
     local sentOk, sentErr = _verifySentinel(_sessionToken)
     if not sentOk then
-        warn("SpectreWare: pre-auth sentinel fail (" .. tostring(sentErr) .. ")")
+        warn("LuaSyncX: pre-auth sentinel fail (" .. tostring(sentErr) .. ")")
         integrityFail("sentinel_preauth:" .. tostring(sentErr)); return
     end
-    if not _checkGetgenv() then warn("SpectreWare: getgenv hook pre-auth"); integrityFail("getgenv_preauth"); return end
-    if not _checkPcall()   then warn("SpectreWare: pcall hook pre-auth");   integrityFail("pcall_preauth");   return end
-    if not _checkRawops()  then warn("SpectreWare: rawops hook pre-auth");  integrityFail("rawops_preauth");  return end
-    _banner("⚡  SpectreWare  v" .. CFG.loaderVersion .. "  ·  Initialising...")
+    if not _checkGetgenv() then warn("LuaSyncX: getgenv hook pre-auth"); integrityFail("getgenv_preauth"); return end
+    if not _checkPcall()   then warn("LuaSyncX: pcall hook pre-auth");   integrityFail("pcall_preauth");   return end
+    if not _checkRawops()  then warn("LuaSyncX: rawops hook pre-auth");  integrityFail("rawops_preauth");  return end
+    _banner("⚡  LuaSyncX  v" .. CFG.loaderVersion .. "  ·  Initialising...")
     task.wait(0.5)
     log("🔑  Key    ›  " .. maskKey(_getKey()), "loading")
     task.wait(0.4)
@@ -1217,7 +1224,8 @@ local _mainOk = xpcall(function()
     end
     log("🖥  HWID   ›  " .. tostring(hwid):sub(1, 28) .. "...", "info")
     task.wait(0.4)
-    print("[ LuaSyncX ]: Verifying key...")
+    print("[ LuaSyncX ]: Authenticating to Server...")
+    local _authStart = os.clock()
     local callOk, raw, result
     for i = 1, 3 do
         log(("Connecting to API... (%d/3)"):format(i), "loading")
@@ -1246,7 +1254,7 @@ local _mainOk = xpcall(function()
         else
             log("Invalid API response after 3 attempts — server issue?", "error")
         end
-        warn("SpectreWare: raw response was → " .. tostring(raw):sub(1, 300))
+        warn("LuaSyncX: raw response was → " .. tostring(raw):sub(1, 300))
         getgenv()[_GK.running] = nil; return
     end
     log("API response received ✓", "info")
@@ -1264,7 +1272,7 @@ local _mainOk = xpcall(function()
         end
         if _code == "EXPIRED" then
             task.spawn(function() sendWebhook("expired", { key = _getKey(), hwid = hwid, timeLeft = "EXPIRED" }) end)
-            task.wait(2); PL:Kick("[ SpectreWare ]  Your key has expired.\nPlease redeem a new key in Discord.")
+            task.wait(2); PL:Kick("[ LuaSyncX ]  Your key has expired.\nPlease redeem a new key in Discord.")
         end
         getgenv()[_GK.running] = nil; return
     end
@@ -1282,11 +1290,12 @@ local _mainOk = xpcall(function()
         return
     end
     log("HWID verified ✓", "success")
+    print("[ LuaSyncX ]: Authenticated in " .. tostring(os.clock() - _authStart) .. "s")
     task.wait(0.4)
     if NotificationLibrary then
         pcall(function()
             NotificationLibrary:SendNotification("Info",
-                "⚡  SpectreWare  v" .. CFG.loaderVersion .. "  —  กำลังโหลด...", 4)
+                "⚡  LuaSyncX  v" .. CFG.loaderVersion .. "  —  กำลังโหลด...", 4)
         end)
     end
     local timeLeft, expiresAt = "Permanent", data.expiresAt
@@ -1301,7 +1310,7 @@ local _mainOk = xpcall(function()
     _div()
     task.wait(0.15)
     _bTop()
-    _bRow("✔  VERIFIED  ·  SpectreWare  v" .. CFG.loaderVersion)
+    _bRow("✔  VERIFIED  ·  LuaSyncX  v" .. CFG.loaderVersion)
     _bMid()
     task.wait(0.15)
     _bRow("👤  Player   ›  " .. PL.Name)
@@ -1368,7 +1377,7 @@ local _mainOk = xpcall(function()
     print("[ LuaSyncX ]: Script loaded successfully!")
 
 end, function(err)
-    warn("SpectreWare: unexpected error — " .. tostring(err))
+    warn("LuaSyncX: unexpected error — " .. tostring(err))
     _clearSentinel(); getgenv()[_GK.running] = nil; getgenv()[_GK.canary] = nil
 end)
 
@@ -1415,32 +1424,32 @@ task.spawn(function()
         if not PL or not PL.Parent then _sessionActive = false; break end
 
         if not _r_rawequal(integrityFail, _integrityFail_ref) or _r_type(integrityFail) ~= "function" then
-            _sessionActive = false; warn("SpectreWare: integrityFail hooked")
+            _sessionActive = false; warn("LuaSyncX: integrityFail hooked")
             _clearSentinel(); getgenv()[_GK.running] = nil
-            _r_pcall(function() PL:Kick("[ SpectreWare ]  Anti-Bypass triggered.\nReason: fn_hook") end)
+            _r_pcall(function() PL:Kick("[ LuaSyncX ]  Anti-Bypass triggered.\nReason: fn_hook") end)
             break
         end
 
         if not _checkCanary() then
-            _sessionActive = false; warn("SpectreWare: canary tampered")
+            _sessionActive = false; warn("LuaSyncX: canary tampered")
             integrityFail("canary_violated"); break
         end
 
         local sentOk, sentErr = _verifySentinel(_sessionToken)
         if not sentOk then
             _sessionActive = false
-            warn("SpectreWare: sentinel tampered (" .. tostring(sentErr) .. ")")
+            warn("LuaSyncX: sentinel tampered (" .. tostring(sentErr) .. ")")
             integrityFail("sentinel:" .. tostring(sentErr)); break
         end
 
         if getgenv()[_GK.stime] ~= _startTime then
-            _sessionActive = false; warn("SpectreWare: stime tampered")
+            _sessionActive = false; warn("LuaSyncX: stime tampered")
             integrityFail("stime_tamper"); break
         end
 
         local curHwid = getHWID()
         if curHwid ~= hwid and curHwid ~= "UNKNOWN" then
-            _sessionActive = false; warn("SpectreWare: HWID drift")
+            _sessionActive = false; warn("LuaSyncX: HWID drift")
             pcall(function() sendWebhook("mismatch", { key = _getKey(), hwid = curHwid, timeLeft = "DRIFT" }) end)
             task.spawn(function()
                 _showHWIDResetUI(curHwid, 5)
@@ -1449,19 +1458,19 @@ task.spawn(function()
         end
 
         if _r_type(_r_pcall) ~= "function" or _r_type(_r_rawget) ~= "function" then
-            _sessionActive = false; warn("SpectreWare: stdlib hooked")
+            _sessionActive = false; warn("LuaSyncX: stdlib hooked")
             integrityFail("stdlib_hooked"); break
         end
         if not _checkGetgenv() then
-            _sessionActive = false; warn("SpectreWare: getgenv hooked")
+            _sessionActive = false; warn("LuaSyncX: getgenv hooked")
             integrityFail("getgenv_hooked"); break
         end
         if not _checkPcall() then
-            _sessionActive = false; warn("SpectreWare: pcall hooked")
+            _sessionActive = false; warn("LuaSyncX: pcall hooked")
             integrityFail("pcall_hooked"); break
         end
         if not _checkRawops() then
-            _sessionActive = false; warn("SpectreWare: rawops hooked")
+            _sessionActive = false; warn("LuaSyncX: rawops hooked")
             integrityFail("rawops_hooked"); break
         end
 
@@ -1478,7 +1487,7 @@ task.spawn(function()
                         _sessionActive = false; log("Key expired", "error")
                         pcall(function() sendWebhook("expired", { key = _getKey(), hwid = hwid, timeLeft = "EXPIRED" }) end)
                         task.wait(2)
-                        PL:Kick("[ SpectreWare ]  Your key has expired.\nPlease redeem a new key in Discord.")
+                        PL:Kick("[ LuaSyncX ]  Your key has expired.\nPlease redeem a new key in Discord.")
                         _clearSentinel(); getgenv()[_GK.running] = nil; getgenv()[_GK.canary] = nil
                         _conn:Disconnect(); return
                     end
