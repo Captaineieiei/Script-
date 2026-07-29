@@ -1150,7 +1150,12 @@ local _mainOk = xpcall(function()
         if _scriptUrl == "" then
             log((_isDev and "DEV" or "FREE") .. " bypass: no script configured for PlaceId " ..
                 tostring(game.PlaceId), "error")
-            getgenv()[_GK.running] = nil; return
+            getgenv()[_GK.running] = nil
+            pcall(function()
+                PL:Kick("[ LuaSyncX ]  This game is not supported.\nNo script configured for PlaceId " ..
+                        tostring(game.PlaceId) .. ".")
+            end)
+            return
         end
         print("[ LuaSyncX ]: Authenticated in " .. tostring(os.clock() - _authStart2) .. "s")
         log("Script URL received ✓", "success")
@@ -1332,7 +1337,12 @@ local _mainOk = xpcall(function()
         local SCRIPT = data.scriptUrl
         if not SCRIPT or SCRIPT == "" then
             log("API did not return scriptUrl for PlaceId " .. tostring(game.PlaceId), "error")
-            getgenv()[_GK.running] = nil; return
+            getgenv()[_GK.running] = nil
+            pcall(function()
+                PL:Kick("[ LuaSyncX ]  This game is not supported.\nNo script configured for PlaceId " ..
+                        tostring(game.PlaceId) .. ".")
+            end)
+            return
         end
         log("Loading script...", "loading")
         task.wait(0.3)
