@@ -1512,7 +1512,7 @@ function Library:CreateWindow(config)
             Handle.Parent = Fill
             corner(Handle, 7)
 
-            local dragging, activeInput = false, nil
+            local dragging, activeType = false, nil
             local function updateFromPos(xPos, fireCallback)
                 local pos = xPos - Bar.AbsolutePosition.X
                 local percent = math.clamp(pos / Bar.AbsoluteSize.X, 0, 1)
@@ -1527,15 +1527,24 @@ function Library:CreateWindow(config)
 
             Bar.InputBegan:Connect(function(input)
                 if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                    dragging = true; activeInput = input
+                    dragging = true
+                    activeType = input.UserInputType
                     updateFromPos(input.Position.X, true)
                 end
             end)
             Bar.InputEnded:Connect(function(input)
-                if input == activeInput then dragging = false; activeInput = nil end
+                if input.UserInputType == activeType then dragging = false; activeType = nil end
             end)
+            -- เช็คแค่ "ประเภท" ของ input (Touch/MouseMovement) แทนการเทียบ InputObject ตรงๆ
+            -- เพราะบาง executor มือถือส่ง InputObject คนละตัวกันในแต่ละ event ของการลากนิ้วเดียวกัน
+            -- ถ้าเทียบ object ตรงๆ จะมี event ตกหล่นเป็นบางจังหวะ ทำให้แถบลากดูค้าง/กระตุก
             UserInputService.InputChanged:Connect(function(input)
-                if dragging and input == activeInput then updateFromPos(input.Position.X, true) end
+                if not dragging then return end
+                if activeType == Enum.UserInputType.Touch and input.UserInputType == Enum.UserInputType.Touch then
+                    updateFromPos(input.Position.X, true)
+                elseif activeType == Enum.UserInputType.MouseButton1 and input.UserInputType == Enum.UserInputType.MouseMovement then
+                    updateFromPos(input.Position.X, true)
+                end
             end)
 
             return newElement(Frame, function() return val end, function(_, newVal)
