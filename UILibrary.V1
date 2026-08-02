@@ -162,6 +162,34 @@ local function corner(inst, radius)
     return c
 end
 
+-- แปลงไอดีรูปที่ผู้ใช้ใส่มาให้เป็น "rbxassetid://..." เสมอ
+-- รองรับ: เลขล้วน (number), string ตัวเลขล้วน ("123456"), string ที่มี/ไม่มี "rbxassetid://" อยู่แล้ว,
+-- หรือแปะลิงก์เต็มมาจากเว็บ Roblox (เช่น https://www.roblox.com/library/123456/Name)
+-- นี่คือสาเหตุที่ปุ่มเปิด UI ไม่ขึ้นรูป: ImageButton.Image ต้องมี prefix "rbxassetid://" เท่านั้น
+-- ถ้าใส่แค่ตัวเลขไอดีเปล่าๆ (เช่น "123456789") Roblox จะไม่ render รูปให้
+local function normalizeAssetId(id)
+    if typeof(id) == "number" then
+        return "rbxassetid://" .. tostring(math.floor(id))
+    end
+    if typeof(id) == "string" then
+        local trimmed = id:match("^%s*(.-)%s*$") or id
+        if trimmed == "" then return "" end
+        if trimmed:match("^rbxassetid://") or trimmed:match("^rbxthumb://") then
+            return trimmed
+        end
+        if trimmed:match("^%d+$") then
+            return "rbxassetid://" .. trimmed
+        end
+        -- เผื่อผู้ใช้แปะลิงก์เต็ม เช่น roblox.com/library/123456/xxx หรือ ?id=123456
+        local digits = trimmed:match("(%d+)")
+        if digits then
+            return "rbxassetid://" .. digits
+        end
+        return trimmed
+    end
+    return ""
+end
+
 local function applyThemeColor(inst, key, prop)
     prop = prop or "BackgroundColor3"
     inst:SetAttribute("ThemeKey", key)
@@ -524,7 +552,7 @@ function Library:CreateWindow(config)
 
     if config.Icon then
         -- ใช้โลโก้/ไอคอนของผู้ใช้เอง (rbxassetid) แทนตัวอักษร
-        RestoreBtn.Image = config.Icon
+        RestoreBtn.Image = normalizeAssetId(config.Icon)
         local iconPad = Instance.new("UIPadding")
         iconPad.PaddingLeft = UDim.new(0, 8)
         iconPad.PaddingRight = UDim.new(0, 8)
