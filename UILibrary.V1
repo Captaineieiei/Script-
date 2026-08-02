@@ -358,8 +358,23 @@ function Library:CreateWindow(config)
         local title = opts.Title or "Notice"
         local content = opts.Content or ""
         local duration = opts.Duration or 3
-        local ntype = opts.Type or "info" 
-        local color = Theme[ntype:sub(1,1):upper() .. ntype:sub(2)] or Theme.Info
+        local ntype = opts.Type or "info"
+        local COLOR_KEY = {success = "Success", error = "Danger", warning = "Warning", info = "Info"}
+        local color = Theme[COLOR_KEY[ntype] or "Info"]
+
+        -- เงานุ่มๆ ใต้การ์ด ให้ลอยเด่นจากพื้นหลัง แทนที่จะแบนราบติดพื้น
+        -- ผูกกับ NotifyGui (ไม่ใช่ NotifyHolder ที่มี UIListLayout คุมอยู่) แล้วซิงค์ตำแหน่ง/ขนาดตาม Toast เอาเอง
+        -- กันปัญหาแท่ง Shadow ไปเป็นสมาชิกในลิสต์แล้วดันเลย์เอาต์ของ toast อื่นเพี้ยน
+        local Shadow = Instance.new("ImageLabel")
+        Shadow.Name = "ToastShadow"
+        Shadow.BackgroundTransparency = 1
+        Shadow.Image = "rbxassetid://5028857084"
+        Shadow.ImageColor3 = Color3.new(0, 0, 0)
+        Shadow.ImageTransparency = 1
+        Shadow.ScaleType = Enum.ScaleType.Slice
+        Shadow.SliceCenter = Rect.new(24, 24, 276, 276)
+        Shadow.ZIndex = 0
+        Shadow.Parent = NotifyGui
 
         local Toast = Instance.new("Frame")
         applyThemeColor(Toast, "Element")
@@ -367,48 +382,83 @@ function Library:CreateWindow(config)
         Toast.AutomaticSize = Enum.AutomaticSize.Y
         Toast.BackgroundTransparency = 1
         Toast.ClipsDescendants = true
+        Toast.ZIndex = 2
         Toast.Parent = NotifyHolder
-        corner(Toast, 10)
+        corner(Toast, 14)
         local outline = stroke(Toast)
         outline.Transparency = 1
 
+        local function syncShadow()
+            if not Shadow.Parent or not Toast.Parent then return end
+            Shadow.Position = UDim2.new(0, Toast.AbsolutePosition.X - 13, 0, Toast.AbsolutePosition.Y - 13)
+            Shadow.Size = UDim2.new(0, Toast.AbsoluteSize.X + 26, 0, Toast.AbsoluteSize.Y + 26)
+        end
+        local shadowConns = {
+            Toast:GetPropertyChangedSignal("AbsoluteSize"):Connect(syncShadow),
+            Toast:GetPropertyChangedSignal("AbsolutePosition"):Connect(syncShadow),
+        }
+        syncShadow()
+
+        -- แถบสีบอกประเภท เป็นแท่งลอยเว้นขอบ ไม่ชนขอบการ์ด ดูพรีเมียมกว่าเส้นทึบเต็มขอบ
         local AccentBar = Instance.new("Frame")
-        AccentBar.Size = UDim2.new(0, 4, 1, 0)
+        AccentBar.AnchorPoint = Vector2.new(0, 0.5)
+        AccentBar.Position = UDim2.new(0, 8, 0.5, 0)
+        AccentBar.Size = UDim2.new(0, 3, 1, -20)
         AccentBar.BackgroundColor3 = color
         AccentBar.BackgroundTransparency = 1
         AccentBar.BorderSizePixel = 0
+        AccentBar.ZIndex = 3
         AccentBar.Parent = Toast
+        corner(AccentBar, 2)
 
-        local IconBadge = Instance.new("ImageLabel")
-        IconBadge.Size = UDim2.new(0, 22, 0, 22)
-        IconBadge.Position = UDim2.new(0, 14, 0, 12)
+        -- ไอคอนแบบ "กระจกสี" วงกลมโปร่งใสโทนสีเดียวกับประเภทแจ้งเตือน + ไอคอนตัดสีเข้ม
+        local IconBadge = Instance.new("Frame")
+        IconBadge.Size = UDim2.new(0, 32, 0, 32)
+        IconBadge.Position = UDim2.new(0, 16, 0, 14)
         IconBadge.BackgroundColor3 = color
         IconBadge.BackgroundTransparency = 1
-        IconBadge.Image = NOTIFY_ICON[ntype] or Library.Icons.info
-        IconBadge.ImageColor3 = Color3.fromRGB(20, 20, 25)
-        IconBadge.ScaleType = Enum.ScaleType.Fit
+        IconBadge.ZIndex = 3
         IconBadge.Parent = Toast
-        corner(IconBadge, 11)
+        corner(IconBadge, 16)
+        local iconBadgeStroke = Instance.new("UIStroke")
+        iconBadgeStroke.Color = color
+        iconBadgeStroke.Thickness = 1
+        iconBadgeStroke.Transparency = 1
+        iconBadgeStroke.Parent = IconBadge
+
+        local IconImg = Instance.new("ImageLabel")
+        IconImg.AnchorPoint = Vector2.new(0.5, 0.5)
+        IconImg.Position = UDim2.new(0.5, 0, 0.5, 0)
+        IconImg.Size = UDim2.new(0, 16, 0, 16)
+        IconImg.BackgroundTransparency = 1
+        IconImg.Image = NOTIFY_ICON[ntype] or Library.Icons.info
+        IconImg.ImageColor3 = color
+        IconImg.ImageTransparency = 1
+        IconImg.ScaleType = Enum.ScaleType.Fit
+        IconImg.ZIndex = 4
+        IconImg.Parent = IconBadge
 
         local TextHolder = Instance.new("Frame")
         TextHolder.BackgroundTransparency = 1
-        TextHolder.Position = UDim2.new(0, 46, 0, 10)
-        TextHolder.Size = UDim2.new(1, -58, 0, 0)
+        TextHolder.Position = UDim2.new(0, 60, 0, 14)
+        TextHolder.Size = UDim2.new(1, -96, 0, 0)
         TextHolder.AutomaticSize = Enum.AutomaticSize.Y
+        TextHolder.ZIndex = 3
         TextHolder.Parent = Toast
         local Layout = Instance.new("UIListLayout")
-        Layout.Padding = UDim.new(0, 2)
+        Layout.Padding = UDim.new(0, 3)
         Layout.Parent = TextHolder
 
         local TitleLbl = Instance.new("TextLabel")
         TitleLbl.BackgroundTransparency = 1
-        TitleLbl.Size = UDim2.new(1, 0, 0, 18)
+        TitleLbl.Size = UDim2.new(1, 0, 0, 16)
         TitleLbl.Font = Enum.Font.GothamBold
-        TitleLbl.TextSize = 13
+        TitleLbl.TextSize = 13.5
         applyThemeColor(TitleLbl, "Text", "TextColor3")
         TitleLbl.TextXAlignment = Enum.TextXAlignment.Left
         TitleLbl.TextTransparency = 1
         TitleLbl.Text = title
+        TitleLbl.ZIndex = 3
         TitleLbl.Parent = TextHolder
 
         local ContentLbl = Instance.new("TextLabel")
@@ -417,16 +467,55 @@ function Library:CreateWindow(config)
         ContentLbl.AutomaticSize = Enum.AutomaticSize.Y
         ContentLbl.Font = Enum.Font.Gotham
         ContentLbl.TextSize = 12
+        ContentLbl.LineHeight = 1.15
         applyThemeColor(ContentLbl, "SubText", "TextColor3")
         ContentLbl.TextXAlignment = Enum.TextXAlignment.Left
         ContentLbl.TextWrapped = true
         ContentLbl.TextTransparency = 1
         ContentLbl.Text = content
+        ContentLbl.ZIndex = 3
         ContentLbl.Parent = TextHolder
 
+        -- ปุ่มปิดเอง มุมขวาบน เผื่ออยากไล่ toast ทิ้งก่อนเวลา
+        local CloseX = Instance.new("ImageButton")
+        CloseX.AnchorPoint = Vector2.new(1, 0)
+        CloseX.Position = UDim2.new(1, -10, 0, 10)
+        CloseX.Size = UDim2.new(0, 18, 0, 18)
+        CloseX.BackgroundTransparency = 1
+        CloseX.AutoButtonColor = false
+        CloseX.Image = Library.Icons.close
+        applyThemeColor(CloseX, "SubText", "ImageColor3")
+        CloseX.ImageTransparency = 1
+        CloseX.ZIndex = 4
+        CloseX.Parent = Toast
+        CloseX.MouseEnter:Connect(function()
+            TweenService:Create(CloseX, TweenInfo.new(0.12), {ImageColor3 = Theme.Text}):Play()
+        end)
+        CloseX.MouseLeave:Connect(function()
+            TweenService:Create(CloseX, TweenInfo.new(0.12), {ImageColor3 = Theme.SubText}):Play()
+        end)
+
         local Pad = Instance.new("UIPadding")
-        Pad.PaddingBottom = UDim.new(0, 10)
+        Pad.PaddingBottom = UDim.new(0, 14)
         Pad.Parent = Toast
+
+        -- แถบนับถอยหลังบางๆ ล่างการ์ด บอกเวลาที่เหลือก่อน toast หาย
+        local ProgressTrack = Instance.new("Frame")
+        ProgressTrack.AnchorPoint = Vector2.new(0, 1)
+        ProgressTrack.Position = UDim2.new(0, 0, 1, 0)
+        ProgressTrack.Size = UDim2.new(1, 0, 0, 3)
+        ProgressTrack.BackgroundColor3 = color
+        ProgressTrack.BackgroundTransparency = 1
+        ProgressTrack.BorderSizePixel = 0
+        ProgressTrack.ZIndex = 3
+        ProgressTrack.ClipsDescendants = true
+        ProgressTrack.Parent = Toast
+        local ProgressBar = Instance.new("Frame")
+        ProgressBar.Size = UDim2.new(1, 0, 1, 0)
+        ProgressBar.BackgroundColor3 = color
+        ProgressBar.BorderSizePixel = 0
+        ProgressBar.ZIndex = 3
+        ProgressBar.Parent = ProgressTrack
 
         -- ป๊อปสเกลเด้งเข้า ให้รู้สึกมีชีวิตชีวาตอนแจ้งเตือนขึ้น (ไม่แตะ Position เพราะ UIListLayout คุมอยู่)
         local ToastScale = Instance.new("UIScale")
@@ -440,26 +529,45 @@ function Library:CreateWindow(config)
         TweenService:Create(ToastScale, TweenInfo.new(0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Scale = 1}):Play()
         TweenService:Create(IconScale, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Scale = 1}):Play()
         TweenService:Create(Toast, TweenInfo.new(0.2), {BackgroundTransparency = 0}):Play()
-        TweenService:Create(outline, TweenInfo.new(0.2), {Transparency = 0.5}):Play()
+        TweenService:Create(outline, TweenInfo.new(0.2), {Transparency = 0.6}):Play()
+        TweenService:Create(Shadow, TweenInfo.new(0.25), {ImageTransparency = 0.65}):Play()
         TweenService:Create(AccentBar, TweenInfo.new(0.2), {BackgroundTransparency = 0}):Play()
-        TweenService:Create(IconBadge, TweenInfo.new(0.2), {BackgroundTransparency = 0}):Play()
+        TweenService:Create(IconBadge, TweenInfo.new(0.2), {BackgroundTransparency = 0.85}):Play()
+        TweenService:Create(iconBadgeStroke, TweenInfo.new(0.2), {Transparency = 0.6}):Play()
+        TweenService:Create(IconImg, TweenInfo.new(0.2), {ImageTransparency = 0}):Play()
         TweenService:Create(TitleLbl, TweenInfo.new(0.2), {TextTransparency = 0}):Play()
         TweenService:Create(ContentLbl, TweenInfo.new(0.2), {TextTransparency = 0}):Play()
+        TweenService:Create(CloseX, TweenInfo.new(0.2), {ImageTransparency = 0.4}):Play()
 
-        task.delay(duration, function()
-            if Toast and Toast.Parent then
-                -- ตอนหาย หดตัว+จางไป
-                TweenService:Create(ToastScale, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Scale = 0.85}):Play()
-                TweenService:Create(Toast, TweenInfo.new(0.25), {BackgroundTransparency = 1}):Play()
-                TweenService:Create(outline, TweenInfo.new(0.25), {Transparency = 1}):Play()
-                TweenService:Create(AccentBar, TweenInfo.new(0.25), {BackgroundTransparency = 1}):Play()
-                TweenService:Create(IconBadge, TweenInfo.new(0.25), {BackgroundTransparency = 1}):Play()
-                TweenService:Create(TitleLbl, TweenInfo.new(0.25), {TextTransparency = 1}):Play()
-                TweenService:Create(ContentLbl, TweenInfo.new(0.25), {TextTransparency = 1}):Play()
-                task.wait(0.25)
-                Toast:Destroy()
-            end
-        end)
+        ProgressBar.Size = UDim2.new(1, 0, 1, 0)
+        TweenService:Create(ProgressBar, TweenInfo.new(duration, Enum.EasingStyle.Linear), {Size = UDim2.new(0, 0, 1, 0)}):Play()
+        TweenService:Create(ProgressTrack, TweenInfo.new(0.2), {BackgroundTransparency = 0.85}):Play()
+
+        local dismissed = false
+        local function dismiss()
+            if dismissed or not Toast or not Toast.Parent then return end
+            dismissed = true
+            TweenService:Create(ToastScale, TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Scale = 0.85}):Play()
+            TweenService:Create(Toast, TweenInfo.new(0.22), {BackgroundTransparency = 1}):Play()
+            TweenService:Create(outline, TweenInfo.new(0.22), {Transparency = 1}):Play()
+            TweenService:Create(Shadow, TweenInfo.new(0.22), {ImageTransparency = 1}):Play()
+            TweenService:Create(AccentBar, TweenInfo.new(0.22), {BackgroundTransparency = 1}):Play()
+            TweenService:Create(IconBadge, TweenInfo.new(0.22), {BackgroundTransparency = 1}):Play()
+            TweenService:Create(iconBadgeStroke, TweenInfo.new(0.22), {Transparency = 1}):Play()
+            TweenService:Create(IconImg, TweenInfo.new(0.22), {ImageTransparency = 1}):Play()
+            TweenService:Create(TitleLbl, TweenInfo.new(0.22), {TextTransparency = 1}):Play()
+            TweenService:Create(ContentLbl, TweenInfo.new(0.22), {TextTransparency = 1}):Play()
+            TweenService:Create(CloseX, TweenInfo.new(0.22), {ImageTransparency = 1}):Play()
+            TweenService:Create(ProgressTrack, TweenInfo.new(0.22), {BackgroundTransparency = 1}):Play()
+            task.delay(0.22, function()
+                for _, c in ipairs(shadowConns) do c:Disconnect() end
+                Shadow:Destroy()
+                if Toast then Toast:Destroy() end
+            end)
+        end
+
+        CloseX.MouseButton1Click:Connect(dismiss)
+        task.delay(duration, dismiss)
     end
 
     -- ============ Main window ============
