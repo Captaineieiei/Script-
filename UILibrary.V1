@@ -276,6 +276,10 @@ function Library:CreateWindow(config)
 
     local oldGui = CoreGui:FindFirstChild("ProMobileUI")
     if oldGui then oldGui:Destroy() end
+    local oldRestoreGui = CoreGui:FindFirstChild("RestoreGui")
+    if oldRestoreGui then oldRestoreGui:Destroy() end
+    local oldNotifyGui = CoreGui:FindFirstChild("NotifyGui")
+    if oldNotifyGui then oldNotifyGui:Destroy() end
 
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "ProMobileUI"
@@ -303,13 +307,23 @@ function Library:CreateWindow(config)
     end
 
     -- ============ Notification layer ============
+    -- ต้องมี ScreenGui แยกของตัวเอง เหมือนกับ RestoreGui ด้านล่าง เพราะถ้าฝากไว้ใน ScreenGui หลัก
+    -- พอผู้ใช้กดปุ่ม "ซ่อน UI" (ScreenGui.Enabled = false) การแจ้งเตือนที่กำลังขึ้นอยู่ หรือที่จะขึ้นมาใหม่
+    -- จะถูกซ่อนไปด้วยทันที ทั้งที่ควรเห็นแจ้งเตือนได้แม้ UI หลักจะถูกซ่อนอยู่ก็ตาม
+    local NotifyGui = Instance.new("ScreenGui")
+    NotifyGui.Name = "NotifyGui"
+    NotifyGui.ResetOnSpawn = false
+    NotifyGui.IgnoreGuiInset = true
+    NotifyGui.DisplayOrder = 998
+    NotifyGui.Parent = UiParent
+
     local NotifyHolder = Instance.new("Frame")
     NotifyHolder.Name = "Notifications"
     NotifyHolder.AnchorPoint = Vector2.new(1, 0)
     NotifyHolder.Position = UDim2.new(1, -16, 0, 16)
     NotifyHolder.Size = UDim2.new(0, 270, 1, -32)
     NotifyHolder.BackgroundTransparency = 1
-    NotifyHolder.Parent = ScreenGui
+    NotifyHolder.Parent = NotifyGui
     local NotifyLayout = Instance.new("UIListLayout")
     NotifyLayout.Padding = UDim.new(0, 8)
     NotifyLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
@@ -714,7 +728,7 @@ function Library:CreateWindow(config)
 
     function Window:Toggle() setUiVisible(not ScreenGui.Enabled) end
     function Window:SetTitle(newTitle) TitleLabel.Text = newTitle end
-    function Window:Destroy() ScreenGui:Destroy(); RestoreGui:Destroy() end
+    function Window:Destroy() ScreenGui:Destroy(); RestoreGui:Destroy(); NotifyGui:Destroy() end
 
     function Window:CreateSettingsTab()
         local tab = Window:CreateTab("Settings", "settings")
