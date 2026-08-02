@@ -818,6 +818,11 @@ function Library:CreateWindow(config)
     RestoreBtn.Active = true
     RestoreBtn.Parent = RestoreGui
     corner(RestoreBtn, 23)
+    -- ใช้ UIScale แทนการเปลี่ยน Size ตรงๆ เพราะ RestoreBtn ไม่ได้ตั้ง AnchorPoint ไว้กลาง
+    -- ถ้า tween Size ตรงๆ มันจะขยายจากมุมบนซ้าย ดูเอียง/เลื่อนมุมไม่สวย
+    local RestoreBtnScale = Instance.new("UIScale")
+    RestoreBtnScale.Scale = 1
+    RestoreBtnScale.Parent = RestoreBtn
     accentGradient(RestoreBtn, 100)
     stroke(RestoreBtn)
 
@@ -844,6 +849,8 @@ function Library:CreateWindow(config)
         LetterLabel.Parent = RestoreBtn
     end
 
+    local baseShadowPos = Shadow.Position
+    local hiddenShadowPos = baseShadowPos + UDim2.new(0, 0, 0, 14)
     local hideToken = 0
     local function setUiVisible(visible)
         hideToken = hideToken + 1
@@ -851,26 +858,32 @@ function Library:CreateWindow(config)
         if visible then
             ScreenGui.Enabled = true
             RestoreBtn.Visible = false
-            -- เริ่มจากขนาดเล็ก+โปร่งใส แล้ว tween โตขึ้นมาแบบเด้งนิดๆ (เหมือนตอนเปิด UI ครั้งแรก)
-            WindowScale.Scale = 0.85
+            -- เริ่มจากขนาดเล็ก+เลื่อนลงนิดหน่อย+โปร่งใส แล้ว tween ขึ้นมานุ่มๆ ด้วย Quint (ไม่เด้งเกินจริง)
+            WindowScale.Scale = 0.92
+            Shadow.Position = hiddenShadowPos
             MainFrame.BackgroundTransparency = 1
             mainStroke.Transparency = 1
-            TweenService:Create(WindowScale, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Scale = 1}):Play()
-            TweenService:Create(MainFrame, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 0}):Play()
-            TweenService:Create(mainStroke, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Transparency = 0.5}):Play()
+            local easeIn = TweenInfo.new(0.24, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+            TweenService:Create(WindowScale, easeIn, {Scale = 1}):Play()
+            TweenService:Create(Shadow, easeIn, {Position = baseShadowPos}):Play()
+            TweenService:Create(MainFrame, easeIn, {BackgroundTransparency = 0}):Play()
+            TweenService:Create(mainStroke, easeIn, {Transparency = 0.5}):Play()
         else
-            -- ย่อ+จางหายก่อน ค่อยปิด ScreenGui จริงตอนจบ tween (กันภาพกระตุกตัด hard cut)
-            local t = TweenService:Create(WindowScale, TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Scale = 0.85})
-            TweenService:Create(MainFrame, TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {BackgroundTransparency = 1}):Play()
-            TweenService:Create(mainStroke, TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Transparency = 1}):Play()
+            -- ย่อ+เลื่อนลง+จางหายพร้อมกันแบบนุ่มๆ ก่อนค่อยปิด ScreenGui จริงตอนจบ tween
+            local easeOut = TweenInfo.new(0.18, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
+            local t = TweenService:Create(WindowScale, easeOut, {Scale = 0.92})
+            TweenService:Create(Shadow, easeOut, {Position = hiddenShadowPos}):Play()
+            TweenService:Create(MainFrame, easeOut, {BackgroundTransparency = 1}):Play()
+            TweenService:Create(mainStroke, easeOut, {Transparency = 1}):Play()
             t:Play()
             t.Completed:Connect(function()
                 if myToken ~= hideToken then return end -- ถูกสั่งซ่อน/คืนซ้อนระหว่าง tween ทิ้ง callback เก่า
                 ScreenGui.Enabled = false
+                Shadow.Position = baseShadowPos -- คืนตำแหน่งไว้เผื่อรอบหน้า
                 RestoreBtn.Visible = true
-                -- ปุ่มลอยเด้งโผล่มาแทนที่จะโผล่มาเฉยๆ ทันที
-                RestoreBtn.Size = UDim2.new(0, 0, 0, 0)
-                TweenService:Create(RestoreBtn, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0, 46, 0, 46)}):Play()
+                -- ปุ่มลอย pop เข้ามาแบบเบาๆ ผ่าน UIScale (จุดหมุนกึ่งกลางจริง ไม่เอียงมุม)
+                RestoreBtnScale.Scale = 0.5
+                TweenService:Create(RestoreBtnScale, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out, 0, false, 0), {Scale = 1}):Play()
             end)
         end
     end
@@ -1029,12 +1042,13 @@ function Library:CreateWindow(config)
             ScreenGui:Destroy(); RestoreGui:Destroy(); NotifyGui:Destroy()
         end
         if ScreenGui.Enabled then
-            -- ย่อ+จางหายทั้งกรอบก่อนค่อยลบจริง ไม่ตัดหายวับทันที
-            TweenService:Create(WindowScale, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Scale = 0.85}):Play()
-            TweenService:Create(MainFrame, TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {BackgroundTransparency = 1}):Play()
-            TweenService:Create(mainStroke, TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Transparency = 1}):Play()
-            TweenService:Create(Shadow, TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {ImageTransparency = 1}):Play()
-            task.delay(0.18, finalize)
+            -- ย่อ+เลื่อนลง+จางหายนุ่มๆ ก่อนค่อยลบจริง ไม่ตัดหายวับทันที
+            local easeOut = TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
+            TweenService:Create(WindowScale, easeOut, {Scale = 0.9}):Play()
+            TweenService:Create(Shadow, easeOut, {Position = hiddenShadowPos, ImageTransparency = 1}):Play()
+            TweenService:Create(MainFrame, easeOut, {BackgroundTransparency = 1}):Play()
+            TweenService:Create(mainStroke, easeOut, {Transparency = 1}):Play()
+            task.delay(0.2, finalize)
         else
             finalize()
         end
