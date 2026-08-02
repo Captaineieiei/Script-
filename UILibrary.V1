@@ -250,6 +250,29 @@ local function applyGlowOnHover(frame)
     end)
 end
 
+-- กด = ยุบตัวเล็กน้อยแบบมี spring, ปล่อย = เด้งกลับ (ใช้กับปุ่มทุกชนิด)
+local function applyPressAnimation(btn, pressScale)
+    pressScale = pressScale or 0.94
+    local uiScale = btn:FindFirstChildOfClass("UIScale")
+    if not uiScale then
+        uiScale = Instance.new("UIScale")
+        uiScale.Parent = btn
+    end
+    local function pressDown()
+        TweenService:Create(uiScale, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Scale = pressScale}):Play()
+    end
+    local function pressUp()
+        TweenService:Create(uiScale, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Scale = 1}):Play()
+    end
+    btn.MouseButton1Down:Connect(pressDown)
+    btn.MouseButton1Up:Connect(pressUp)
+    btn.MouseLeave:Connect(pressUp)
+    btn.TouchTap:Connect(function()
+        pressDown()
+        task.delay(0.08, pressUp)
+    end)
+end
+
 local function isPointOverGui(pos, guiObject)
     if not guiObject or not guiObject.Parent then return false end
     if guiObject:IsA("GuiObject") and not guiObject.Visible then return false end
@@ -405,6 +428,17 @@ function Library:CreateWindow(config)
         Pad.PaddingBottom = UDim.new(0, 10)
         Pad.Parent = Toast
 
+        -- ป๊อปสเกลเด้งเข้า ให้รู้สึกมีชีวิตชีวาตอนแจ้งเตือนขึ้น (ไม่แตะ Position เพราะ UIListLayout คุมอยู่)
+        local ToastScale = Instance.new("UIScale")
+        ToastScale.Scale = 0.85
+        ToastScale.Parent = Toast
+
+        local IconScale = Instance.new("UIScale")
+        IconScale.Scale = 0.4
+        IconScale.Parent = IconBadge
+
+        TweenService:Create(ToastScale, TweenInfo.new(0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Scale = 1}):Play()
+        TweenService:Create(IconScale, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Scale = 1}):Play()
         TweenService:Create(Toast, TweenInfo.new(0.2), {BackgroundTransparency = 0}):Play()
         TweenService:Create(outline, TweenInfo.new(0.2), {Transparency = 0.5}):Play()
         TweenService:Create(AccentBar, TweenInfo.new(0.2), {BackgroundTransparency = 0}):Play()
@@ -414,6 +448,8 @@ function Library:CreateWindow(config)
 
         task.delay(duration, function()
             if Toast and Toast.Parent then
+                -- ตอนหาย หดตัว+จางไป
+                TweenService:Create(ToastScale, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Scale = 0.85}):Play()
                 TweenService:Create(Toast, TweenInfo.new(0.25), {BackgroundTransparency = 1}):Play()
                 TweenService:Create(outline, TweenInfo.new(0.25), {Transparency = 1}):Play()
                 TweenService:Create(AccentBar, TweenInfo.new(0.25), {BackgroundTransparency = 1}):Play()
@@ -522,6 +558,7 @@ function Library:CreateWindow(config)
     CloseBtn.ZIndex = 5
     CloseBtn.Parent = TopBar
     corner(CloseBtn, 8)
+    applyPressAnimation(CloseBtn, 0.8)
     CloseBtn.MouseEnter:Connect(function()
         TweenService:Create(CloseBtn, TweenInfo.new(0.15), {BackgroundColor3 = Theme.Danger, ImageColor3 = Color3.fromRGB(255,255,255)}):Play()
     end)
@@ -544,6 +581,7 @@ function Library:CreateWindow(config)
     HideBtn.ZIndex = 5
     HideBtn.Parent = TopBar
     corner(HideBtn, 8)
+    applyPressAnimation(HideBtn, 0.8)
     HideBtn.MouseEnter:Connect(function()
         TweenService:Create(HideBtn, TweenInfo.new(0.15), {BackgroundColor3 = Theme.ElementHover, BackgroundTransparency = 0.3}):Play()
     end)
@@ -749,6 +787,7 @@ function Library:CreateWindow(config)
         tabOrderCounter = tabOrderCounter + 1
         TabBtn.LayoutOrder = tabOrderCounter
         corner(TabBtn, 8)
+        applyPressAnimation(TabBtn, 0.96)
 
         local iconOffset = 10
         if icon then
@@ -919,6 +958,7 @@ function Library:CreateWindow(config)
             corner(Btn, 9)
             applyHoverEffect(Btn, "Element", "ElementHover")
             applyGlowOnHover(Btn)
+            applyPressAnimation(Btn)
 
             local iconOffset = 12
             if c.Icon then
@@ -991,6 +1031,7 @@ function Library:CreateWindow(config)
             Switch.Text = ""
             Switch.Parent = Frame
             corner(Switch, 10)
+            applyPressAnimation(Switch, 0.85)
             local switchGrad = accentGradient(Switch, 0)
             switchGrad.Transparency = NumberSequence.new(1)
 
