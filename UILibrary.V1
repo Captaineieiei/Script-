@@ -440,27 +440,17 @@ function Library:CreateWindow(config)
         })
         accentFade.Parent = AccentBar
 
-        -- ฮาโลเรืองแสงจางๆ อยู่หลังไอคอน สีเดียวกับประเภทแจ้งเตือน ให้ไอคอนดูลอยเด่นมีแสงนวลรอบตัว
-        local IconGlow = Instance.new("Frame")
-        IconGlow.AnchorPoint = Vector2.new(0.5, 0.5)
-        IconGlow.Position = UDim2.new(0, 32, 0, 32)
-        IconGlow.Size = UDim2.new(0, 46, 0, 46)
-        IconGlow.BackgroundColor3 = color
-        IconGlow.BackgroundTransparency = 1
-        IconGlow.ZIndex = 2
-        IconGlow.Parent = Toast
-        corner(IconGlow, 23)
-
         -- ไอคอนแบบ "กระจกสี" วงกลมโปร่งใสโทนสีเดียวกับประเภทแจ้งเตือน + ไอคอนตัดสีเข้ม
+        -- (ตัดฮาโลวงกลมทึบออก เพราะทำให้ดูเป็นก้อนสีทับกันแทนที่จะเป็นแสงนวล)
         local IconBadge = Instance.new("Frame")
         IconBadge.AnchorPoint = Vector2.new(0.5, 0.5)
-        IconBadge.Size = UDim2.new(0, 34, 0, 34)
+        IconBadge.Size = UDim2.new(0, 32, 0, 32)
         IconBadge.Position = UDim2.new(0, 32, 0, 32)
         IconBadge.BackgroundColor3 = color
         IconBadge.BackgroundTransparency = 1
         IconBadge.ZIndex = 3
         IconBadge.Parent = Toast
-        corner(IconBadge, 17)
+        corner(IconBadge, 16)
         local iconBadgeStroke = Instance.new("UIStroke")
         iconBadgeStroke.Color = color
         iconBadgeStroke.Thickness = 1
@@ -470,7 +460,7 @@ function Library:CreateWindow(config)
         local IconImg = Instance.new("ImageLabel")
         IconImg.AnchorPoint = Vector2.new(0.5, 0.5)
         IconImg.Position = UDim2.new(0.5, 0, 0.5, 0)
-        IconImg.Size = UDim2.new(0, 17, 0, 17)
+        IconImg.Size = UDim2.new(0, 16, 0, 16)
         IconImg.BackgroundTransparency = 1
         IconImg.Image = NOTIFY_ICON[ntype] or Library.Icons.info
         IconImg.ImageColor3 = color
@@ -584,7 +574,6 @@ function Library:CreateWindow(config)
         TweenService:Create(Shadow, TweenInfo.new(0.28), {ImageTransparency = 0.6}):Play()
         TweenService:Create(TopHighlight, TweenInfo.new(0.25), {BackgroundTransparency = 0.75}):Play()
         TweenService:Create(AccentBar, TweenInfo.new(0.2), {BackgroundTransparency = 0}):Play()
-        TweenService:Create(IconGlow, TweenInfo.new(0.3), {BackgroundTransparency = 0.7}):Play()
         TweenService:Create(IconBadge, TweenInfo.new(0.2), {BackgroundTransparency = 0.82}):Play()
         TweenService:Create(iconBadgeStroke, TweenInfo.new(0.2), {Transparency = 0.55}):Play()
         TweenService:Create(IconImg, TweenInfo.new(0.2), {ImageTransparency = 0}):Play()
@@ -606,7 +595,6 @@ function Library:CreateWindow(config)
             TweenService:Create(Shadow, TweenInfo.new(0.22), {ImageTransparency = 1}):Play()
             TweenService:Create(TopHighlight, TweenInfo.new(0.22), {BackgroundTransparency = 1}):Play()
             TweenService:Create(AccentBar, TweenInfo.new(0.22), {BackgroundTransparency = 1}):Play()
-            TweenService:Create(IconGlow, TweenInfo.new(0.22), {BackgroundTransparency = 1}):Play()
             TweenService:Create(IconBadge, TweenInfo.new(0.22), {BackgroundTransparency = 1}):Play()
             TweenService:Create(iconBadgeStroke, TweenInfo.new(0.22), {Transparency = 1}):Play()
             TweenService:Create(IconImg, TweenInfo.new(0.22), {ImageTransparency = 1}):Play()
