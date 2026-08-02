@@ -2247,9 +2247,8 @@ function Library:CreateWindow(config)
             Box.Size = UDim2.new(1, 0, 0, 38)
             applyThemeColor(Box, "Element")
             Box.Text = c.Default or ""
-            Box.PlaceholderText = c.Text or "Search..."
+            Box.PlaceholderText = "" -- ปิด PlaceholderText ของ Roblox เพราะไม่ยึด UIPadding ทำให้ทับไอคอน
             applyThemeColor(Box, "Text", "TextColor3")
-            applyThemeColor(Box, "SubText", "PlaceholderColor3")
             Box.Font = Enum.Font.GothamSemibold
             Box.TextSize = 13
             Box.ClearTextOnFocus = false
@@ -2265,16 +2264,36 @@ function Library:CreateWindow(config)
             IconImg.Image = Library.Icons.search
             applyThemeColor(IconImg, "SubText", "ImageColor3")
             IconImg.ScaleType = Enum.ScaleType.Fit
+            IconImg.ZIndex = 2
             IconImg.Parent = Box
 
             local Pad = Instance.new("UIPadding")
             Pad.PaddingLeft = UDim.new(0, 34)
             Pad.Parent = Box
 
+            -- Placeholder ปลอมที่คุมตำแหน่งเอง ไม่พึ่ง PlaceholderText ของ Roblox
+            local PlaceholderLbl = Instance.new("TextLabel")
+            PlaceholderLbl.BackgroundTransparency = 1
+            PlaceholderLbl.Position = UDim2.new(0, 34, 0, 0)
+            PlaceholderLbl.Size = UDim2.new(1, -44, 1, 0)
+            PlaceholderLbl.Font = Enum.Font.GothamSemibold
+            PlaceholderLbl.TextSize = 13
+            PlaceholderLbl.TextXAlignment = Enum.TextXAlignment.Left
+            PlaceholderLbl.TextTruncate = Enum.TextTruncate.AtEnd
+            PlaceholderLbl.Text = c.Text or "Search..."
+            PlaceholderLbl.ZIndex = 1
+            applyThemeColor(PlaceholderLbl, "SubText", "TextColor3")
+            PlaceholderLbl.Visible = Box.Text == ""
+            PlaceholderLbl.Parent = Box
+
             Box:GetPropertyChangedSignal("Text"):Connect(function()
+                PlaceholderLbl.Visible = Box.Text == ""
                 if c.Callback then c.Callback(Box.Text) end
             end)
-            return newElement(Box, function() return Box.Text end, function(_, newText) Box.Text = newText end)
+            return newElement(Box, function() return Box.Text end, function(_, newText)
+                Box.Text = newText
+                PlaceholderLbl.Visible = Box.Text == ""
+            end)
         end
 
         function Tab:CreateImage(c)
