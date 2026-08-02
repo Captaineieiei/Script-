@@ -482,7 +482,7 @@ function Library:CreateWindow(config)
     applyThemeColor(HideBtn, "Element")
     HideBtn.BackgroundTransparency = 1
     HideBtn.AutoButtonColor = false
-    HideBtn.Image = Library.Icons.eyeOff
+    HideBtn.Image = Library.Icons.minus
     applyThemeColor(HideBtn, "SubText", "ImageColor3")
     HideBtn.ScaleType = Enum.ScaleType.Fit
     HideBtn.ZIndex = 5
