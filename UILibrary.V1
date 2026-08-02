@@ -120,27 +120,42 @@ local BaseTheme = {
     Warning = Color3.fromRGB(251, 191, 36),
     Info = Color3.fromRGB(96, 165, 250)
 }
-BaseTheme.Accent = BaseTheme.AccentA 
 
-Library.Themes.Midnight = BaseTheme
-Library.Themes.Ocean = setmetatable({
+-- สร้างธีมแบบ "resolve ค่าเต็มไว้ล่วงหน้า" เป็นตารางแยกอิสระของตัวเอง ไม่ใช้ metatable/__index fallback
+-- เหตุผล: ของเดิมใช้ setmetatable({...}, {__index = BaseTheme}) ทำให้ธีมที่ไม่ได้กำหนดค่าเอง (เช่น Text)
+-- ไปอ้างอิง BaseTheme ตัวเดียวกันแบบ "เชื่อมถึงกัน" ตลอดเวลา ถ้ามีจุดไหนในโค้ด (ปัจจุบันหรืออนาคต)
+-- เผลอเขียนทับ BaseTheme โดยตรง สีจะรั่วข้ามธีมกันทันที ฟังก์ชันนี้ตัดปัญหาด้วยการ "ก็อปปี้ค่าจริง"
+-- ออกมาเป็นตารางของตัวเองเลยตั้งแต่ตอนโหลด ธีมแต่ละอันจึงเป็นอิสระต่อกัน 100%
+local function resolveTheme(overrides)
+    local t = {}
+    for k, v in pairs(BaseTheme) do t[k] = v end
+    if overrides then
+        for k, v in pairs(overrides) do t[k] = v end
+    end
+    t.Accent = t.AccentA
+    return t
+end
+
+Library.Themes.Midnight = resolveTheme(nil)
+Library.Themes.Ocean = resolveTheme({
     Background = Color3.fromRGB(7, 17, 27), Sidebar = Color3.fromRGB(9, 21, 33), Topbar = Color3.fromRGB(12, 26, 40),
     Element = Color3.fromRGB(15, 34, 52), ElementHover = Color3.fromRGB(21, 45, 67), AccentA = Color3.fromRGB(34, 211, 238),
     AccentB = Color3.fromRGB(56, 130, 246), ToggleOff = Color3.fromRGB(25, 45, 63), Stroke = Color3.fromRGB(30, 56, 76)
-}, {__index = BaseTheme})
-Library.Themes.Crimson = setmetatable({
+})
+Library.Themes.Crimson = resolveTheme({
     Background = Color3.fromRGB(23, 10, 14), Sidebar = Color3.fromRGB(27, 12, 16), Topbar = Color3.fromRGB(32, 15, 19),
     Element = Color3.fromRGB(41, 19, 24), ElementHover = Color3.fromRGB(51, 24, 30), AccentA = Color3.fromRGB(251, 68, 97),
     AccentB = Color3.fromRGB(255, 145, 70), ToggleOff = Color3.fromRGB(53, 26, 31), Stroke = Color3.fromRGB(59, 28, 34)
-}, {__index = BaseTheme})
-Library.Themes.Light = setmetatable({
+})
+Library.Themes.Light = resolveTheme({
     Background = Color3.fromRGB(245, 246, 250), Sidebar = Color3.fromRGB(255, 255, 255), Topbar = Color3.fromRGB(255, 255, 255),
     Element = Color3.fromRGB(255, 255, 255), ElementHover = Color3.fromRGB(241, 242, 247), Text = Color3.fromRGB(23, 23, 32),
     SubText = Color3.fromRGB(105, 105, 122), AccentA = Color3.fromRGB(99, 91, 255), AccentB = Color3.fromRGB(236, 72, 153),
     ToggleOff = Color3.fromRGB(212, 214, 223), Stroke = Color3.fromRGB(226, 227, 234)
-}, {__index = BaseTheme})
+})
 
-local Theme = Library.Themes.Midnight
+-- Theme คือตารางที่ "ใช้งานจริง" ต้องเป็นก้อนของตัวเองแยกจากธีมทุกอันข้างบนเสมอ (ห้ามชี้ตัวเดียวกัน)
+local Theme = resolveTheme(nil)
 local NOTIFY_ICON = {success = Library.Icons.check, error = Library.Icons.close, warning = Library.Icons.warning, info = Library.Icons.info}
 
 -- ============ HELPERS ============
@@ -272,8 +287,7 @@ function Library:CreateWindow(config)
     function Library:SetTheme(themeName)
         local newTheme = Library.Themes[themeName]
         if not newTheme then return end
-        for k, v in pairs(BaseTheme) do Theme[k] = newTheme[k] end
-        Theme.Accent = Theme.AccentA
+        for k, v in pairs(newTheme) do Theme[k] = v end
         Library.CurrentTheme = themeName
 
         for _, inst in ipairs(ScreenGui:GetDescendants()) do
