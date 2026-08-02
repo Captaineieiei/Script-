@@ -21,7 +21,7 @@ end
 -- ตั้งค่า Flag แบบ manual โดยไม่ต้องผ่าน element ใดๆ (เช่น preset/config loader)
 function Library:SetFlag(name, value)
     Library.Flags[name] = value
-end 
+end
 
 -- ============ ICONS SETUP ============
 -- ระบบไอคอนแบบ ImageLabel (Asset ID มาตรฐาน)
@@ -646,7 +646,7 @@ function Library:CreateWindow(config)
 
     local MainFrame = Instance.new("Frame")
     MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-    MainFrame.Size = UDim2.new(0, 460, 0, 380)
+    MainFrame.Size = UDim2.new(0, 380, 0, 340)
     MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
     applyThemeColor(MainFrame, "Background")
     MainFrame.BackgroundTransparency = 1
@@ -2463,8 +2463,8 @@ function Library:CreateWindow(config)
     end)
 
     -- ============ Resizable ============
-    -- MIN_SIZE ล็อกเท่ากับขนาดเริ่มต้นของหน้าต่าง (460x380) ลากขยายได้อย่างเดียว ย่อให้เล็กกว่าเดิมไม่ได้
-    local MIN_SIZE, MAX_SIZE = Vector2.new(460, 380), Vector2.new(750, 600)
+    -- MIN_SIZE ล็อกเท่ากับขนาดเริ่มต้นของหน้าต่าง (380x340) ลากขยายได้อย่างเดียว ย่อให้เล็กกว่าเดิมไม่ได้
+    local MIN_SIZE, MAX_SIZE = Vector2.new(380, 340), Vector2.new(650, 550)
     local resizeStart, startSize, resizeTouch = nil, nil, nil
     ResizeHandle.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
