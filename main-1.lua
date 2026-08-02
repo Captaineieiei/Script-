@@ -565,6 +565,14 @@ function Library:CreateWindow(config)
             local switchGrad = accentGradient(Switch, 0)
             switchGrad.Transparency = NumberSequence.new(1)
 
+            -- UIGradient.Transparency is a NumberSequence, which TweenService cannot
+            -- tween directly. Drive it through a persistent NumberValue proxy instead.
+            local switchGradProxy = Instance.new("NumberValue")
+            switchGradProxy.Value = 1
+            switchGradProxy:GetPropertyChangedSignal("Value"):Connect(function()
+                switchGrad.Transparency = NumberSequence.new(switchGradProxy.Value)
+            end)
+
             local Circle = Instance.new("Frame")
             Circle.Size = UDim2.new(0, 16, 0, 16)
             Circle.Position = state and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
@@ -576,7 +584,7 @@ function Library:CreateWindow(config)
                 state = newState
                 bindFlag(c.Flag, state)
                 TweenService:Create(Switch, TweenInfo.new(0.15), {BackgroundColor3 = state and Theme.AccentA or Theme.ToggleOff}):Play()
-                TweenService:Create(switchGrad, TweenInfo.new(0.15), {Transparency = NumberSequence.new(state and 0 or 1)}):Play()
+                TweenService:Create(switchGradProxy, TweenInfo.new(0.15), {Value = state and 0 or 1}):Play()
                 TweenService:Create(Circle, TweenInfo.new(0.15), {
                     Position = state and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
                 }):Play()
