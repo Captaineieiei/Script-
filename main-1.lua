@@ -50,16 +50,19 @@ local function applyHoverEffect(btn, defaultColor, hoverColor)
     end)
 end
 
--- FIX #4 helper: เช็คว่าตำแหน่งที่แตะอยู่บน guiObject (หรือลูกของมัน) หรือไม่
+-- FIX #4 helper: เช็คว่าตำแหน่งที่แตะอยู่ในกรอบของ guiObject หรือไม่
+-- หมายเหตุ: ไม่ใช้ UserInputService:GetGuiObjectsAtPosition() เพราะบาง executor (เช่น Delta)
+-- ยังไม่รองรับเมธอดนี้ -> ทำให้ error "not a valid member of UserInputService"
+-- ใช้วิธีเช็ค bounding box (AbsolutePosition/AbsoluteSize) แทน เข้ากันได้กว้างกว่า
 local function isPointOverGui(pos, guiObject)
-    if not guiObject then return false end
-    local objs = UserInputService:GetGuiObjectsAtPosition(pos.X, pos.Y)
-    for _, obj in ipairs(objs) do
-        if obj == guiObject or obj:IsDescendantOf(guiObject) then
-            return true
-        end
-    end
-    return false
+    if not guiObject or not guiObject.Parent then return false end
+    if guiObject:IsA("GuiObject") and not guiObject.Visible then return false end
+
+    local topLeft = guiObject.AbsolutePosition
+    local size = guiObject.AbsoluteSize
+
+    return pos.X >= topLeft.X and pos.X <= topLeft.X + size.X
+       and pos.Y >= topLeft.Y and pos.Y <= topLeft.Y + size.Y
 end
 
 function Library:CreateWindow(config)
