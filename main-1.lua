@@ -1,10 +1,10 @@
 --[[
-    Pro Mobile & PC UI Library
-    - Modern Design (Clean & Smooth)
+    Pro Mobile & PC UI Library (Fixed Full Version)
+    - Modern Design
     - Tabs System
-    - 8 UI Elements (Button, Toggle, Slider, Dropdown, ColorPicker, Input, Keybind, Label)
+    - 8 UI Elements
     - Notification System
-    - Mobile Friendly (Drag with touch, Big buttons)
+    - Mobile & PC Friendly (Fixed Camera Rotate Issue)
 ]]
 
 local Library = {}
@@ -65,6 +65,7 @@ function Library:CreateWindow(config)
     TopBar.Size = UDim2.new(1, 0, 0, 40)
     TopBar.BackgroundColor3 = Theme.Topbar
     TopBar.BorderSizePixel = 0
+    TopBar.Active = true -- ✅ บล็อคการหันจอเวลาแตะ
     TopBar.Parent = MainFrame
     
     local TopCorner = Instance.new("UICorner")
@@ -162,7 +163,10 @@ function Library:CreateWindow(config)
             CurrentTab = {Btn = TabBtn, Content = TabContent}
         end)
         
-        -- Methods
+        -- ============================================
+        -- UI ELEMENTS
+        -- ============================================
+        
         function Tab:CreateButton(c)
             c = type(c) == "table" and c or {}
             local Btn = Instance.new("TextButton")
@@ -176,7 +180,10 @@ function Library:CreateWindow(config)
             local Cor = Instance.new("UICorner")
             Cor.CornerRadius = UDim.new(0, 6)
             Cor.Parent = Btn
-            Btn.MouseButton1Click:Connect(function() if c.Callback then c.Callback() end end)
+            
+            Btn.MouseButton1Click:Connect(function() 
+                if c.Callback then c.Callback() end 
+            end)
             return Btn
         end
         
@@ -194,6 +201,7 @@ function Library:CreateWindow(config)
             local Cor = Instance.new("UICorner")
             Cor.CornerRadius = UDim.new(0, 6)
             Cor.Parent = Tog
+            
             Tog.MouseButton1Click:Connect(function()
                 state = not state
                 Tog.BackgroundColor3 = state and Theme.ToggleOn or Theme.Element
@@ -213,6 +221,7 @@ function Library:CreateWindow(config)
             local Cor = Instance.new("UICorner")
             Cor.CornerRadius = UDim.new(0, 6)
             Cor.Parent = Frame
+            
             local Label = Instance.new("TextLabel")
             Label.Size = UDim2.new(1, -20, 0, 20)
             Label.Position = UDim2.new(0, 10, 0, 5)
@@ -222,6 +231,7 @@ function Library:CreateWindow(config)
             Label.Font = Enum.Font.GothamSemibold
             Label.TextSize = 14
             Label.Parent = Frame
+            
             local Bar = Instance.new("Frame")
             Bar.Size = UDim2.new(1, -20, 0, 15)
             Bar.Position = UDim2.new(0, 10, 0, 30)
@@ -230,6 +240,7 @@ function Library:CreateWindow(config)
             local BarCor = Instance.new("UICorner")
             BarCor.CornerRadius = UDim.new(0, 4)
             BarCor.Parent = Bar
+            
             local Fill = Instance.new("Frame")
             Fill.Size = UDim2.new((val-min)/(max-min), 0, 1, 0)
             Fill.BackgroundColor3 = Theme.Accent
@@ -237,7 +248,28 @@ function Library:CreateWindow(config)
             local FillCor = Instance.new("UICorner")
             FillCor.CornerRadius = UDim.new(0, 4)
             FillCor.Parent = Fill
-            -- Slider logic here (omitted for brevity but works)
+            
+            local dragging = false
+            Bar.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                    dragging = true
+                end
+            end)
+            Bar.InputEnded:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                    dragging = false
+                end
+            end)
+            UserInputService.InputChanged:Connect(function(input)
+                if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+                    local pos = input.Position.X - Bar.AbsolutePosition.X
+                    local percent = math.clamp(pos / Bar.AbsoluteSize.X, 0, 1)
+                    local value = math.floor(min + (max - min) * percent)
+                    Fill.Size = UDim2.new(percent, 0, 1, 0)
+                    Label.Text = (c.Text or "Slider") .. ": " .. value
+                    if c.Callback then c.Callback(value) end
+                end
+            end)
             return Frame
         end
         
@@ -254,7 +286,46 @@ function Library:CreateWindow(config)
             local Cor = Instance.new("UICorner")
             Cor.CornerRadius = UDim.new(0, 6)
             Cor.Parent = Drop
-            -- Dropdown logic here
+            
+            local isOpen = false
+            local selected = c.Default or c.Options[1]
+            
+            Drop.MouseButton1Click:Connect(function()
+                isOpen = not isOpen
+                if isOpen then
+                    local list = Instance.new("Frame")
+                    list.Size = UDim2.new(1, 0, 0, #c.Options * 35)
+                    list.Position = UDim2.new(0, 0, 0, 45)
+                    list.BackgroundColor3 = Theme.Element
+                    list.Parent = Drop
+                    local listCor = Instance.new("UICorner")
+                    listCor.CornerRadius = UDim.new(0, 6)
+                    listCor.Parent = list
+                    
+                    for i, opt in ipairs(c.Options) do
+                        local optBtn = Instance.new("TextButton")
+                        optBtn.Size = UDim2.new(1, 0, 0, 35)
+                        optBtn.Position = UDim2.new(0, 0, 0, (i-1)*35)
+                        optBtn.BackgroundColor3 = Theme.Element
+                        optBtn.Text = opt
+                        optBtn.TextColor3 = Theme.Text
+                        optBtn.Font = Enum.Font.GothamSemibold
+                        optBtn.TextSize = 13
+                        optBtn.Parent = list
+                        
+                        optBtn.MouseButton1Click:Connect(function()
+                            selected = opt
+                            Drop.Text = (c.Text or "Dropdown") .. ": " .. opt
+                            isOpen = false
+                            list:Destroy()
+                            if c.Callback then c.Callback(opt) end
+                        end)
+                    end
+                else
+                    local list = Drop:FindFirstChild("Frame")
+                    if list then list:Destroy() end
+                end
+            end)
             return Drop
         end
         
@@ -271,7 +342,58 @@ function Library:CreateWindow(config)
             local Cor = Instance.new("UICorner")
             Cor.CornerRadius = UDim.new(0, 6)
             Cor.Parent = Btn
-            -- ColorPicker logic here
+            
+            local colorPreview = Instance.new("Frame")
+            colorPreview.Size = UDim2.new(0, 20, 0, 20)
+            colorPreview.Position = UDim2.new(1, -30, 0.5, -10)
+            colorPreview.BackgroundColor3 = c.Default or Color3.fromRGB(255,255,255)
+            colorPreview.Parent = Btn
+            local prevCor = Instance.new("UICorner")
+            prevCor.CornerRadius = UDim.new(0, 4)
+            prevCor.Parent = colorPreview
+            
+            local isOpen = false
+            local selectedColor = c.Default or Color3.fromRGB(255,255,255)
+            
+            Btn.MouseButton1Click:Connect(function()
+                isOpen = not isOpen
+                if isOpen then
+                    local picker = Instance.new("Frame")
+                    picker.Size = UDim2.new(1, 0, 0, 100)
+                    picker.Position = UDim2.new(0, 0, 0, 45)
+                    picker.BackgroundColor3 = Theme.Background
+                    picker.Parent = Btn
+                    local picCor = Instance.new("UICorner")
+                    picCor.CornerRadius = UDim.new(0, 6)
+                    picCor.Parent = picker
+                    
+                    local colors = {
+                        Color3.fromRGB(255,0,0), Color3.fromRGB(0,255,0), Color3.fromRGB(0,0,255),
+                        Color3.fromRGB(255,255,0), Color3.fromRGB(0,255,255), Color3.fromRGB(255,0,255),
+                        Color3.fromRGB(255,255,255), Color3.fromRGB(0,0,0), Color3.fromRGB(150,150,150)
+                    }
+                    
+                    for i, col in ipairs(colors) do
+                        local colBtn = Instance.new("TextButton")
+                        colBtn.Size = UDim2.new(0, 25, 0, 25)
+                        colBtn.Position = UDim2.new(0, 10 + ((i-1)%5)*30, 0, 10 + math.floor((i-1)/5)*30)
+                        colBtn.BackgroundColor3 = col
+                        colBtn.Text = ""
+                        colBtn.Parent = picker
+                        
+                        colBtn.MouseButton1Click:Connect(function()
+                            selectedColor = col
+                            colorPreview.BackgroundColor3 = col
+                            isOpen = false
+                            picker:Destroy()
+                            if c.Callback then c.Callback(col) end
+                        end)
+                    end
+                else
+                    local picker = Btn:FindFirstChild("Frame")
+                    if picker then picker:Destroy() end
+                end
+            end)
             return Btn
         end
         
@@ -286,11 +408,15 @@ function Library:CreateWindow(config)
             Box.PlaceholderColor3 = Theme.SubText
             Box.Font = Enum.Font.GothamSemibold
             Box.TextSize = 14
+            Box.ClearTextOnFocus = false
             Box.Parent = TabContent
             local Cor = Instance.new("UICorner")
             Cor.CornerRadius = UDim.new(0, 6)
             Cor.Parent = Box
-            Box.FocusLost:Connect(function() if c.Callback then c.Callback(Box.Text) end end)
+            
+            Box.FocusLost:Connect(function() 
+                if c.Callback then c.Callback(Box.Text) end 
+            end)
             return Box
         end
         
@@ -307,7 +433,24 @@ function Library:CreateWindow(config)
             local Cor = Instance.new("UICorner")
             Cor.CornerRadius = UDim.new(0, 6)
             Cor.Parent = Btn
-            -- Keybind logic here
+            
+            local waiting = false
+            local selectedKey = c.Default
+            
+            Btn.MouseButton1Click:Connect(function()
+                waiting = true
+                Btn.Text = (c.Text or "Keybind") .. ": Press..."
+                local conn
+                conn = UserInputService.InputBegan:Connect(function(input)
+                    if waiting and input.UserInputType == Enum.UserInputType.Keyboard then
+                        selectedKey = input.KeyCode
+                        Btn.Text = (c.Text or "Keybind") .. ": " .. selectedKey.Name
+                        waiting = false
+                        conn:Disconnect()
+                        if c.Callback then c.Callback(selectedKey) end
+                    end
+                end)
+            end)
             return Btn
         end
         
@@ -326,34 +469,52 @@ function Library:CreateWindow(config)
         end
         
         table.insert(Tabs, {Btn = TabBtn, Content = TabContent})
-        if #Tabs == 1 then TabBtn.BackgroundColor3 = Theme.Accent; TabBtn.TextColor3 = Theme.Text; TabContent.Visible = true; CurrentTab = {Btn = TabBtn, Content = TabContent} end
+        if #Tabs == 1 then 
+            TabBtn.BackgroundColor3 = Theme.Accent
+            TabBtn.TextColor3 = Theme.Text
+            TabContent.Visible = true
+            CurrentTab = {Btn = TabBtn, Content = TabContent} 
+        end
         
         return Tab
     end
     
-    -- Draggable (PC & Mobile)
-    local dragging, dragInput, dragStart, startPos
+    -- ============================================
+    -- DRAGGABLE SYSTEM (แก้บัคหันจอ)
+    -- ============================================
+    local dragging = false
+    local dragInput, dragStart, startPos
+    local dragGui = nil
+
+    local function update(input)
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+
     TopBar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             dragging = true
             dragStart = input.Position
             startPos = MainFrame.Position
+            
+            if input.UserInputType == Enum.UserInputType.Touch then
+                dragGui = input
+            end
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                    dragGui = nil
+                end
+            end)
         end
     end)
+
     TopBar.InputChanged:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            dragInput = input
-        end
-    end)
-    UserInputService.InputChanged:Connect(function(input)
-        if input == dragInput and dragging then
-            local delta = input.Position - dragStart
-            MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-        end
-    end)
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = false
+            if input == dragGui then
+                update(input)
+            end
         end
     end)
     
