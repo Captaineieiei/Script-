@@ -115,21 +115,21 @@ local CoreGui = game:GetService("CoreGui")
 
 -- ============ THEMES SETUP ============
 local BaseTheme = {
-    Background = Color3.fromRGB(13, 13, 19),
-    Sidebar = Color3.fromRGB(17, 17, 25),
-    Topbar = Color3.fromRGB(20, 20, 29),
-    Element = Color3.fromRGB(29, 29, 40),
-    ElementHover = Color3.fromRGB(37, 37, 50),
-    Text = Color3.fromRGB(240, 240, 248),
-    SubText = Color3.fromRGB(146, 146, 168),
-    AccentA = Color3.fromRGB(112, 102, 255),
-    AccentB = Color3.fromRGB(255, 90, 168),
-    ToggleOff = Color3.fromRGB(50, 50, 64),
-    Stroke = Color3.fromRGB(45, 45, 60),
-    Success = Color3.fromRGB(74, 222, 128),
-    Danger = Color3.fromRGB(248, 81, 73),
-    Warning = Color3.fromRGB(251, 191, 36),
-    Info = Color3.fromRGB(96, 165, 250)
+    Background = Color3.fromRGB(10, 10, 15),
+    Sidebar = Color3.fromRGB(14, 14, 20),
+    Topbar = Color3.fromRGB(16, 16, 24),
+    Element = Color3.fromRGB(24, 24, 34),
+    ElementHover = Color3.fromRGB(33, 33, 46),
+    Text = Color3.fromRGB(245, 245, 250),
+    SubText = Color3.fromRGB(150, 150, 172),
+    AccentA = Color3.fromRGB(124, 108, 255),
+    AccentB = Color3.fromRGB(96, 200, 255),
+    ToggleOff = Color3.fromRGB(46, 46, 60),
+    Stroke = Color3.fromRGB(50, 50, 66),
+    Success = Color3.fromRGB(66, 214, 146),
+    Danger = Color3.fromRGB(255, 92, 92),
+    Warning = Color3.fromRGB(255, 189, 74),
+    Info = Color3.fromRGB(94, 176, 255)
 }
 
 -- สร้างธีมแบบ "resolve ค่าเต็มไว้ล่วงหน้า" เป็นตารางแยกอิสระของตัวเอง ไม่ใช้ metatable/__index fallback
@@ -149,20 +149,23 @@ end
 
 Library.Themes.Midnight = resolveTheme(nil)
 Library.Themes.Ocean = resolveTheme({
-    Background = Color3.fromRGB(7, 17, 27), Sidebar = Color3.fromRGB(9, 21, 33), Topbar = Color3.fromRGB(12, 26, 40),
-    Element = Color3.fromRGB(15, 34, 52), ElementHover = Color3.fromRGB(21, 45, 67), AccentA = Color3.fromRGB(34, 211, 238),
-    AccentB = Color3.fromRGB(56, 130, 246), ToggleOff = Color3.fromRGB(25, 45, 63), Stroke = Color3.fromRGB(30, 56, 76)
+    Background = Color3.fromRGB(6, 14, 22), Sidebar = Color3.fromRGB(8, 18, 28), Topbar = Color3.fromRGB(10, 22, 34),
+    Element = Color3.fromRGB(14, 30, 46), ElementHover = Color3.fromRGB(19, 40, 60), AccentA = Color3.fromRGB(45, 212, 233),
+    AccentB = Color3.fromRGB(59, 130, 246), ToggleOff = Color3.fromRGB(22, 40, 58), Stroke = Color3.fromRGB(27, 50, 70),
+    Text = Color3.fromRGB(240, 248, 252), SubText = Color3.fromRGB(140, 165, 185)
 })
 Library.Themes.Crimson = resolveTheme({
-    Background = Color3.fromRGB(23, 10, 14), Sidebar = Color3.fromRGB(27, 12, 16), Topbar = Color3.fromRGB(32, 15, 19),
-    Element = Color3.fromRGB(41, 19, 24), ElementHover = Color3.fromRGB(51, 24, 30), AccentA = Color3.fromRGB(251, 68, 97),
-    AccentB = Color3.fromRGB(255, 145, 70), ToggleOff = Color3.fromRGB(53, 26, 31), Stroke = Color3.fromRGB(59, 28, 34)
+    Background = Color3.fromRGB(18, 8, 11), Sidebar = Color3.fromRGB(22, 10, 13), Topbar = Color3.fromRGB(26, 12, 16),
+    Element = Color3.fromRGB(35, 16, 20), ElementHover = Color3.fromRGB(45, 21, 26), AccentA = Color3.fromRGB(255, 78, 108),
+    AccentB = Color3.fromRGB(255, 158, 87), ToggleOff = Color3.fromRGB(47, 23, 27), Stroke = Color3.fromRGB(52, 25, 30),
+    Text = Color3.fromRGB(252, 245, 246)
 })
 Library.Themes.Light = resolveTheme({
-    Background = Color3.fromRGB(245, 246, 250), Sidebar = Color3.fromRGB(255, 255, 255), Topbar = Color3.fromRGB(255, 255, 255),
-    Element = Color3.fromRGB(255, 255, 255), ElementHover = Color3.fromRGB(241, 242, 247), Text = Color3.fromRGB(23, 23, 32),
-    SubText = Color3.fromRGB(105, 105, 122), AccentA = Color3.fromRGB(99, 91, 255), AccentB = Color3.fromRGB(236, 72, 153),
-    ToggleOff = Color3.fromRGB(212, 214, 223), Stroke = Color3.fromRGB(226, 227, 234)
+    Background = Color3.fromRGB(240, 241, 246), Sidebar = Color3.fromRGB(255, 255, 255), Topbar = Color3.fromRGB(255, 255, 255),
+    Element = Color3.fromRGB(255, 255, 255), ElementHover = Color3.fromRGB(245, 246, 250), Text = Color3.fromRGB(20, 20, 28),
+    SubText = Color3.fromRGB(102, 102, 120), AccentA = Color3.fromRGB(109, 99, 255), AccentB = Color3.fromRGB(0, 191, 214),
+    ToggleOff = Color3.fromRGB(216, 218, 227), Stroke = Color3.fromRGB(228, 229, 236),
+    Success = Color3.fromRGB(22, 163, 106), Danger = Color3.fromRGB(224, 54, 54), Warning = Color3.fromRGB(217, 130, 0), Info = Color3.fromRGB(37, 108, 224)
 })
 
 -- เพิ่มธีมของผู้ใช้เองเข้าไปใน Library.Themes ได้ตอนรันไทม์ (จะไปโผล่ใน CreateThemeDropdown อัตโนมัติ)
@@ -234,7 +237,7 @@ local function stroke(inst, colorKey, thickness)
     local s = Instance.new("UIStroke")
     applyThemeColor(s, colorKey or "Stroke", "Color")
     s.Thickness = thickness or 1
-    s.Transparency = 0.5
+    s.Transparency = 0.65
     s.Parent = inst
     return s
 end
@@ -629,9 +632,31 @@ function Library:CreateWindow(config)
     MainFrame.BorderSizePixel = 0
     MainFrame.Active = true
     MainFrame.Parent = Shadow
-    corner(MainFrame, 12)
+    corner(MainFrame, 14)
     local mainStroke = stroke(MainFrame)
     mainStroke.Transparency = 1
+
+    -- เพิ่มความมิติให้กรอบหน้าต่างแบบ "glass sheen" บางๆ ที่มุมบนซ้าย ให้ดูทันสมัยขึ้นแทนที่จะเป็นสีทึบแบนราบ
+    -- ใช้เฟรมแยกต่างหากทับอยู่ด้านบนแทนการใส่ UIGradient ลงบน Background ของ MainFrame ตรงๆ
+    -- (ถ้าใส่ตรงๆ จุดที่ Transparency = 1 จะเจาะทะลุพื้นหลังจริงของหน้าต่างจนโหว่ ไม่ใช่แค่ทำให้ดูเงา)
+    local Sheen = Instance.new("Frame")
+    Sheen.Name = "Sheen"
+    Sheen.Size = UDim2.new(1, 0, 1, 0)
+    Sheen.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Sheen.BorderSizePixel = 0
+    Sheen.ZIndex = 0
+    Sheen.Active = false
+    Sheen.Parent = MainFrame
+    corner(Sheen, 14)
+    local sheenGradient = Instance.new("UIGradient")
+    sheenGradient.Color = ColorSequence.new(Color3.fromRGB(255, 255, 255), Color3.fromRGB(255, 255, 255))
+    sheenGradient.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.93),
+        NumberSequenceKeypoint.new(0.35, 1),
+        NumberSequenceKeypoint.new(1, 1),
+    })
+    sheenGradient.Rotation = 100
+    sheenGradient.Parent = Sheen
 
     local topBarH = config.SubTitle and 50 or 42
     local TopBar = Instance.new("Frame")
@@ -641,7 +666,7 @@ function Library:CreateWindow(config)
     TopBar.BorderSizePixel = 0
     TopBar.Active = true
     TopBar.Parent = MainFrame
-    corner(TopBar, 12)
+    corner(TopBar, 14)
     
     local topBarFix = Instance.new("Frame")
     topBarFix.Size = UDim2.new(1, 0, 0, 12)
@@ -651,6 +676,15 @@ function Library:CreateWindow(config)
     topBarFix.BorderSizePixel = 0
     topBarFix.ZIndex = 0
     topBarFix.Parent = TopBar
+
+    local TopBarLine = Instance.new("Frame")
+    TopBarLine.Name = "TopBarLine"
+    TopBarLine.Size = UDim2.new(1, 0, 0, 1)
+    TopBarLine.Position = UDim2.new(0, 0, 1, 0)
+    applyThemeColor(TopBarLine, "Stroke")
+    TopBarLine.BackgroundTransparency = 0.4
+    TopBarLine.BorderSizePixel = 0
+    TopBarLine.Parent = TopBar
 
     local LogoDot = Instance.new("Frame")
     LogoDot.Size = UDim2.new(0, 8, 0, 8)
