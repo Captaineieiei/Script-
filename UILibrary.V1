@@ -496,6 +496,15 @@ function Library:CreateWindow(config)
     end)
 
     -- ปุ่มลอยไว้กด "เรียก UI กลับมา" ตอน UI ถูกซ่อน (โลโก้ผู้ใช้ ถ้ามี ไม่งั้นขึ้นตัวอักษรแรกของชื่อ)
+    -- ต้องมี ScreenGui ของตัวเองแยกจาก ScreenGui หลัก เพราะ ImageButton ต้องอยู่ใต้ ScreenGui ถึงจะ render
+    -- และถ้าฝากไว้ใน ScreenGui หลัก พอ ScreenGui.Enabled = false ปุ่มนี้ก็จะหายไปด้วย (ผิดจุดประสงค์)
+    local RestoreGui = Instance.new("ScreenGui")
+    RestoreGui.Name = "RestoreGui"
+    RestoreGui.ResetOnSpawn = false
+    RestoreGui.IgnoreGuiInset = true
+    RestoreGui.DisplayOrder = 999
+    RestoreGui.Parent = UiParent
+
     local RestoreBtn = Instance.new("ImageButton")
     RestoreBtn.Name = "RestoreBtn"
     RestoreBtn.Size = UDim2.new(0, 46, 0, 46)
@@ -508,7 +517,7 @@ function Library:CreateWindow(config)
     RestoreBtn.ZIndex = 20
     RestoreBtn.Visible = false
     RestoreBtn.Active = true
-    RestoreBtn.Parent = UiParent
+    RestoreBtn.Parent = RestoreGui
     corner(RestoreBtn, 23)
     accentGradient(RestoreBtn, 100)
     stroke(RestoreBtn)
@@ -661,7 +670,7 @@ function Library:CreateWindow(config)
 
     function Window:Toggle() setUiVisible(not ScreenGui.Enabled) end
     function Window:SetTitle(newTitle) TitleLabel.Text = newTitle end
-    function Window:Destroy() ScreenGui:Destroy(); RestoreBtn:Destroy() end
+    function Window:Destroy() ScreenGui:Destroy(); RestoreGui:Destroy() end
 
     function Window:CreateSettingsTab()
         local tab = Window:CreateTab("Settings", "settings")
