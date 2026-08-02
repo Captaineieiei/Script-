@@ -400,10 +400,10 @@ function Library:CreateWindow(config)
         syncShadow()
 
         -- แถบสีบอกประเภท เป็นแท่งลอยเว้นขอบ ไม่ชนขอบการ์ด ดูพรีเมียมกว่าเส้นทึบเต็มขอบ
+        -- ใช้ระยะขอบบน/ล่างคงที่ (ไม่ใช่ center+offset) กันไม่ให้เผลอโผล่พ้นขอบการ์ดตอนเนื้อหาสั้น
         local AccentBar = Instance.new("Frame")
-        AccentBar.AnchorPoint = Vector2.new(0, 0.5)
-        AccentBar.Position = UDim2.new(0, 8, 0.5, 0)
-        AccentBar.Size = UDim2.new(0, 3, 1, -20)
+        AccentBar.Position = UDim2.new(0, 8, 0, 14)
+        AccentBar.Size = UDim2.new(0, 3, 1, -32)
         AccentBar.BackgroundColor3 = color
         AccentBar.BackgroundTransparency = 1
         AccentBar.BorderSizePixel = 0
@@ -476,6 +476,15 @@ function Library:CreateWindow(config)
         ContentLbl.ZIndex = 3
         ContentLbl.Parent = TextHolder
 
+        -- สเปเซอร์ล่างสุดใน TextHolder เพื่อกันพื้นที่ให้แถบนับถอยหลัง
+        -- (ใช้ตัวนี้แทน UIPadding เพราะ UIPadding ไม่ถูกนับรวมกับ AutomaticSize ของ Toast
+        -- ที่มีลูกวางตำแหน่งเองแบบ manual ทำให้ก่อนหน้านี้แถบนับถอยหลังไปทับข้อความ)
+        local BottomSpacer = Instance.new("Frame")
+        BottomSpacer.BackgroundTransparency = 1
+        BottomSpacer.Size = UDim2.new(1, 0, 0, 14)
+        BottomSpacer.ZIndex = 3
+        BottomSpacer.Parent = TextHolder
+
         -- ปุ่มปิดเอง มุมขวาบน เผื่ออยากไล่ toast ทิ้งก่อนเวลา
         local CloseX = Instance.new("ImageButton")
         CloseX.AnchorPoint = Vector2.new(1, 0)
@@ -495,9 +504,8 @@ function Library:CreateWindow(config)
             TweenService:Create(CloseX, TweenInfo.new(0.12), {ImageColor3 = Theme.SubText}):Play()
         end)
 
-        local Pad = Instance.new("UIPadding")
-        Pad.PaddingBottom = UDim.new(0, 14)
-        Pad.Parent = Toast
+        -- (เดิมมี UIPadding ตรงนี้เพื่อเว้นระยะล่าง แต่ Padding ไม่ถูกนับใน AutomaticSize
+        -- ของเฟรมที่ลูกวางตำแหน่งเอง เลยเอาออก ใช้ BottomSpacer ข้างบนแทน)
 
         -- แถบนับถอยหลังบางๆ ล่างการ์ด บอกเวลาที่เหลือก่อน toast หาย
         local ProgressTrack = Instance.new("Frame")
