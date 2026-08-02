@@ -1071,21 +1071,22 @@ function Library:CreateWindow(config)
             bindFlag(c.Flag, selected)
 
             local Drop = Instance.new("TextButton")
-            Drop.Size = UDim2.new(1, 0, 0, 42)
+            Drop.Size = UDim2.new(1, 0, 0, 44)
             applyThemeColor(Drop, "Element")
             Drop.AutoButtonColor = false
             Drop.Text = ""
             Drop.ClipsDescendants = false
             Drop.Parent = TabContent
-            corner(Drop, 10)
+            corner(Drop, 12)
             applyHoverEffect(Drop, "Element", "ElementHover")
             applyGlowOnHover(Drop)
             local dropStroke = stroke(Drop)
-            dropStroke.Transparency = 0.7
+            dropStroke.Thickness = 1.2
+            dropStroke.Transparency = 0.75
 
             local Label = Instance.new("TextLabel")
-            Label.Size = UDim2.new(1, -42, 1, 0)
-            Label.Position = UDim2.new(0, 14, 0, 0)
+            Label.Size = UDim2.new(1, -44, 1, 0)
+            Label.Position = UDim2.new(0, 16, 0, 0)
             Label.BackgroundTransparency = 1
             Label.Text = (c.Text or "Dropdown") .. ": " .. selected
             applyThemeColor(Label, "Text", "TextColor3")
@@ -1097,7 +1098,7 @@ function Library:CreateWindow(config)
 
             local ArrowWrap = Instance.new("Frame")
             ArrowWrap.Size = UDim2.new(0, 18, 0, 18)
-            ArrowWrap.Position = UDim2.new(1, -30, 0.5, 0)
+            ArrowWrap.Position = UDim2.new(1, -32, 0.5, 0)
             ArrowWrap.AnchorPoint = Vector2.new(0, 0.5)
             ArrowWrap.BackgroundTransparency = 1
             ArrowWrap.Parent = Drop
@@ -1112,18 +1113,22 @@ function Library:CreateWindow(config)
             Arrow.ScaleType = Enum.ScaleType.Fit
             Arrow.Parent = ArrowWrap
 
-            local isOpen, list, outsideConn = false, nil, nil
+            local isOpen, list, shadow, outsideConn = false, nil, nil, nil
             local function closeDropdown()
                 if list then
                     isOpen = false
-                    local closingList = list
-                    list = nil
-                    TweenService:Create(dropStroke, TweenInfo.new(0.15), {Transparency = 0.7}):Play()
+                    local closingList, closingShadow = list, shadow
+                    list, shadow = nil, nil
+                    TweenService:Create(dropStroke, TweenInfo.new(0.15), {Transparency = 0.75}):Play()
                     TweenService:Create(Arrow, TweenInfo.new(0.18), {Rotation = 0}):Play()
-                    local t = TweenService:Create(closingList, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {
+                    local t = TweenService:Create(closingList, TweenInfo.new(0.15, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
                         Size = UDim2.new(closingList.Size.X.Scale, closingList.Size.X.Offset, 0, 0),
                         BackgroundTransparency = 1
                     })
+                    if closingShadow then
+                        TweenService:Create(closingShadow, TweenInfo.new(0.15), {ImageTransparency = 1}):Play()
+                        task.delay(0.15, function() closingShadow:Destroy() end)
+                    end
                     t:Play()
                     t.Completed:Connect(function() closingList:Destroy() end)
                 end
@@ -1139,13 +1144,32 @@ function Library:CreateWindow(config)
             local function openDropdown()
                 closeActivePopup()
                 isOpen = true
-                TweenService:Create(dropStroke, TweenInfo.new(0.15), {Transparency = 0.2}):Play()
-                TweenService:Create(Arrow, TweenInfo.new(0.18), {Rotation = 180}):Play()
+                TweenService:Create(dropStroke, TweenInfo.new(0.15), {Transparency = 0.15}):Play()
+                TweenService:Create(Arrow, TweenInfo.new(0.2, Enum.EasingStyle.Back), {Rotation = 180}):Play()
 
-                local itemH, gap, pad = 34, 4, 6
-                local fullH = pad * 2 + #c.Options * itemH + (#c.Options - 1) * gap
+                local itemH, gap, pad = 38, 6, 8
+                local maxVisible = 5
+                local contentH = #c.Options * itemH + (#c.Options - 1) * gap
+                local fullH = pad * 2 + math.min(contentH, maxVisible * itemH + (maxVisible - 1) * gap)
+                local needsScroll = #c.Options > maxVisible
 
-                list = Instance.new("Frame")
+                -- soft drop shadow for elevation
+                shadow = Instance.new("ImageLabel")
+                shadow.Name = "DropShadow"
+                shadow.BackgroundTransparency = 1
+                shadow.Image = "rbxassetid://5028857084"
+                shadow.ImageColor3 = Color3.new(0, 0, 0)
+                shadow.ImageTransparency = 1
+                shadow.ScaleType = Enum.ScaleType.Slice
+                shadow.SliceCenter = Rect.new(24, 24, 276, 276)
+                shadow.ZIndex = 9
+                shadow.Parent = ScreenGui
+                shadow.AnchorPoint = Vector2.new(0, 0)
+                shadow.Position = UDim2.new(0, Drop.AbsolutePosition.X - 14, 0, Drop.AbsolutePosition.Y + Drop.AbsoluteSize.Y + 6 - 14)
+                shadow.Size = UDim2.new(0, Drop.AbsoluteSize.X + 28, 0, 28)
+                TweenService:Create(shadow, TweenInfo.new(0.18), {ImageTransparency = 0.55}):Play()
+
+                list = Instance.new(needsScroll and "ScrollingFrame" or "Frame")
                 list.Size = UDim2.new(0, Drop.AbsoluteSize.X, 0, 0)
                 list.Position = UDim2.new(0, Drop.AbsolutePosition.X, 0, Drop.AbsolutePosition.Y + Drop.AbsoluteSize.Y + 6)
                 applyThemeColor(list, "Element")
@@ -1154,9 +1178,21 @@ function Library:CreateWindow(config)
                 list.ZIndex = 10
                 list.Active = true
                 list.Parent = ScreenGui
-                corner(list, 10)
-                local listStroke = stroke(list)
-                listStroke.Transparency = 0.5
+                if needsScroll then
+                    list.ScrollBarThickness = 3
+                    list.ScrollBarImageTransparency = 0.4
+                    applyThemeColor(list, "AccentA", "ScrollBarImageColor3")
+                    list.CanvasSize = UDim2.new(0, 0, 0, contentH + pad * 2)
+                    list.BorderSizePixel = 0
+                end
+                corner(list, 14)
+                local listGrad = Instance.new("UIGradient")
+                listGrad.Rotation = 90
+                listGrad.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(1, 0.06)})
+                listGrad.Parent = list
+                local listStroke = stroke(list, "AccentA")
+                listStroke.Thickness = 1
+                listStroke.Transparency = 0.7
 
                 local inner = Instance.new("Frame")
                 inner.Size = UDim2.new(1, -pad * 2, 1, -pad * 2)
@@ -1172,32 +1208,45 @@ function Library:CreateWindow(config)
                     local isSelected = (opt == selected)
                     local optBtn = Instance.new("TextButton")
                     optBtn.Size = UDim2.new(1, 0, 0, itemH)
-                    applyThemeColor(optBtn, isSelected and "AccentA" or "Element")
-                    optBtn.BackgroundTransparency = isSelected and 0.85 or 1
+                    applyThemeColor(optBtn, "Element")
+                    optBtn.BackgroundTransparency = 1
                     optBtn.AutoButtonColor = false
                     optBtn.Text = ""
                     optBtn.ZIndex = 11
                     optBtn.Parent = inner
-                    corner(optBtn, 7)
+                    corner(optBtn, 9)
                     if not isSelected then applyHoverEffect(optBtn, "Element", "ElementHover") end
 
+                    if isSelected then
+                        local accentBar = Instance.new("Frame")
+                        accentBar.Size = UDim2.new(0, 3, 0, itemH * 0.5)
+                        accentBar.AnchorPoint = Vector2.new(0, 0.5)
+                        accentBar.Position = UDim2.new(0, 4, 0.5, 0)
+                        applyThemeColor(accentBar, "AccentA")
+                        accentBar.BorderSizePixel = 0
+                        accentBar.ZIndex = 12
+                        accentBar.Parent = optBtn
+                        corner(accentBar, 2)
+                    end
+
                     local optLabel = Instance.new("TextLabel")
-                    optLabel.Size = UDim2.new(1, isSelected and -34 or -14, 1, 0)
-                    optLabel.Position = UDim2.new(0, 12, 0, 0)
+                    optLabel.Size = UDim2.new(1, isSelected and -46 or -24, 1, 0)
+                    optLabel.Position = UDim2.new(0, isSelected and 20 or 14, 0, 0)
                     optLabel.BackgroundTransparency = 1
                     optLabel.Text = opt
                     applyThemeColor(optLabel, isSelected and "AccentA" or "Text", "TextColor3")
                     optLabel.Font = isSelected and Enum.Font.GothamBold or Enum.Font.GothamSemibold
                     optLabel.TextSize = 13
                     optLabel.TextXAlignment = Enum.TextXAlignment.Left
+                    optLabel.TextTruncate = Enum.TextTruncate.AtEnd
                     optLabel.ZIndex = 12
                     optLabel.Parent = optBtn
 
                     if isSelected then
                         local check = Instance.new("ImageLabel")
-                        check.Size = UDim2.new(0, 16, 0, 16)
+                        check.Size = UDim2.new(0, 15, 0, 15)
                         check.AnchorPoint = Vector2.new(1, 0.5)
-                        check.Position = UDim2.new(1, -10, 0.5, 0)
+                        check.Position = UDim2.new(1, -12, 0.5, 0)
                         check.BackgroundTransparency = 1
                         check.Image = Library.Icons.check
                         applyThemeColor(check, "AccentA", "ImageColor3")
@@ -1209,9 +1258,12 @@ function Library:CreateWindow(config)
                     optBtn.MouseButton1Click:Connect(function() selectOption(opt, true) end)
                 end
 
-                TweenService:Create(list, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                TweenService:Create(list, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
                     Size = UDim2.new(0, Drop.AbsoluteSize.X, 0, fullH),
                     BackgroundTransparency = 0
+                }):Play()
+                TweenService:Create(shadow, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                    Size = UDim2.new(0, Drop.AbsoluteSize.X + 28, 0, fullH + 28)
                 }):Play()
 
                 closeActivePopup = closeDropdown
