@@ -646,7 +646,7 @@ function Library:CreateWindow(config)
 
     local MainFrame = Instance.new("Frame")
     MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-    MainFrame.Size = UDim2.new(0, 380, 0, 360)
+    MainFrame.Size = UDim2.new(0, 620, 0, 440)
     MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
     applyThemeColor(MainFrame, "Background")
     MainFrame.BackgroundTransparency = 1
@@ -2463,8 +2463,8 @@ function Library:CreateWindow(config)
     end)
 
     -- ============ Resizable ============
-    -- MIN_SIZE ล็อกเท่ากับขนาดเริ่มต้นของหน้าต่าง (380x360) ลากขยายได้อย่างเดียว ย่อให้เล็กกว่าเดิมไม่ได้
-    local MIN_SIZE, MAX_SIZE = Vector2.new(380, 360), Vector2.new(700, 650)
+    -- MIN_SIZE ล็อกเท่ากับขนาดเริ่มต้นของหน้าต่าง (620x440) ลากขยายได้อย่างเดียว ย่อให้เล็กกว่าเดิมไม่ได้
+    local MIN_SIZE, MAX_SIZE = Vector2.new(620, 440), Vector2.new(900, 700)
     local resizeStart, startSize, resizeTouch = nil, nil, nil
     ResizeHandle.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
