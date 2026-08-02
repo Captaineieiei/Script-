@@ -1,10 +1,8 @@
 --[[
-    Modern Pro Mobile & PC UI Library
-    - Premium Modern Design (UIStroke, Shadows, Hover Effects)
-    - Smooth Animations (TweenService)
-    - Tabs System
-    - 8 UI Elements (Toggle & Slider Redesigned)
-    - Mobile & PC Friendly (Fixed Camera Rotate Issue)
+    Modern Pro Mobile & PC UI Library (Final Fixed Version)
+    - Fixed Mobile Screen Size (Auto Fit)
+    - Fixed Dropdown & ColorPicker Clipping (Now floats on top)
+    - Fixed Draggable System (PC & Mobile Smooth)
 ]]
 
 local Library = {}
@@ -38,7 +36,6 @@ local function getUiParent()
     return CoreGui
 end
 
--- ฟังก์ชันช่วยสร้าง Hover Effect
 local function applyHoverEffect(btn, defaultColor, hoverColor)
     btn.MouseEnter:Connect(function()
         TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = hoverColor}):Play()
@@ -61,12 +58,12 @@ function Library:CreateWindow(config)
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     ScreenGui.Parent = getUiParent()
     
-    -- Shadow Frame (มิติพื้นหลัง)
+    -- Shadow Frame
     local Shadow = Instance.new("ImageLabel")
     Shadow.Name = "Shadow"
     Shadow.AnchorPoint = Vector2.new(0.5, 0.5)
     Shadow.Position = UDim2.new(0.5, 0, 0.5, 0)
-    Shadow.Size = UDim2.new(0, 470, 0, 320)
+    Shadow.Size = UDim2.new(0, 400, 0, 380)
     Shadow.BackgroundTransparency = 1
     Shadow.Image = "rbxassetid://1316045217"
     Shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
@@ -76,8 +73,8 @@ function Library:CreateWindow(config)
     Shadow.Parent = ScreenGui
     
     local MainFrame = Instance.new("Frame")
-    MainFrame.Size = UDim2.new(0, 450, 0, 300)
-    MainFrame.Position = UDim2.new(0.5, -225, 0.5, -150)
+    MainFrame.Size = UDim2.new(0, 380, 0, 360)
+    MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
     MainFrame.BackgroundColor3 = Theme.Background
     MainFrame.BorderSizePixel = 0
     MainFrame.Parent = Shadow
@@ -130,7 +127,7 @@ function Library:CreateWindow(config)
     CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
     
     local TabContainer = Instance.new("Frame")
-    TabContainer.Size = UDim2.new(0, 130, 1, -40)
+    TabContainer.Size = UDim2.new(0, 120, 1, -40)
     TabContainer.Position = UDim2.new(0, 0, 0, 40)
     TabContainer.BackgroundColor3 = Theme.Sidebar
     TabContainer.BorderSizePixel = 0
@@ -150,8 +147,8 @@ function Library:CreateWindow(config)
     TabLayout.Parent = TabList
     
     local ContentArea = Instance.new("Frame")
-    ContentArea.Size = UDim2.new(1, -130, 1, -40)
-    ContentArea.Position = UDim2.new(0, 130, 0, 40)
+    ContentArea.Size = UDim2.new(1, -120, 1, -40)
+    ContentArea.Position = UDim2.new(0, 120, 0, 40)
     ContentArea.BackgroundTransparency = 1
     ContentArea.Parent = MainFrame
     
@@ -197,7 +194,7 @@ function Library:CreateWindow(config)
         end)
         
         -- ============================================
-        -- UI ELEMENTS (Redesigned)
+        -- UI ELEMENTS
         -- ============================================
         
         function Tab:CreateButton(c)
@@ -366,15 +363,27 @@ function Library:CreateWindow(config)
             
             local isOpen = false
             local selected = c.Default or c.Options[1]
+            local list
+            
+            local function closeDropdown()
+                if list then
+                    isOpen = false
+                    list:Destroy()
+                    list = nil
+                end
+            end
             
             Drop.MouseButton1Click:Connect(function()
-                isOpen = not isOpen
                 if isOpen then
-                    local list = Instance.new("Frame")
-                    list.Size = UDim2.new(1, 0, 0, #c.Options * 35)
-                    list.Position = UDim2.new(0, 0, 0, 45)
-                    list.BackgroundColor3 = Theme.Background
-                    list.Parent = Drop
+                    closeDropdown()
+                else
+                    isOpen = true
+                    list = Instance.new("Frame")
+                    list.Size = UDim2.new(0, Drop.AbsoluteSize.X, 0, #c.Options * 35)
+                    list.Position = UDim2.new(0, Drop.AbsolutePosition.X, 0, Drop.AbsolutePosition.Y + 40)
+                    list.BackgroundColor3 = Theme.Element
+                    list.ZIndex = 10
+                    list.Parent = ScreenGui -- Fixed: Parent to ScreenGui to avoid clipping
                     local listCor = Instance.new("UICorner")
                     listCor.CornerRadius = UDim.new(0, 6)
                     listCor.Parent = list
@@ -386,25 +395,22 @@ function Library:CreateWindow(config)
                         local optBtn = Instance.new("TextButton")
                         optBtn.Size = UDim2.new(1, 0, 0, 35)
                         optBtn.Position = UDim2.new(0, 0, 0, (i-1)*35)
-                        optBtn.BackgroundColor3 = Theme.Background
+                        optBtn.BackgroundColor3 = Theme.Element
                         optBtn.Text = opt
                         optBtn.TextColor3 = Theme.Text
                         optBtn.Font = Enum.Font.GothamSemibold
                         optBtn.TextSize = 13
+                        optBtn.ZIndex = 11
                         optBtn.Parent = list
-                        applyHoverEffect(optBtn, Theme.Background, Theme.Element)
+                        applyHoverEffect(optBtn, Theme.Element, Theme.ElementHover)
                         
                         optBtn.MouseButton1Click:Connect(function()
                             selected = opt
                             Drop.Text = (c.Text or "Dropdown") .. ": " .. opt
-                            isOpen = false
-                            list:Destroy()
+                            closeDropdown()
                             if c.Callback then c.Callback(opt) end
                         end)
                     end
-                else
-                    local list = Drop:FindFirstChild("Frame")
-                    if list then list:Destroy() end
                 end
             end)
             return Drop
@@ -436,15 +442,27 @@ function Library:CreateWindow(config)
             
             local isOpen = false
             local selectedColor = c.Default or Color3.fromRGB(255,255,255)
+            local picker
+            
+            local function closePicker()
+                if picker then
+                    isOpen = false
+                    picker:Destroy()
+                    picker = nil
+                end
+            end
             
             Btn.MouseButton1Click:Connect(function()
-                isOpen = not isOpen
                 if isOpen then
-                    local picker = Instance.new("Frame")
-                    picker.Size = UDim2.new(1, 0, 0, 100)
-                    picker.Position = UDim2.new(0, 0, 0, 45)
+                    closePicker()
+                else
+                    isOpen = true
+                    picker = Instance.new("Frame")
+                    picker.Size = UDim2.new(0, Btn.AbsoluteSize.X, 0, 100)
+                    picker.Position = UDim2.new(0, Btn.AbsolutePosition.X, 0, Btn.AbsolutePosition.Y + 40)
                     picker.BackgroundColor3 = Theme.Background
-                    picker.Parent = Btn
+                    picker.ZIndex = 10
+                    picker.Parent = ScreenGui -- Fixed: Parent to ScreenGui to avoid clipping
                     local picCor = Instance.new("UICorner")
                     picCor.CornerRadius = UDim.new(0, 6)
                     picCor.Parent = picker
@@ -464,6 +482,7 @@ function Library:CreateWindow(config)
                         colBtn.Position = UDim2.new(0, 10 + ((i-1)%5)*30, 0, 10 + math.floor((i-1)/5)*30)
                         colBtn.BackgroundColor3 = col
                         colBtn.Text = ""
+                        colBtn.ZIndex = 11
                         colBtn.Parent = picker
                         local colCor = Instance.new("UICorner")
                         colCor.CornerRadius = UDim.new(0, 4)
@@ -472,14 +491,10 @@ function Library:CreateWindow(config)
                         colBtn.MouseButton1Click:Connect(function()
                             selectedColor = col
                             TweenService:Create(colorPreview, TweenInfo.new(0.2), {BackgroundColor3 = col}):Play()
-                            isOpen = false
-                            picker:Destroy()
+                            closePicker()
                             if c.Callback then c.Callback(col) end
                         end)
                     end
-                else
-                    local picker = Btn:FindFirstChild("Frame")
-                    if picker then picker:Destroy() end
                 end
             end)
             return Btn
@@ -569,40 +584,38 @@ function Library:CreateWindow(config)
     end
     
     -- ============================================
-    -- DRAGGABLE SYSTEM (Fixed Camera Rotate)
+    -- DRAGGABLE SYSTEM (Fixed for PC & Mobile)
     -- ============================================
     local dragging = false
-    local dragInput, dragStart, startPos
-    local dragGui = nil
-
-    local function update(input)
-        local delta = input.Position - dragStart
-        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
+    local dragStart, startPos
+    local activeTouch = nil
 
     TopBar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             dragging = true
             dragStart = input.Position
-            startPos = MainFrame.Position
+            startPos = Shadow.Position
             
             if input.UserInputType == Enum.UserInputType.Touch then
-                dragGui = input
+                activeTouch = input
             end
-
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                    dragGui = nil
-                end
-            end)
         end
     end)
 
-    TopBar.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            if input == dragGui then
-                update(input)
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            if input.UserInputType == Enum.UserInputType.MouseMovement or input == activeTouch then
+                local delta = input.Position - dragStart
+                Shadow.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+            end
+        end
+    end)
+
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+            if input == activeTouch then
+                activeTouch = nil
             end
         end
     end)
