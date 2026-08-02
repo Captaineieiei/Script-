@@ -606,6 +606,7 @@ function Library:CreateWindow(config)
     TabList.Parent = TabContainer
     local TabLayout = Instance.new("UIListLayout")
     TabLayout.Padding = UDim.new(0, 4)
+    TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
     TabLayout.Parent = TabList
 
     local ContentArea = Instance.new("Frame")
@@ -642,6 +643,7 @@ function Library:CreateWindow(config)
     local Tabs = {}
     local CurrentTab = nil
     local closeActivePopup = function() end
+    local tabOrderCounter = 0
 
     MainFrame.Size = MainFrame.Size - UDim2.new(0, 20, 0, 20)
     TweenService:Create(MainFrame, TweenInfo.new(0.28, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
@@ -674,16 +676,8 @@ function Library:CreateWindow(config)
 
     function Window:CreateSettingsTab()
         local tab = Window:CreateTab("Settings", "settings")
+        tab.Btn.LayoutOrder = 9999 -- ตรึงให้แท็บ Settings อยู่ล่างสุดของไซด์บาร์เสมอ ไม่ว่าจะสร้างตอนไหน
         tab:CreateThemeDropdown()
-        tab:CreateButton({
-            Text = "Destroy UI",
-            Icon = "trash",
-            NotifyText = "กำลังปิด UI...",
-            Callback = function()
-                task.wait(0.5)
-                Window:Destroy()
-            end
-        })
         return tab
     end
 
@@ -696,6 +690,8 @@ function Library:CreateWindow(config)
         TabBtn.AutoButtonColor = false
         TabBtn.Text = ""
         TabBtn.Parent = TabList
+        tabOrderCounter = tabOrderCounter + 1
+        TabBtn.LayoutOrder = tabOrderCounter
         corner(TabBtn, 8)
 
         local iconOffset = 10
@@ -1478,6 +1474,7 @@ function Library:CreateWindow(config)
             return newElement(Label, function() return Label.Text end, function(_, newText) Label.Text = newText end)
         end
 
+        Tab.Btn = TabBtn
         table.insert(Tabs, {Btn = TabBtn, Content = TabContent, SetActive = setActive})
         if #Tabs == 1 then
             setActive(true)
