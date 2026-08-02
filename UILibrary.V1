@@ -148,6 +148,7 @@ local function getUiParent()
     if gethui then return gethui() end
     if syn and syn.protect_gui then
         local protected = Instance.new("ScreenGui")
+        protected.Parent = CoreGui
         syn.protect_gui(protected)
         return protected
     end
@@ -237,7 +238,8 @@ function Library:CreateWindow(config)
     ScreenGui.Name = "ProMobileUI"
     ScreenGui.ResetOnSpawn = false
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    ScreenGui.Parent = getUiParent()
+    local UiParent = getUiParent()
+    ScreenGui.Parent = UiParent
 
     function Library:SetTheme(themeName)
         local newTheme = Library.Themes[themeName]
@@ -507,7 +509,7 @@ function Library:CreateWindow(config)
     RestoreBtn.ZIndex = 20
     RestoreBtn.Visible = false
     RestoreBtn.Active = true
-    RestoreBtn.Parent = getUiParent()
+    RestoreBtn.Parent = UiParent
     corner(RestoreBtn, 22)
     stroke(RestoreBtn)
 
