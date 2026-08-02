@@ -1,8 +1,10 @@
 --[[
-    Modern Pro Mobile & PC UI Library (Final Fixed Version)
-    - Fixed Mobile Screen Size (Auto Fit)
-    - Fixed Dropdown & ColorPicker Clipping (Now floats on top)
-    - Fixed Draggable System (PC & Mobile Smooth)
+    Pro Mobile & PC UI Library (Touch Fixed Version)
+    - Fixed Touch Input Issue (No more camera rotate while dragging)
+    - Modern Design
+    - Tabs System
+    - 8 UI Elements
+    - Mobile & PC Friendly
 ]]
 
 local Library = {}
@@ -77,6 +79,7 @@ function Library:CreateWindow(config)
     MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
     MainFrame.BackgroundColor3 = Theme.Background
     MainFrame.BorderSizePixel = 0
+    MainFrame.Active = true -- ✅ บล็อคการสัมผัสไม่ให้ไปโดนตัวละคร
     MainFrame.Parent = Shadow
     
     local MainCorner = Instance.new("UICorner")
@@ -93,7 +96,7 @@ function Library:CreateWindow(config)
     TopBar.Size = UDim2.new(1, 0, 0, 40)
     TopBar.BackgroundColor3 = Theme.Topbar
     TopBar.BorderSizePixel = 0
-    TopBar.Active = true
+    TopBar.Active = true -- ✅ บล็อคการสัมผัส
     TopBar.Parent = MainFrame
     
     local TopCorner = Instance.new("UICorner")
@@ -131,6 +134,7 @@ function Library:CreateWindow(config)
     TabContainer.Position = UDim2.new(0, 0, 0, 40)
     TabContainer.BackgroundColor3 = Theme.Sidebar
     TabContainer.BorderSizePixel = 0
+    TabContainer.Active = true -- ✅ บล็อคการสัมผัส
     TabContainer.Parent = MainFrame
     local SideCorner = Instance.new("UICorner")
     SideCorner.CornerRadius = UDim.new(0, 8)
@@ -141,6 +145,7 @@ function Library:CreateWindow(config)
     TabList.Position = UDim2.new(0, 5, 0, 5)
     TabList.BackgroundTransparency = 1
     TabList.ScrollBarThickness = 2
+    TabList.Active = true -- ✅ บล็อคการสัมผัส
     TabList.Parent = TabContainer
     local TabLayout = Instance.new("UIListLayout")
     TabLayout.Padding = UDim.new(0, 5)
@@ -150,6 +155,7 @@ function Library:CreateWindow(config)
     ContentArea.Size = UDim2.new(1, -120, 1, -40)
     ContentArea.Position = UDim2.new(0, 120, 0, 40)
     ContentArea.BackgroundTransparency = 1
+    ContentArea.Active = true -- ✅ บล็อคการสัมผัส
     ContentArea.Parent = MainFrame
     
     local Tabs = {}
@@ -176,6 +182,7 @@ function Library:CreateWindow(config)
         TabContent.BackgroundTransparency = 1
         TabContent.ScrollBarThickness = 2
         TabContent.Visible = false
+        TabContent.Active = true -- ✅ บล็อคการสัมผัส
         TabContent.Parent = ContentArea
         local ContentLayout = Instance.new("UIListLayout")
         ContentLayout.Padding = UDim.new(0, 8)
@@ -226,6 +233,7 @@ function Library:CreateWindow(config)
             local Frame = Instance.new("Frame")
             Frame.Size = UDim2.new(1, 0, 0, 40)
             Frame.BackgroundColor3 = Theme.Element
+            Frame.Active = true
             Frame.Parent = TabContent
             local Cor = Instance.new("UICorner")
             Cor.CornerRadius = UDim.new(0, 6)
@@ -280,6 +288,7 @@ function Library:CreateWindow(config)
             local Frame = Instance.new("Frame")
             Frame.Size = UDim2.new(1, 0, 0, 50)
             Frame.BackgroundColor3 = Theme.Element
+            Frame.Active = true
             Frame.Parent = TabContent
             local Cor = Instance.new("UICorner")
             Cor.CornerRadius = UDim.new(0, 6)
@@ -300,6 +309,7 @@ function Library:CreateWindow(config)
             Bar.Size = UDim2.new(1, -20, 0, 10)
             Bar.Position = UDim2.new(0, 10, 0, 32)
             Bar.BackgroundColor3 = Theme.Background
+            Bar.Active = true
             Bar.Parent = Frame
             local BarCor = Instance.new("UICorner")
             BarCor.CornerRadius = UDim.new(1, 0)
@@ -383,7 +393,8 @@ function Library:CreateWindow(config)
                     list.Position = UDim2.new(0, Drop.AbsolutePosition.X, 0, Drop.AbsolutePosition.Y + 40)
                     list.BackgroundColor3 = Theme.Element
                     list.ZIndex = 10
-                    list.Parent = ScreenGui -- Fixed: Parent to ScreenGui to avoid clipping
+                    list.Active = true
+                    list.Parent = ScreenGui
                     local listCor = Instance.new("UICorner")
                     listCor.CornerRadius = UDim.new(0, 6)
                     listCor.Parent = list
@@ -462,7 +473,8 @@ function Library:CreateWindow(config)
                     picker.Position = UDim2.new(0, Btn.AbsolutePosition.X, 0, Btn.AbsolutePosition.Y + 40)
                     picker.BackgroundColor3 = Theme.Background
                     picker.ZIndex = 10
-                    picker.Parent = ScreenGui -- Fixed: Parent to ScreenGui to avoid clipping
+                    picker.Active = true
+                    picker.Parent = ScreenGui
                     local picCor = Instance.new("UICorner")
                     picCor.CornerRadius = UDim.new(0, 6)
                     picCor.Parent = picker
