@@ -770,7 +770,19 @@ function Library:CreateWindow(config)
     CloseBtn.MouseLeave:Connect(function()
         TweenService:Create(CloseBtn, TweenInfo.new(0.15), {BackgroundColor3 = Theme.Element, ImageColor3 = Theme.SubText}):Play()
     end)
-    CloseBtn.MouseButton1Click:Connect(function() Window:Destroy() end)
+    CloseBtn.MouseButton1Click:Connect(function()
+        Window:Confirm({
+            Title = "ปิด UI",
+            Content = "ยืนยันที่จะปิดหน้าต่างนี้หรือไม่?",
+            ConfirmText = "ยืนยัน",
+            CancelText = "ยกเลิก",
+            Callback = function(result)
+                if result then
+                    Window:Destroy()
+                end
+            end
+        })
+    end)
 
     -- ============ Hide UI Button ============
     local HideBtn = Instance.new("ImageButton")
