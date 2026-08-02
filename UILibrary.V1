@@ -526,7 +526,17 @@ function Library:CreateWindow(config)
             corner(Btn, 9)
             applyHoverEffect(Btn, Theme.Element, Theme.ElementHover)
             applyGlowOnHover(Btn)
-            Btn.MouseButton1Click:Connect(function() if c.Callback then c.Callback() end end)
+            Btn.MouseButton1Click:Connect(function()
+                if c.Notify ~= false then
+                    Library:Notify({
+                        Title = c.Text or "Button",
+                        Content = c.NotifyText or "กดใช้งานเรียบร้อย",
+                        Type = "info",
+                        Duration = 1.5
+                    })
+                end
+                if c.Callback then c.Callback() end
+            end)
             return newElement(Btn, nil, function(_, newText) Btn.Text = newText end)
         end
 
@@ -588,7 +598,17 @@ function Library:CreateWindow(config)
                 TweenService:Create(Circle, TweenInfo.new(0.15), {
                     Position = state and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
                 }):Play()
-                if fireCallback and c.Callback then c.Callback(state) end
+                if fireCallback then
+                    if c.Notify ~= false then
+                        Library:Notify({
+                            Title = c.Text or "Toggle",
+                            Content = state and (c.NotifyOnText or "เปิดใช้งานแล้ว") or (c.NotifyOffText or "ปิดใช้งานแล้ว"),
+                            Type = state and "success" or "warning",
+                            Duration = 1.5
+                        })
+                    end
+                    if c.Callback then c.Callback(state) end
+                end
             end
             applyState(state, false)
 
