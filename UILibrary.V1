@@ -635,13 +635,12 @@ function Library:CreateWindow(config)
         end
 
         TabBtn.MouseButton1Click:Connect(function()
-            if CurrentTab and CurrentTab.Btn ~= TabBtn then
-                CurrentTab.SetActive(false)
-                CurrentTab.Content.Visible = false
-            end
             closeActivePopup()
-            setActive(true)
-            TabContent.Visible = true
+            for _, t in ipairs(Tabs) do
+                local isThis = (t.Btn == TabBtn)
+                t.SetActive(isThis)
+                t.Content.Visible = isThis
+            end
             CurrentTab = {Btn = TabBtn, Content = TabContent, SetActive = setActive}
         end)
 
@@ -1215,7 +1214,7 @@ function Library:CreateWindow(config)
             return newElement(Label, function() return Label.Text end, function(_, newText) Label.Text = newText end)
         end
 
-        table.insert(Tabs, {Btn = TabBtn, Content = TabContent})
+        table.insert(Tabs, {Btn = TabBtn, Content = TabContent, SetActive = setActive})
         if #Tabs == 1 then
             setActive(true)
             TabContent.Visible = true
