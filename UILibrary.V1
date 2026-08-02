@@ -512,7 +512,7 @@ function Library:CreateWindow(config)
         BackgroundTransparency = 0, Size = UDim2.new(0, 380, 0, 360)
     }):Play()
     TweenService:Create(mainStroke, TweenInfo.new(0.28), {Transparency = 0.5}):Play()
-    TweenService:Create(Shadow, TweenInfo.new(0.35), {ImageTransparency = 0.5}):Play()
+    -- Shadow ปิดไว้ (ไม่แสดง) ตามที่ขอ
     TweenService:Create(TopBar, TweenInfo.new(0.28), {BackgroundTransparency = 0}):Play()
     TweenService:Create(topBarFix, TweenInfo.new(0.28), {BackgroundTransparency = 0}):Play()
     TweenService:Create(TitleLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
