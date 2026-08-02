@@ -478,7 +478,7 @@ function Library:CreateWindow(config)
         -- ที่มีลูกวางตำแหน่งเองแบบ manual ทำให้ก่อนหน้านี้แถบนับถอยหลังไปทับข้อความ)
         local BottomSpacer = Instance.new("Frame")
         BottomSpacer.BackgroundTransparency = 1
-        BottomSpacer.Size = UDim2.new(1, 0, 0, 16)
+        BottomSpacer.Size = UDim2.new(1, 0, 0, 22)
         BottomSpacer.ZIndex = 3
         BottomSpacer.Parent = TextHolder
 
@@ -509,7 +509,7 @@ function Library:CreateWindow(config)
         -- ถ้าวางชิดขอบเต็มความกว้างแบบเดิมจะเห็นแท่งยื่นทะลุมุมโค้งออกมา)
         local ProgressTrack = Instance.new("Frame")
         ProgressTrack.AnchorPoint = Vector2.new(0.5, 1)
-        ProgressTrack.Position = UDim2.new(0.5, 0, 1, -6)
+        ProgressTrack.Position = UDim2.new(0.5, 0, 1, -8)
         ProgressTrack.Size = UDim2.new(1, -20, 0, 3)
         applyThemeColor(ProgressTrack, "Stroke")
         ProgressTrack.BackgroundTransparency = 1
