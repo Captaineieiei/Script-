@@ -365,11 +365,11 @@ function Library:CreateWindow(config)
     NotifyHolder.Name = "Notifications"
     NotifyHolder.AnchorPoint = Vector2.new(1, 0)
     NotifyHolder.Position = UDim2.new(1, -16, 0, 16)
-    NotifyHolder.Size = UDim2.new(0, 296, 1, -32)
+    NotifyHolder.Size = UDim2.new(0, 312, 1, -32)
     NotifyHolder.BackgroundTransparency = 1
     NotifyHolder.Parent = NotifyGui
     local NotifyLayout = Instance.new("UIListLayout")
-    NotifyLayout.Padding = UDim.new(0, 8)
+    NotifyLayout.Padding = UDim.new(0, 10)
     NotifyLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
     NotifyLayout.Parent = NotifyHolder
 
@@ -405,7 +405,7 @@ function Library:CreateWindow(config)
         Toast.ClipsDescendants = true
         Toast.ZIndex = 2
         Toast.Parent = NotifyHolder
-        corner(Toast, 14)
+        corner(Toast, 16)
         local outline = stroke(Toast)
         outline.Thickness = 1
         outline.Transparency = 1
@@ -421,29 +421,48 @@ function Library:CreateWindow(config)
         }
         syncShadow()
 
-        -- แถบสีทึบบอกประเภท ชิดขอบซ้ายของการ์ด เว้นบน-ล่างเล็กน้อยกันโผล่พ้นมุมโค้ง
-        -- เรียบง่ายกว่าของเดิมที่ไล่เฉด/มีฮาโล ดูสะอาดตาและอ่านง่ายกว่า
+        -- แถบสีบอกประเภท ชิดขอบซ้ายของการ์ด ปลายมนทั้งสองด้าน + ไล่เฉดจางลงเล็กน้อยจากบนลงล่างให้ดูมีมิติ ไม่ใช่แท่งทึบแข็งๆ
         local AccentBar = Instance.new("Frame")
         AccentBar.Position = UDim2.new(0, 0, 0, 14)
-        AccentBar.Size = UDim2.new(0, 3, 0, 0)
+        AccentBar.Size = UDim2.new(0, 4, 0, 0)
         AccentBar.BackgroundColor3 = color
         AccentBar.BackgroundTransparency = 1
         AccentBar.BorderSizePixel = 0
         AccentBar.ZIndex = 3
         AccentBar.Parent = Toast
         corner(AccentBar, 2)
+        local accentFade = Instance.new("UIGradient")
+        accentFade.Color = ColorSequence.new(color, color)
+        accentFade.Transparency = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 0),
+            NumberSequenceKeypoint.new(1, 0.55),
+        })
+        accentFade.Rotation = 90
+        accentFade.Parent = AccentBar
 
-        -- ไอคอนชิปสี่เหลี่ยมมุมมนทึบสี + ไอคอนสีขาวตัดกันชัดเจน
-        -- ดูสะอาดตาและเด่นกว่าวงกลมกระจกใสแบบเดิม ไม่ต้องพึ่งสโตรกหรือฮาโลช่วย
+        -- ไอคอนวงกลม "โทนนุ่ม" แทนชิปสี่เหลี่ยมสีทึบเดิม: พื้นหลังผสมสีธีมกับสีประเภทแค่ ~22%
+        -- ให้ได้โทนพาสเทลกลมกลืนกับการ์ดมืด ส่วนตัวไอคอนใช้สีเต็มของประเภทนั้นแทนสีขาว ให้เด่นเป็นจุดโฟกัสแทน
+        -- และมีฮาโลจางๆ ล้อมรอบเพิ่มความมีมิติ (เดิมตั้งใจตัดฮาโลออกเพราะของเก่าใช้แบบกระจกใสไม่มีสี ดูลอยไม่มีจุดเด่น
+        -- แบบใหม่นี้ฮาโลมีสีเดียวกับไอคอนและจางมาก จึงช่วยเน้นจุดสนใจแทนที่จะรก)
+        local IconGlow = Instance.new("Frame")
+        IconGlow.AnchorPoint = Vector2.new(0.5, 0.5)
+        IconGlow.Size = UDim2.new(0, 44, 0, 44)
+        IconGlow.Position = UDim2.new(0, 31, 0, 29)
+        IconGlow.BackgroundColor3 = color
+        IconGlow.BackgroundTransparency = 1
+        IconGlow.ZIndex = 2
+        IconGlow.Parent = Toast
+        corner(IconGlow, 22)
+
         local IconBadge = Instance.new("Frame")
         IconBadge.AnchorPoint = Vector2.new(0.5, 0.5)
         IconBadge.Size = UDim2.new(0, 30, 0, 30)
         IconBadge.Position = UDim2.new(0, 31, 0, 29)
-        IconBadge.BackgroundColor3 = color
+        IconBadge.BackgroundColor3 = color:Lerp(Theme.Element, 0.78)
         IconBadge.BackgroundTransparency = 1
         IconBadge.ZIndex = 3
         IconBadge.Parent = Toast
-        corner(IconBadge, 10)
+        corner(IconBadge, 15)
 
         local IconImg = Instance.new("ImageLabel")
         IconImg.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -451,7 +470,7 @@ function Library:CreateWindow(config)
         IconImg.Size = UDim2.new(0, 15, 0, 15)
         IconImg.BackgroundTransparency = 1
         IconImg.Image = NOTIFY_ICON[ntype] or Library.Icons.info
-        IconImg.ImageColor3 = Color3.new(1, 1, 1)
+        IconImg.ImageColor3 = color
         IconImg.ImageTransparency = 1
         IconImg.ScaleType = Enum.ScaleType.Fit
         IconImg.ZIndex = 4
@@ -532,7 +551,7 @@ function Library:CreateWindow(config)
         local ProgressTrack = Instance.new("Frame")
         ProgressTrack.AnchorPoint = Vector2.new(0.5, 1)
         ProgressTrack.Position = UDim2.new(0.5, 0, 1, -8)
-        ProgressTrack.Size = UDim2.new(1, -20, 0, 3)
+        ProgressTrack.Size = UDim2.new(1, -20, 0, 4)
         applyThemeColor(ProgressTrack, "Stroke")
         ProgressTrack.BackgroundTransparency = 1
         ProgressTrack.BorderSizePixel = 0
@@ -565,10 +584,11 @@ function Library:CreateWindow(config)
         TweenService:Create(outline, TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Transparency = 0.6}):Play()
         TweenService:Create(Shadow, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageTransparency = 0.65}):Play()
 
-        TweenService:Create(AccentBar, TweenInfo.new(0.38, Enum.EasingStyle.Quint, Enum.EasingDirection.Out, 0, false, 0.04), {Size = UDim2.new(0, 3, 1, -28), BackgroundTransparency = 0}):Play()
+        TweenService:Create(AccentBar, TweenInfo.new(0.38, Enum.EasingStyle.Quint, Enum.EasingDirection.Out, 0, false, 0.04), {Size = UDim2.new(0, 4, 1, -28), BackgroundTransparency = 0}):Play()
 
         TweenService:Create(IconScale, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out, 0, false, 0.08), {Scale = 1}):Play()
         TweenService:Create(IconBadge, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out, 0, false, 0.08), {Rotation = 0, BackgroundTransparency = 0}):Play()
+        TweenService:Create(IconGlow, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0.08), {BackgroundTransparency = 0.86}):Play()
         TweenService:Create(IconImg, TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0.14), {ImageTransparency = 0}):Play()
 
         TweenService:Create(TitleLbl, TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0.1), {TextTransparency = 0}):Play()
@@ -588,6 +608,7 @@ function Library:CreateWindow(config)
             -- ทางออก: กระชับและไวกว่าตอนเข้า ทุกอย่างจางพร้อมกันแบบ Quint In ให้ความรู้สึก "ถูกดึงหายไป" หนักแน่น ไม่ยืดเยื้อ
             TweenService:Create(ToastScale, TweenInfo.new(0.18, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {Scale = 0.88}):Play()
             TweenService:Create(IconBadge, TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Rotation = 12, BackgroundTransparency = 1}):Play()
+            TweenService:Create(IconGlow, TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {BackgroundTransparency = 1}):Play()
             TweenService:Create(Toast, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {BackgroundTransparency = 1}):Play()
             TweenService:Create(outline, TweenInfo.new(0.18), {Transparency = 1}):Play()
             TweenService:Create(Shadow, TweenInfo.new(0.18), {ImageTransparency = 1}):Play()
