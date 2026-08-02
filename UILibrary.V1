@@ -253,10 +253,10 @@ end
 
 local function applyHoverEffect(btn, defKey, hovKey)
     btn.MouseEnter:Connect(function()
-        TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundColor3 = Theme[hovKey]}):Play()
+        TweenService:Create(btn, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundColor3 = Theme[hovKey]}):Play()
     end)
     btn.MouseLeave:Connect(function()
-        TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundColor3 = Theme[defKey]}):Play()
+        TweenService:Create(btn, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundColor3 = Theme[defKey]}):Play()
     end)
 end
 
@@ -264,10 +264,10 @@ local function applyGlowOnHover(frame)
     local glow = stroke(frame, "AccentA", 1)
     glow.Transparency = 1
     frame.MouseEnter:Connect(function()
-        TweenService:Create(glow, TweenInfo.new(0.2), {Transparency = 0.6}):Play()
+        TweenService:Create(glow, TweenInfo.new(0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Transparency = 0.6}):Play()
     end)
     frame.MouseLeave:Connect(function()
-        TweenService:Create(glow, TweenInfo.new(0.2), {Transparency = 1}):Play()
+        TweenService:Create(glow, TweenInfo.new(0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Transparency = 1}):Play()
     end)
 end
 
@@ -536,10 +536,10 @@ function Library:CreateWindow(config)
         CloseX.ZIndex = 4
         CloseX.Parent = Toast
         CloseX.MouseEnter:Connect(function()
-            TweenService:Create(CloseX, TweenInfo.new(0.12), {ImageColor3 = Theme.Text}):Play()
+            TweenService:Create(CloseX, TweenInfo.new(0.12, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {ImageColor3 = Theme.Text}):Play()
         end)
         CloseX.MouseLeave:Connect(function()
-            TweenService:Create(CloseX, TweenInfo.new(0.12), {ImageColor3 = Theme.SubText}):Play()
+            TweenService:Create(CloseX, TweenInfo.new(0.12, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {ImageColor3 = Theme.SubText}):Play()
         end)
 
         -- (เดิมมี UIPadding ตรงนี้เพื่อเว้นระยะล่าง แต่ Padding ไม่ถูกนับใน AutomaticSize
@@ -580,26 +580,26 @@ function Library:CreateWindow(config)
         -- ลำดับการเข้า: การ์ดป๊อปก่อน -> แถบสีวาดตัวเองลงมา -> ไอคอนหมุนเด้งตาม -> ข้อความค่อยๆ ไล่จางเข้าทีละบรรทัด -> ปุ่มปิด/แถบเวลาเข้ามาปิดท้าย
         -- ใช้ DelayTime ใน TweenInfo (พารามิเตอร์ตัวที่ 6) เพื่อไล่จังหวะ แทนที่จะขึ้นพร้อมกันหมดทีเดียวซึ่งดูแข็งทื่อ
         TweenService:Create(ToastScale, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Scale = 1}):Play()
-        TweenService:Create(Toast, TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 0}):Play()
-        TweenService:Create(outline, TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Transparency = 0.6}):Play()
-        TweenService:Create(Shadow, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageTransparency = 0.65}):Play()
+        TweenService:Create(Toast, TweenInfo.new(0.22, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundTransparency = 0}):Play()
+        TweenService:Create(outline, TweenInfo.new(0.22, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Transparency = 0.6}):Play()
+        TweenService:Create(Shadow, TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {ImageTransparency = 0.65}):Play()
 
         TweenService:Create(AccentBar, TweenInfo.new(0.38, Enum.EasingStyle.Quint, Enum.EasingDirection.Out, 0, false, 0.04), {Size = UDim2.new(0, 4, 1, -28), BackgroundTransparency = 0}):Play()
 
         TweenService:Create(IconScale, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out, 0, false, 0.08), {Scale = 1}):Play()
         TweenService:Create(IconBadge, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out, 0, false, 0.08), {Rotation = 0, BackgroundTransparency = 0}):Play()
-        TweenService:Create(IconGlow, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0.08), {BackgroundTransparency = 0.86}):Play()
-        TweenService:Create(IconImg, TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0.14), {ImageTransparency = 0}):Play()
+        TweenService:Create(IconGlow, TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0.08), {BackgroundTransparency = 0.86}):Play()
+        TweenService:Create(IconImg, TweenInfo.new(0.22, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0.14), {ImageTransparency = 0}):Play()
 
-        TweenService:Create(TitleLbl, TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0.1), {TextTransparency = 0}):Play()
-        TweenService:Create(ContentLbl, TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0.16), {TextTransparency = 0}):Play()
-        TweenService:Create(CloseX, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0.2), {ImageTransparency = 0.4}):Play()
+        TweenService:Create(TitleLbl, TweenInfo.new(0.22, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0.1), {TextTransparency = 0}):Play()
+        TweenService:Create(ContentLbl, TweenInfo.new(0.22, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0.16), {TextTransparency = 0}):Play()
+        TweenService:Create(CloseX, TweenInfo.new(0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0.2), {ImageTransparency = 0.4}):Play()
 
         ProgressBar.BackgroundTransparency = 1
         ProgressBar.Size = UDim2.new(1, 0, 1, 0)
-        TweenService:Create(ProgressBar, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0.22), {BackgroundTransparency = 0}):Play()
+        TweenService:Create(ProgressBar, TweenInfo.new(0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0.22), {BackgroundTransparency = 0}):Play()
         TweenService:Create(ProgressBar, TweenInfo.new(duration, Enum.EasingStyle.Linear), {Size = UDim2.new(0, 0, 1, 0)}):Play()
-        TweenService:Create(ProgressTrack, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0.18), {BackgroundTransparency = 0.85}):Play()
+        TweenService:Create(ProgressTrack, TweenInfo.new(0.25, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0.18), {BackgroundTransparency = 0.85}):Play()
 
         local dismissed = false
         local function dismiss()
@@ -607,18 +607,18 @@ function Library:CreateWindow(config)
             dismissed = true
             -- ทางออก: กระชับและไวกว่าตอนเข้า ทุกอย่างจางพร้อมกันแบบ Quint In ให้ความรู้สึก "ถูกดึงหายไป" หนักแน่น ไม่ยืดเยื้อ
             TweenService:Create(ToastScale, TweenInfo.new(0.18, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {Scale = 0.88}):Play()
-            TweenService:Create(IconBadge, TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Rotation = 12, BackgroundTransparency = 1}):Play()
-            TweenService:Create(IconGlow, TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {BackgroundTransparency = 1}):Play()
-            TweenService:Create(Toast, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {BackgroundTransparency = 1}):Play()
-            TweenService:Create(outline, TweenInfo.new(0.18), {Transparency = 1}):Play()
-            TweenService:Create(Shadow, TweenInfo.new(0.18), {ImageTransparency = 1}):Play()
-            TweenService:Create(AccentBar, TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {BackgroundTransparency = 1}):Play()
-            TweenService:Create(IconImg, TweenInfo.new(0.14), {ImageTransparency = 1}):Play()
-            TweenService:Create(TitleLbl, TweenInfo.new(0.14), {TextTransparency = 1}):Play()
-            TweenService:Create(ContentLbl, TweenInfo.new(0.14), {TextTransparency = 1}):Play()
-            TweenService:Create(CloseX, TweenInfo.new(0.14), {ImageTransparency = 1}):Play()
-            TweenService:Create(ProgressTrack, TweenInfo.new(0.14), {BackgroundTransparency = 1}):Play()
-            TweenService:Create(ProgressBar, TweenInfo.new(0.14), {BackgroundTransparency = 1}):Play()
+            TweenService:Create(IconBadge, TweenInfo.new(0.16, Enum.EasingStyle.Sine, Enum.EasingDirection.In), {Rotation = 12, BackgroundTransparency = 1}):Play()
+            TweenService:Create(IconGlow, TweenInfo.new(0.16, Enum.EasingStyle.Sine, Enum.EasingDirection.In), {BackgroundTransparency = 1}):Play()
+            TweenService:Create(Toast, TweenInfo.new(0.18, Enum.EasingStyle.Sine, Enum.EasingDirection.In), {BackgroundTransparency = 1}):Play()
+            TweenService:Create(outline, TweenInfo.new(0.18, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Transparency = 1}):Play()
+            TweenService:Create(Shadow, TweenInfo.new(0.18, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {ImageTransparency = 1}):Play()
+            TweenService:Create(AccentBar, TweenInfo.new(0.16, Enum.EasingStyle.Sine, Enum.EasingDirection.In), {BackgroundTransparency = 1}):Play()
+            TweenService:Create(IconImg, TweenInfo.new(0.14, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {ImageTransparency = 1}):Play()
+            TweenService:Create(TitleLbl, TweenInfo.new(0.14, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {TextTransparency = 1}):Play()
+            TweenService:Create(ContentLbl, TweenInfo.new(0.14, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {TextTransparency = 1}):Play()
+            TweenService:Create(CloseX, TweenInfo.new(0.14, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {ImageTransparency = 1}):Play()
+            TweenService:Create(ProgressTrack, TweenInfo.new(0.14, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
+            TweenService:Create(ProgressBar, TweenInfo.new(0.14, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
             task.delay(0.2, function()
                 for _, c in ipairs(shadowConns) do c:Disconnect() end
                 Shadow:Destroy()
@@ -747,7 +747,7 @@ function Library:CreateWindow(config)
         SubTitleLabel.TextSize = 11
         SubTitleLabel.TextXAlignment = Enum.TextXAlignment.Left
         SubTitleLabel.Parent = TopBar
-        TweenService:Create(SubTitleLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
+        TweenService:Create(SubTitleLabel, TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {TextTransparency = 0}):Play()
     end
 
     local CloseBtn = Instance.new("ImageButton")
@@ -765,10 +765,10 @@ function Library:CreateWindow(config)
     corner(CloseBtn, 8)
     applyPressAnimation(CloseBtn, 0.8)
     CloseBtn.MouseEnter:Connect(function()
-        TweenService:Create(CloseBtn, TweenInfo.new(0.15), {BackgroundColor3 = Theme.Danger, ImageColor3 = Color3.fromRGB(255,255,255)}):Play()
+        TweenService:Create(CloseBtn, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundColor3 = Theme.Danger, ImageColor3 = Color3.fromRGB(255,255,255)}):Play()
     end)
     CloseBtn.MouseLeave:Connect(function()
-        TweenService:Create(CloseBtn, TweenInfo.new(0.15), {BackgroundColor3 = Theme.Element, ImageColor3 = Theme.SubText}):Play()
+        TweenService:Create(CloseBtn, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundColor3 = Theme.Element, ImageColor3 = Theme.SubText}):Play()
     end)
     CloseBtn.MouseButton1Click:Connect(function()
         Window:Confirm({
@@ -800,10 +800,10 @@ function Library:CreateWindow(config)
     corner(HideBtn, 8)
     applyPressAnimation(HideBtn, 0.8)
     HideBtn.MouseEnter:Connect(function()
-        TweenService:Create(HideBtn, TweenInfo.new(0.15), {BackgroundColor3 = Theme.ElementHover, BackgroundTransparency = 0.3}):Play()
+        TweenService:Create(HideBtn, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundColor3 = Theme.ElementHover, BackgroundTransparency = 0.3}):Play()
     end)
     HideBtn.MouseLeave:Connect(function()
-        TweenService:Create(HideBtn, TweenInfo.new(0.15), {BackgroundTransparency = 1}):Play()
+        TweenService:Create(HideBtn, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
     end)
 
     -- ปุ่มลอยไว้กด "เรียก UI กลับมา" ตอน UI ถูกซ่อน (โลโก้ผู้ใช้ ถ้ามี ไม่งั้นขึ้นตัวอักษรแรกของชื่อ)
@@ -870,13 +870,12 @@ function Library:CreateWindow(config)
         if visible then
             ScreenGui.Enabled = true
             RestoreBtn.Visible = false
-            -- เริ่มจากขนาดเล็ก+เลื่อนลงนิดหน่อย+โปร่งใส แล้ว tween ขึ้นมานุ่มๆ ด้วย Quint (ไม่เด้งเกินจริง)
-            WindowScale.Scale = 0.92
+            -- เริ่มจากโปร่งใส+เลื่อนลงนิดหน่อย แล้ว tween ขึ้นมานุ่มๆ ด้วย Quint โดยไม่ย่อขนาดลงก่อน (คงขนาดเต็มไว้ตลอด)
+            WindowScale.Scale = 1
             Shadow.Position = hiddenShadowPos
             MainFrame.BackgroundTransparency = 1
             mainStroke.Transparency = 1
             local easeIn = TweenInfo.new(0.24, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
-            TweenService:Create(WindowScale, easeIn, {Scale = 1}):Play()
             TweenService:Create(Shadow, easeIn, {Position = baseShadowPos}):Play()
             TweenService:Create(MainFrame, easeIn, {BackgroundTransparency = 0}):Play()
             TweenService:Create(mainStroke, easeIn, {Transparency = 0.5}):Play()
@@ -982,11 +981,11 @@ function Library:CreateWindow(config)
     ResizeHandle.ZIndex = 6
     ResizeHandle.Parent = MainFrame
     ResizeHandle.MouseEnter:Connect(function()
-        TweenService:Create(ResizeHandle, TweenInfo.new(0.15), {ImageTransparency = 0}):Play()
+        TweenService:Create(ResizeHandle, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {ImageTransparency = 0}):Play()
     end)
     ResizeHandle.MouseLeave:Connect(function()
         if not resizing then
-            TweenService:Create(ResizeHandle, TweenInfo.new(0.15), {ImageTransparency = 0.4}):Play()
+            TweenService:Create(ResizeHandle, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {ImageTransparency = 0.4}):Play()
         end
     end)
 
@@ -995,21 +994,20 @@ function Library:CreateWindow(config)
     local closeActivePopup = function() end
     local tabOrderCounter = 0
 
-    MainFrame.Size = MainFrame.Size - UDim2.new(0, 20, 0, 20)
-    TweenService:Create(MainFrame, TweenInfo.new(0.28, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-        BackgroundTransparency = 0, Size = UDim2.new(0, 380, 0, 360)
+    TweenService:Create(MainFrame, TweenInfo.new(0.28, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+        BackgroundTransparency = 0
     }):Play()
-    TweenService:Create(mainStroke, TweenInfo.new(0.28), {Transparency = 0.5}):Play()
+    TweenService:Create(mainStroke, TweenInfo.new(0.28, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Transparency = 0.5}):Play()
     -- Shadow ปิดไว้ (ไม่แสดง) ตามที่ขอ
-    TweenService:Create(TopBar, TweenInfo.new(0.28), {BackgroundTransparency = 0}):Play()
-    TweenService:Create(topBarFix, TweenInfo.new(0.28), {BackgroundTransparency = 0}):Play()
-    TweenService:Create(TitleLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
-    TweenService:Create(LogoDot, TweenInfo.new(0.3), {BackgroundTransparency = 0}):Play()
-    TweenService:Create(CloseBtn, TweenInfo.new(0.28), {ImageTransparency = 1}):Play()
-    TweenService:Create(CloseBtn, TweenInfo.new(0.28), {ImageTransparency = 0}):Play()
+    TweenService:Create(TopBar, TweenInfo.new(0.28, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundTransparency = 0}):Play()
+    TweenService:Create(topBarFix, TweenInfo.new(0.28, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundTransparency = 0}):Play()
+    TweenService:Create(TitleLabel, TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {TextTransparency = 0}):Play()
+    TweenService:Create(LogoDot, TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundTransparency = 0}):Play()
+    TweenService:Create(CloseBtn, TweenInfo.new(0.28, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {ImageTransparency = 1}):Play()
+    TweenService:Create(CloseBtn, TweenInfo.new(0.28, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {ImageTransparency = 0}):Play()
     HideBtn.ImageTransparency = 1
-    TweenService:Create(HideBtn, TweenInfo.new(0.28), {ImageTransparency = 0}):Play()
-    TweenService:Create(TabContainer, TweenInfo.new(0.28), {BackgroundTransparency = 0}):Play()
+    TweenService:Create(HideBtn, TweenInfo.new(0.28, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {ImageTransparency = 0}):Play()
+    TweenService:Create(TabContainer, TweenInfo.new(0.28, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundTransparency = 0}):Play()
 
     if config.ToggleKeybind then
         UserInputService.InputBegan:Connect(function(input, gpe)
@@ -1128,10 +1126,10 @@ function Library:CreateWindow(config)
         corner(OkBtn, 9)
         applyPressAnimation(OkBtn, 0.95)
 
-        TweenService:Create(Overlay, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
+        TweenService:Create(Overlay, TweenInfo.new(0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
 
         local function closeAlert()
-            TweenService:Create(Overlay, TweenInfo.new(0.15), {BackgroundTransparency = 1}):Play()
+            TweenService:Create(Overlay, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
             task.delay(0.15, function() if Overlay then Overlay:Destroy() end end)
             if opts.Callback then opts.Callback() end
         end
@@ -1214,10 +1212,10 @@ function Library:CreateWindow(config)
         corner(ConfirmBtn, 9)
         applyPressAnimation(ConfirmBtn, 0.95)
 
-        TweenService:Create(Overlay, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
+        TweenService:Create(Overlay, TweenInfo.new(0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
 
         local function close(result)
-            TweenService:Create(Overlay, TweenInfo.new(0.15), {BackgroundTransparency = 1}):Play()
+            TweenService:Create(Overlay, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
             task.delay(0.15, function() if Overlay then Overlay:Destroy() end end)
             if opts.Callback then opts.Callback(result) end
         end
@@ -1284,11 +1282,11 @@ function Library:CreateWindow(config)
 
         TabBtn.MouseEnter:Connect(function()
             if CurrentTab and CurrentTab.Btn == TabBtn then return end
-            TweenService:Create(TabBtn, TweenInfo.new(0.15), {BackgroundTransparency = 0.4, BackgroundColor3 = Theme.Element}):Play()
+            TweenService:Create(TabBtn, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundTransparency = 0.4, BackgroundColor3 = Theme.Element}):Play()
         end)
         TabBtn.MouseLeave:Connect(function()
             if CurrentTab and CurrentTab.Btn == TabBtn then return end
-            TweenService:Create(TabBtn, TweenInfo.new(0.15), {BackgroundTransparency = 1}):Play()
+            TweenService:Create(TabBtn, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
         end)
 
         local TabContent = Instance.new("ScrollingFrame")
@@ -1307,16 +1305,16 @@ function Library:CreateWindow(config)
         ContentLayout.Parent = TabContent
 
         local function setActive(active)
-            TweenService:Create(TabBtn, TweenInfo.new(0.18), {
+            TweenService:Create(TabBtn, TweenInfo.new(0.18, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
                 BackgroundTransparency = active and 0.85 or 1,
                 BackgroundColor3 = active and Theme.AccentA or Theme.Element
             }):Play()
-            TweenService:Create(ActiveBar, TweenInfo.new(0.18), {Size = UDim2.new(0, 3, 0, active and 20 or 0)}):Play()
+            TweenService:Create(ActiveBar, TweenInfo.new(0.18, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Size = UDim2.new(0, 3, 0, active and 20 or 0)}):Play()
             TabTitle.TextColor3 = active and Theme.Text or Theme.SubText
             if icon then
                 local iconImg = TabBtn:FindFirstChildOfClass("ImageLabel")
                 if iconImg then
-                    TweenService:Create(iconImg, TweenInfo.new(0.18), {ImageColor3 = active and Theme.Text or Theme.SubText}):Play()
+                    TweenService:Create(iconImg, TweenInfo.new(0.18, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {ImageColor3 = active and Theme.Text or Theme.SubText}):Play()
                 end
             end
         end
@@ -1509,9 +1507,9 @@ function Library:CreateWindow(config)
             local function applyState(newState, fireCallback)
                 state = newState
                 bindFlag(c.Flag, state)
-                TweenService:Create(Switch, TweenInfo.new(0.15), {BackgroundColor3 = state and Theme.AccentA or Theme.ToggleOff}):Play()
-                TweenService:Create(switchGradProxy, TweenInfo.new(0.15), {Value = state and 0 or 1}):Play()
-                TweenService:Create(Circle, TweenInfo.new(0.15), {
+                TweenService:Create(Switch, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundColor3 = state and Theme.AccentA or Theme.ToggleOff}):Play()
+                TweenService:Create(switchGradProxy, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Value = state and 0 or 1}):Play()
+                TweenService:Create(Circle, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
                     Position = state and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
                 }):Play()
                 if fireCallback then
@@ -1690,14 +1688,14 @@ function Library:CreateWindow(config)
                     isOpen = false
                     local closingList, closingShadow = list, shadow
                     list, shadow = nil, nil
-                    TweenService:Create(dropStroke, TweenInfo.new(0.15), {Transparency = 0.75}):Play()
-                    TweenService:Create(Arrow, TweenInfo.new(0.18), {Rotation = 0}):Play()
+                    TweenService:Create(dropStroke, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Transparency = 0.75}):Play()
+                    TweenService:Create(Arrow, TweenInfo.new(0.18, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Rotation = 0}):Play()
                     local t = TweenService:Create(closingList, TweenInfo.new(0.15, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
                         Size = UDim2.new(closingList.Size.X.Scale, closingList.Size.X.Offset, 0, 0),
                         BackgroundTransparency = 1
                     })
                     if closingShadow then
-                        TweenService:Create(closingShadow, TweenInfo.new(0.15), {ImageTransparency = 1}):Play()
+                        TweenService:Create(closingShadow, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {ImageTransparency = 1}):Play()
                         task.delay(0.15, function() closingShadow:Destroy() end)
                     end
                     t:Play()
@@ -1715,7 +1713,7 @@ function Library:CreateWindow(config)
             local function openDropdown()
                 closeActivePopup()
                 isOpen = true
-                TweenService:Create(dropStroke, TweenInfo.new(0.15), {Transparency = 0.15}):Play()
+                TweenService:Create(dropStroke, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Transparency = 0.15}):Play()
                 TweenService:Create(Arrow, TweenInfo.new(0.2, Enum.EasingStyle.Back), {Rotation = 180}):Play()
 
                 local itemH, gap, pad = 38, 6, 8
@@ -1738,7 +1736,7 @@ function Library:CreateWindow(config)
                 shadow.AnchorPoint = Vector2.new(0, 0)
                 shadow.Position = UDim2.new(0, Drop.AbsolutePosition.X - 14, 0, Drop.AbsolutePosition.Y + Drop.AbsoluteSize.Y + 6 - 14)
                 shadow.Size = UDim2.new(0, Drop.AbsoluteSize.X + 28, 0, 28)
-                TweenService:Create(shadow, TweenInfo.new(0.18), {ImageTransparency = 0.55}):Play()
+                TweenService:Create(shadow, TweenInfo.new(0.18, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {ImageTransparency = 0.55}):Play()
 
                 list = Instance.new(needsScroll and "ScrollingFrame" or "Frame")
                 list.Size = UDim2.new(0, Drop.AbsoluteSize.X, 0, 0)
@@ -1908,7 +1906,7 @@ function Library:CreateWindow(config)
             local function applyColor(col, fireCallback)
                 selectedColor = col
                 bindFlag(c.Flag, selectedColor)
-                TweenService:Create(colorPreview, TweenInfo.new(0.15), {BackgroundColor3 = col}):Play()
+                TweenService:Create(colorPreview, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundColor3 = col}):Play()
                 if fireCallback and c.Callback then c.Callback(col) end
             end
 
@@ -2125,7 +2123,7 @@ function Library:CreateWindow(config)
                 newVal = math.clamp(newVal, min, max)
                 val = newVal
                 local percent = max > min and (val - min) / (max - min) or 0
-                TweenService:Create(Fill, TweenInfo.new(0.2), {Size = UDim2.new(percent, 0, 1, 0)}):Play()
+                TweenService:Create(Fill, TweenInfo.new(0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Size = UDim2.new(percent, 0, 1, 0)}):Play()
             end
 
             return newElement(Frame, function() return val end, function(_, newVal) setValue(newVal) end)
@@ -2169,7 +2167,7 @@ function Library:CreateWindow(config)
             local function refresh()
                 for opt, circle in pairs(circles) do
                     local isSel = (opt == selected)
-                    TweenService:Create(circle, TweenInfo.new(0.15), {BackgroundColor3 = isSel and Theme.AccentA or Theme.ToggleOff}):Play()
+                    TweenService:Create(circle, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundColor3 = isSel and Theme.AccentA or Theme.ToggleOff}):Play()
                 end
             end
 
@@ -2314,8 +2312,8 @@ function Library:CreateWindow(config)
                 boxes[opt] = {Box = CheckBox, Check = Check}
                 Row.MouseButton1Click:Connect(function()
                     selected[opt] = not selected[opt]
-                    TweenService:Create(CheckBox, TweenInfo.new(0.15), {BackgroundColor3 = selected[opt] and Theme.AccentA or Theme.ToggleOff}):Play()
-                    TweenService:Create(Check, TweenInfo.new(0.15), {ImageTransparency = selected[opt] and 0 or 1}):Play()
+                    TweenService:Create(CheckBox, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundColor3 = selected[opt] and Theme.AccentA or Theme.ToggleOff}):Play()
+                    TweenService:Create(Check, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {ImageTransparency = selected[opt] and 0 or 1}):Play()
                     fireCallback()
                 end)
             end
@@ -2489,7 +2487,7 @@ function Library:CreateWindow(config)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             if resizing then
                 resizing = false
-                TweenService:Create(ResizeHandle, TweenInfo.new(0.15), {ImageTransparency = 0.4}):Play()
+                TweenService:Create(ResizeHandle, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {ImageTransparency = 0.4}):Play()
             end
             if input == resizeTouch then resizeTouch = nil end
         end
