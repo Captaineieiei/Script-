@@ -2463,7 +2463,8 @@ function Library:CreateWindow(config)
     end)
 
     -- ============ Resizable ============
-    local MIN_SIZE, MAX_SIZE = Vector2.new(300, 260), Vector2.new(700, 650)
+    -- MIN_SIZE ล็อกเท่ากับขนาดเริ่มต้นของหน้าต่าง (380x360) ลากขยายได้อย่างเดียว ย่อให้เล็กกว่าเดิมไม่ได้
+    local MIN_SIZE, MAX_SIZE = Vector2.new(380, 360), Vector2.new(700, 650)
     local resizeStart, startSize, resizeTouch = nil, nil, nil
     ResizeHandle.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
