@@ -657,6 +657,12 @@ function Library:CreateWindow(config)
     local mainStroke = stroke(MainFrame)
     mainStroke.Transparency = 1
 
+    -- UIScale ไว้ทำ animation ย่อ/ขยายตอนซ่อน-เรียกคืน-ปิด UI (ใส่ที่ Shadow เพราะ MainFrame เป็นลูกของมัน
+    -- ทำให้ scale ทั้งกรอบ+เงาไปด้วยกัน จุดหมุนอยู่กลางพอดีเพราะทั้งคู่ AnchorPoint 0.5,0.5)
+    local WindowScale = Instance.new("UIScale")
+    WindowScale.Scale = 1
+    WindowScale.Parent = Shadow
+
     -- เพิ่มความมิติให้กรอบหน้าต่างแบบ "glass sheen" บางๆ ที่มุมบนซ้าย ให้ดูทันสมัยขึ้นแทนที่จะเป็นสีทึบแบนราบ
     -- ใช้เฟรมแยกต่างหากทับอยู่ด้านบนแทนการใส่ UIGradient ลงบน Background ของ MainFrame ตรงๆ
     -- (ถ้าใส่ตรงๆ จุดที่ Transparency = 1 จะเจาะทะลุพื้นหลังจริงของหน้าต่างจนโหว่ ไม่ใช่แค่ทำให้ดูเงา)
@@ -838,9 +844,35 @@ function Library:CreateWindow(config)
         LetterLabel.Parent = RestoreBtn
     end
 
+    local hideToken = 0
     local function setUiVisible(visible)
-        ScreenGui.Enabled = visible
-        RestoreBtn.Visible = not visible
+        hideToken = hideToken + 1
+        local myToken = hideToken
+        if visible then
+            ScreenGui.Enabled = true
+            RestoreBtn.Visible = false
+            -- เริ่มจากขนาดเล็ก+โปร่งใส แล้ว tween โตขึ้นมาแบบเด้งนิดๆ (เหมือนตอนเปิด UI ครั้งแรก)
+            WindowScale.Scale = 0.85
+            MainFrame.BackgroundTransparency = 1
+            mainStroke.Transparency = 1
+            TweenService:Create(WindowScale, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Scale = 1}):Play()
+            TweenService:Create(MainFrame, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 0}):Play()
+            TweenService:Create(mainStroke, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Transparency = 0.5}):Play()
+        else
+            -- ย่อ+จางหายก่อน ค่อยปิด ScreenGui จริงตอนจบ tween (กันภาพกระตุกตัด hard cut)
+            local t = TweenService:Create(WindowScale, TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Scale = 0.85})
+            TweenService:Create(MainFrame, TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {BackgroundTransparency = 1}):Play()
+            TweenService:Create(mainStroke, TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Transparency = 1}):Play()
+            t:Play()
+            t.Completed:Connect(function()
+                if myToken ~= hideToken then return end -- ถูกสั่งซ่อน/คืนซ้อนระหว่าง tween ทิ้ง callback เก่า
+                ScreenGui.Enabled = false
+                RestoreBtn.Visible = true
+                -- ปุ่มลอยเด้งโผล่มาแทนที่จะโผล่มาเฉยๆ ทันที
+                RestoreBtn.Size = UDim2.new(0, 0, 0, 0)
+                TweenService:Create(RestoreBtn, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0, 46, 0, 46)}):Play()
+            end)
+        end
     end
 
     HideBtn.MouseButton1Click:Connect(function() setUiVisible(false) end)
@@ -990,10 +1022,22 @@ function Library:CreateWindow(config)
     end
 
     function Window:Destroy()
-        for _, cb in ipairs(closeCallbacks) do
-            pcall(cb)
+        local function finalize()
+            for _, cb in ipairs(closeCallbacks) do
+                pcall(cb)
+            end
+            ScreenGui:Destroy(); RestoreGui:Destroy(); NotifyGui:Destroy()
         end
-        ScreenGui:Destroy(); RestoreGui:Destroy(); NotifyGui:Destroy()
+        if ScreenGui.Enabled then
+            -- ย่อ+จางหายทั้งกรอบก่อนค่อยลบจริง ไม่ตัดหายวับทันที
+            TweenService:Create(WindowScale, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Scale = 0.85}):Play()
+            TweenService:Create(MainFrame, TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {BackgroundTransparency = 1}):Play()
+            TweenService:Create(mainStroke, TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Transparency = 1}):Play()
+            TweenService:Create(Shadow, TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {ImageTransparency = 1}):Play()
+            task.delay(0.18, finalize)
+        else
+            finalize()
+        end
     end
 
     -- ============ Modal Dialogs ============
