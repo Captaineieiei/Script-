@@ -1,10 +1,9 @@
 --[[
-    Pro Mobile & PC UI Library v6.2 (WindUI Icon Style)
+    Pro Mobile & PC UI Library v6.1 (Massive Icon Update)
     =====================================================
-    อัปเดตจาก v6.1:
-    - เปลี่ยนชุดไอคอนทั้งหมดให้เป็น Lucide Icons (Outlined) เหมือน WindUI
-    - ปรับขนาดการแสดงผลไอคอนให้ดูสมดุล (16x16 สำหรับแท็บ, 18x18 สำหรับปุ่ม)
-    - เพิ่มไอคอนเฉพาะทางที่หาไม่ได้จากชุดเดิม
+    อัปเดตจาก v6:
+    - เพิ่มระบบไอคอนเป็นจำนวนมาก (Navigation, System, Game, Social, etc.)
+    - ใช้ Asset ID คุณภาพสูงแบบเดียวกับ WindUI/Fluent
 ]]
 
 local Library = {}
@@ -13,7 +12,8 @@ Library.Flags = {}
 Library.Themes = {}
 Library.CurrentTheme = "Midnight"
 
--- ============ ICONS SETUP (WindUI / Lucide Style) ============
+-- ============ ICONS SETUP ============
+-- ระบบไอคอนแบบ ImageLabel (Asset ID มาตรฐาน)
 Library.Icons = {
     -- Navigation
     home = "rbxassetid://6035047377",
@@ -22,8 +22,6 @@ Library.Icons = {
     chevronUp = "rbxassetid://6035047397",
     chevronLeft = "rbxassetid://6035047398",
     chevronRight = "rbxassetid://6035047396",
-    arrowLeft = "rbxassetid://6035047389",
-    arrowRight = "rbxassetid://6035047390",
     
     -- Settings & System
     settings = "rbxassetid://6031280882",
@@ -452,7 +450,7 @@ function Library:CreateWindow(config)
     end
 
     local CloseBtn = Instance.new("ImageButton")
-    CloseBtn.Size = UDim2.new(0, 24, 0, 24)
+    CloseBtn.Size = UDim2.new(0, 26, 0, 26)
     CloseBtn.AnchorPoint = Vector2.new(1, 0.5)
     CloseBtn.Position = UDim2.new(1, -10, 0.5, 0)
     applyThemeColor(CloseBtn, "Element")
@@ -563,7 +561,7 @@ function Library:CreateWindow(config)
         local iconOffset = 10
         if icon then
             local IconImg = Instance.new("ImageLabel")
-            IconImg.Size = UDim2.new(0, 16, 0, 16) -- ปรับขนาดให้พอดีกับเส้นบางๆ
+            IconImg.Size = UDim2.new(0, 18, 0, 18)
             IconImg.Position = UDim2.new(0, 10, 0.5, 0)
             IconImg.AnchorPoint = Vector2.new(0, 0.5)
             IconImg.BackgroundTransparency = 1
@@ -571,7 +569,7 @@ function Library:CreateWindow(config)
             IconImg.ScaleType = Enum.ScaleType.Fit
             applyThemeColor(IconImg, "SubText", "ImageColor3")
             IconImg.Parent = TabBtn
-            iconOffset = 34
+            iconOffset = 36
         end
 
         local TabTitle = Instance.new("TextLabel")
