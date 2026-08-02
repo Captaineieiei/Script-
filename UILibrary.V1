@@ -635,8 +635,8 @@ function Library:CreateWindow(config)
         end
 
         TabBtn.MouseButton1Click:Connect(function()
-            if CurrentTab then
-                setActive(false)
+            if CurrentTab and CurrentTab.Btn ~= TabBtn then
+                CurrentTab.SetActive(false)
                 CurrentTab.Content.Visible = false
             end
             closeActivePopup()
