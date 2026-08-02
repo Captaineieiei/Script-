@@ -1529,11 +1529,15 @@ function Library:CreateWindow(config)
                 if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                     dragging = true
                     activeType = input.UserInputType
+                    TabContent.ScrollingEnabled = false -- กันไม่ให้การเลื่อน scroll แย่ง gesture ตอนลาก ทำให้กระตุก
                     updateFromPos(input.Position.X, true)
                 end
             end)
             Bar.InputEnded:Connect(function(input)
-                if input.UserInputType == activeType then dragging = false; activeType = nil end
+                if input.UserInputType == activeType then
+                    dragging = false; activeType = nil
+                    TabContent.ScrollingEnabled = true
+                end
             end)
             -- เช็คแค่ "ประเภท" ของ input (Touch/MouseMovement) แทนการเทียบ InputObject ตรงๆ
             -- เพราะบาง executor มือถือส่ง InputObject คนละตัวกันในแต่ละ event ของการลากนิ้วเดียวกัน
@@ -1544,6 +1548,13 @@ function Library:CreateWindow(config)
                     updateFromPos(input.Position.X, true)
                 elseif activeType == Enum.UserInputType.MouseButton1 and input.UserInputType == Enum.UserInputType.MouseMovement then
                     updateFromPos(input.Position.X, true)
+                end
+            end)
+            -- fallback: เผื่อ Bar.InputEnded ไม่ fire (เช่นนิ้วเลื่อนหลุดกรอบ Bar ระหว่างลากแล้วปล่อย) กันไม่ให้ scroll ถูกปิดค้าง
+            UserInputService.InputEnded:Connect(function(input)
+                if dragging and input.UserInputType == activeType then
+                    dragging = false; activeType = nil
+                    TabContent.ScrollingEnabled = true
                 end
             end)
 
