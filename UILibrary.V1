@@ -478,7 +478,7 @@ function Library:CreateWindow(config)
         -- ที่มีลูกวางตำแหน่งเองแบบ manual ทำให้ก่อนหน้านี้แถบนับถอยหลังไปทับข้อความ)
         local BottomSpacer = Instance.new("Frame")
         BottomSpacer.BackgroundTransparency = 1
-        BottomSpacer.Size = UDim2.new(1, 0, 0, 14)
+        BottomSpacer.Size = UDim2.new(1, 0, 0, 16)
         BottomSpacer.ZIndex = 3
         BottomSpacer.Parent = TextHolder
 
@@ -504,23 +504,27 @@ function Library:CreateWindow(config)
         -- (เดิมมี UIPadding ตรงนี้เพื่อเว้นระยะล่าง แต่ Padding ไม่ถูกนับใน AutomaticSize
         -- ของเฟรมที่ลูกวางตำแหน่งเอง เลยเอาออก ใช้ BottomSpacer ข้างบนแทน)
 
-        -- แถบนับถอยหลังชิดขอบล่างสุดของการ์ด เรียบง่าย บางเบา ไม่แย่งความสนใจจากเนื้อหา
+        -- แถบนับถอยหลังลอยเข้ามาจากขอบเล็กน้อย + มนขอบ กันไม่ให้โผล่พ้นมุมโค้งของการ์ด
+        -- (ClipsDescendants ของ Roblox ตัดแค่กรอบสี่เหลี่ยม ไม่ตัดตามมุมโค้งจริง
+        -- ถ้าวางชิดขอบเต็มความกว้างแบบเดิมจะเห็นแท่งยื่นทะลุมุมโค้งออกมา)
         local ProgressTrack = Instance.new("Frame")
-        ProgressTrack.AnchorPoint = Vector2.new(0, 1)
-        ProgressTrack.Position = UDim2.new(0, 0, 1, 0)
-        ProgressTrack.Size = UDim2.new(1, 0, 0, 3)
+        ProgressTrack.AnchorPoint = Vector2.new(0.5, 1)
+        ProgressTrack.Position = UDim2.new(0.5, 0, 1, -6)
+        ProgressTrack.Size = UDim2.new(1, -20, 0, 3)
         applyThemeColor(ProgressTrack, "Stroke")
         ProgressTrack.BackgroundTransparency = 1
         ProgressTrack.BorderSizePixel = 0
         ProgressTrack.ZIndex = 3
         ProgressTrack.ClipsDescendants = true
         ProgressTrack.Parent = Toast
+        corner(ProgressTrack, 2)
         local ProgressBar = Instance.new("Frame")
         ProgressBar.Size = UDim2.new(1, 0, 1, 0)
         ProgressBar.BackgroundColor3 = color
         ProgressBar.BorderSizePixel = 0
         ProgressBar.ZIndex = 3
         ProgressBar.Parent = ProgressTrack
+        corner(ProgressBar, 2)
 
         -- ป๊อปสเกลเด้งเข้า ให้รู้สึกมีชีวิตชีวาตอนแจ้งเตือนขึ้น (ไม่แตะ Position เพราะ UIListLayout คุมอยู่)
         local ToastScale = Instance.new("UIScale")
