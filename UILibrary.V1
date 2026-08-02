@@ -1,11 +1,10 @@
 --[[
-    Pro Mobile & PC UI Library v5 (Theme System & More APIs)
-    ========================================================
-    อัปเดตจาก v4:
-    - เพิ่มระบบ Theme Switcher เปลี่ยนสี UI ได้แบบเรียลไทม์ด้วย Dropdown
-    - เพิ่ม API: CreateDivider, CreateParagraph, CreateThemeDropdown, CreateSettingsTab
-    - ปรับปรุง Slider ให้รองรับทศนิยม (Places) และ Suffix
-    - ปรับปรุงระบบ Attribute เพื่ออัปเดตสีแบบ Global
+    Pro Mobile & PC UI Library v6 (Image Icon System)
+    =================================================
+    อัปเดตจาก v5:
+    - เปลี่ยนระบบไอคอนจาก Emoji เป็น ImageLabel (เหมือน WindUI)
+    - เพิ่ม Library.Icons สำหรับเก็บ Asset ID
+    - Tab และ Button รองรับไอคอนแบบรูปภาพ และเปลี่ยนสีตามธีมอัตโนมัติ
 ]]
 
 local Library = {}
@@ -13,6 +12,22 @@ Library.__index = Library
 Library.Flags = {}
 Library.Themes = {}
 Library.CurrentTheme = "Midnight"
+
+-- ============ ICONS SETUP ============
+-- ใส่ Asset ID หรือ rbxassetid:// ของไอคอนตรงนี้ (ดึงมาจากสไตล์ WindUI)
+Library.Icons = {
+    home = "rbxassetid://6035047377",
+    settings = "rbxassetid://6031280882",
+    user = "rbxassetid://6031075938",
+    shield = "rbxassetid://6031110341",
+    script = "rbxassetid://6031263435",
+    star = "rbxassetid://6031075939",
+    check = "rbxassetid://6031109897",
+    close = "rbxassetid://6031094670",
+    warning = "rbxassetid://6031094678",
+    info = "rbxassetid://6031094674",
+    chevronDown = "rbxassetid://6031094678"
+}
 
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -27,8 +42,8 @@ local BaseTheme = {
     ElementHover = Color3.fromRGB(41, 41, 50),
     Text = Color3.fromRGB(245, 245, 250),
     SubText = Color3.fromRGB(150, 150, 165),
-    AccentA = Color3.fromRGB(90, 130, 255),   -- gradient start
-    AccentB = Color3.fromRGB(170, 100, 255),  -- gradient end
+    AccentA = Color3.fromRGB(90, 130, 255),
+    AccentB = Color3.fromRGB(170, 100, 255),
     ToggleOff = Color3.fromRGB(55, 55, 63),
     Stroke = Color3.fromRGB(50, 50, 58),
     Success = Color3.fromRGB(90, 220, 140),
@@ -40,43 +55,24 @@ BaseTheme.Accent = BaseTheme.AccentA
 
 Library.Themes.Midnight = BaseTheme
 Library.Themes.Ocean = setmetatable({
-    Background = Color3.fromRGB(10, 20, 30),
-    Sidebar = Color3.fromRGB(12, 25, 38),
-    Topbar = Color3.fromRGB(15, 30, 45),
-    Element = Color3.fromRGB(20, 40, 60),
-    ElementHover = Color3.fromRGB(25, 50, 75),
-    AccentA = Color3.fromRGB(0, 200, 255),
-    AccentB = Color3.fromRGB(0, 100, 200),
-    ToggleOff = Color3.fromRGB(30, 50, 70),
-    Stroke = Color3.fromRGB(40, 70, 90)
+    Background = Color3.fromRGB(10, 20, 30), Sidebar = Color3.fromRGB(12, 25, 38), Topbar = Color3.fromRGB(15, 30, 45),
+    Element = Color3.fromRGB(20, 40, 60), ElementHover = Color3.fromRGB(25, 50, 75), AccentA = Color3.fromRGB(0, 200, 255),
+    AccentB = Color3.fromRGB(0, 100, 200), ToggleOff = Color3.fromRGB(30, 50, 70), Stroke = Color3.fromRGB(40, 70, 90)
 }, {__index = BaseTheme})
 Library.Themes.Crimson = setmetatable({
-    Background = Color3.fromRGB(30, 10, 15),
-    Sidebar = Color3.fromRGB(35, 12, 18),
-    Topbar = Color3.fromRGB(40, 15, 22),
-    Element = Color3.fromRGB(50, 20, 28),
-    ElementHover = Color3.fromRGB(60, 25, 35),
-    AccentA = Color3.fromRGB(255, 50, 80),
-    AccentB = Color3.fromRGB(200, 20, 40),
-    ToggleOff = Color3.fromRGB(60, 30, 35),
-    Stroke = Color3.fromRGB(70, 30, 40)
+    Background = Color3.fromRGB(30, 10, 15), Sidebar = Color3.fromRGB(35, 12, 18), Topbar = Color3.fromRGB(40, 15, 22),
+    Element = Color3.fromRGB(50, 20, 28), ElementHover = Color3.fromRGB(60, 25, 35), AccentA = Color3.fromRGB(255, 50, 80),
+    AccentB = Color3.fromRGB(200, 20, 40), ToggleOff = Color3.fromRGB(60, 30, 35), Stroke = Color3.fromRGB(70, 30, 40)
 }, {__index = BaseTheme})
 Library.Themes.Light = setmetatable({
-    Background = Color3.fromRGB(240, 240, 245),
-    Sidebar = Color3.fromRGB(230, 230, 235),
-    Topbar = Color3.fromRGB(220, 220, 225),
-    Element = Color3.fromRGB(250, 250, 255),
-    ElementHover = Color3.fromRGB(235, 235, 245),
-    Text = Color3.fromRGB(20, 20, 25),
-    SubText = Color3.fromRGB(90, 90, 100),
-    AccentA = Color3.fromRGB(100, 100, 255),
-    AccentB = Color3.fromRGB(150, 50, 255),
-    ToggleOff = Color3.fromRGB(200, 200, 210),
-    Stroke = Color3.fromRGB(200, 200, 210)
+    Background = Color3.fromRGB(240, 240, 245), Sidebar = Color3.fromRGB(230, 230, 235), Topbar = Color3.fromRGB(220, 220, 225),
+    Element = Color3.fromRGB(250, 250, 255), ElementHover = Color3.fromRGB(235, 235, 245), Text = Color3.fromRGB(20, 20, 25),
+    SubText = Color3.fromRGB(90, 90, 100), AccentA = Color3.fromRGB(100, 100, 255), AccentB = Color3.fromRGB(150, 50, 255),
+    ToggleOff = Color3.fromRGB(200, 200, 210), Stroke = Color3.fromRGB(200, 200, 210)
 }, {__index = BaseTheme})
 
 local Theme = Library.Themes.Midnight
-local NOTIFY_ICON = {success = "✓", error = "✕", warning = "!", info = "i"}
+local NOTIFY_ICON = {success = Library.Icons.check, error = Library.Icons.close, warning = Library.Icons.warning, info = Library.Icons.info}
 
 -- ============ HELPERS ============
 local function getUiParent()
@@ -96,7 +92,6 @@ local function corner(inst, radius)
     return c
 end
 
--- ติดตามสีแบบ Global เพื่อให้เปลี่ยนธีมได้
 local function applyThemeColor(inst, key, prop)
     prop = prop or "BackgroundColor3"
     inst:SetAttribute("ThemeKey", key)
@@ -175,7 +170,6 @@ function Library:CreateWindow(config)
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     ScreenGui.Parent = getUiParent()
 
-    -- ============ Theme System ============
     function Library:SetTheme(themeName)
         local newTheme = Library.Themes[themeName]
         if not newTheme then return end
@@ -235,16 +229,14 @@ function Library:CreateWindow(config)
         AccentBar.BorderSizePixel = 0
         AccentBar.Parent = Toast
 
-        local IconBadge = Instance.new("TextLabel")
+        local IconBadge = Instance.new("ImageLabel")
         IconBadge.Size = UDim2.new(0, 22, 0, 22)
         IconBadge.Position = UDim2.new(0, 14, 0, 12)
         IconBadge.BackgroundColor3 = color
         IconBadge.BackgroundTransparency = 1
-        IconBadge.Text = NOTIFY_ICON[ntype] or "i"
-        IconBadge.TextColor3 = Color3.fromRGB(20, 20, 25)
-        IconBadge.Font = Enum.Font.GothamBold
-        IconBadge.TextSize = 12
-        IconBadge.TextTransparency = 1
+        IconBadge.Image = NOTIFY_ICON[ntype] or Library.Icons.info
+        IconBadge.ImageColor3 = Color3.fromRGB(20, 20, 25)
+        IconBadge.ScaleType = Enum.ScaleType.Fit
         IconBadge.Parent = Toast
         corner(IconBadge, 11)
 
@@ -289,7 +281,7 @@ function Library:CreateWindow(config)
         TweenService:Create(Toast, TweenInfo.new(0.2), {BackgroundTransparency = 0}):Play()
         TweenService:Create(outline, TweenInfo.new(0.2), {Transparency = 0.5}):Play()
         TweenService:Create(AccentBar, TweenInfo.new(0.2), {BackgroundTransparency = 0}):Play()
-        TweenService:Create(IconBadge, TweenInfo.new(0.2), {BackgroundTransparency = 0, TextTransparency = 0}):Play()
+        TweenService:Create(IconBadge, TweenInfo.new(0.2), {BackgroundTransparency = 0}):Play()
         TweenService:Create(TitleLbl, TweenInfo.new(0.2), {TextTransparency = 0}):Play()
         TweenService:Create(ContentLbl, TweenInfo.new(0.2), {TextTransparency = 0}):Play()
 
@@ -298,7 +290,7 @@ function Library:CreateWindow(config)
                 TweenService:Create(Toast, TweenInfo.new(0.25), {BackgroundTransparency = 1}):Play()
                 TweenService:Create(outline, TweenInfo.new(0.25), {Transparency = 1}):Play()
                 TweenService:Create(AccentBar, TweenInfo.new(0.25), {BackgroundTransparency = 1}):Play()
-                TweenService:Create(IconBadge, TweenInfo.new(0.25), {BackgroundTransparency = 1, TextTransparency = 1}):Play()
+                TweenService:Create(IconBadge, TweenInfo.new(0.25), {BackgroundTransparency = 1}):Play()
                 TweenService:Create(TitleLbl, TweenInfo.new(0.25), {TextTransparency = 1}):Play()
                 TweenService:Create(ContentLbl, TweenInfo.new(0.25), {TextTransparency = 1}):Play()
                 task.wait(0.25)
@@ -390,28 +382,24 @@ function Library:CreateWindow(config)
         TweenService:Create(SubTitleLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
     end
 
-    local CloseBtn = Instance.new("TextButton")
+    local CloseBtn = Instance.new("ImageButton")
     CloseBtn.Size = UDim2.new(0, 26, 0, 26)
     CloseBtn.AnchorPoint = Vector2.new(1, 0.5)
     CloseBtn.Position = UDim2.new(1, -10, 0.5, 0)
     applyThemeColor(CloseBtn, "Element")
     CloseBtn.BackgroundTransparency = 1
     CloseBtn.AutoButtonColor = false
-    CloseBtn.Text = "×"
-    applyThemeColor(CloseBtn, "SubText", "TextColor3")
-    CloseBtn.TextTransparency = 1
-    CloseBtn.Font = Enum.Font.GothamBold
-    CloseBtn.TextSize = 17
+    CloseBtn.Image = Library.Icons.close
+    applyThemeColor(CloseBtn, "SubText", "ImageColor3")
+    CloseBtn.ScaleType = Enum.ScaleType.Fit
     CloseBtn.ZIndex = 5
     CloseBtn.Parent = TopBar
     corner(CloseBtn, 8)
     CloseBtn.MouseEnter:Connect(function()
-        TweenService:Create(CloseBtn, TweenInfo.new(0.15), {BackgroundColor3 = Theme.Danger}):Play()
-        TweenService:Create(CloseBtn, TweenInfo.new(0.15), {TextColor3 = Color3.fromRGB(255,255,255)}):Play()
+        TweenService:Create(CloseBtn, TweenInfo.new(0.15), {BackgroundColor3 = Theme.Danger, ImageColor3 = Color3.fromRGB(255,255,255)}):Play()
     end)
     CloseBtn.MouseLeave:Connect(function()
-        TweenService:Create(CloseBtn, TweenInfo.new(0.15), {BackgroundColor3 = Theme.Element}):Play()
-        TweenService:Create(CloseBtn, TweenInfo.new(0.15), {TextColor3 = Theme.SubText}):Play()
+        TweenService:Create(CloseBtn, TweenInfo.new(0.15), {BackgroundColor3 = Theme.Element, ImageColor3 = Theme.SubText}):Play()
     end)
     CloseBtn.MouseButton1Click:Connect(function() Window:Destroy() end)
 
@@ -460,7 +448,8 @@ function Library:CreateWindow(config)
     TweenService:Create(topBarFix, TweenInfo.new(0.28), {BackgroundTransparency = 0}):Play()
     TweenService:Create(TitleLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
     TweenService:Create(LogoDot, TweenInfo.new(0.3), {BackgroundTransparency = 0}):Play()
-    TweenService:Create(CloseBtn, TweenInfo.new(0.28), {TextTransparency = 0}):Play()
+    TweenService:Create(CloseBtn, TweenInfo.new(0.28), {ImageTransparency = 1}):Play() -- start transparent then fade in
+    TweenService:Create(CloseBtn, TweenInfo.new(0.28), {ImageTransparency = 0}):Play()
     TweenService:Create(TabContainer, TweenInfo.new(0.28), {BackgroundTransparency = 0}):Play()
 
     if config.ToggleKeybind then
@@ -476,9 +465,8 @@ function Library:CreateWindow(config)
     function Window:SetTitle(newTitle) TitleLabel.Text = newTitle end
     function Window:Destroy() ScreenGui:Destroy() end
 
-    -- ============ SETTINGS TAB API ============
     function Window:CreateSettingsTab()
-        local tab = Window:CreateTab("Settings", "⚙️")
+        local tab = Window:CreateTab("Settings", "settings")
         tab:CreateThemeDropdown()
         tab:CreateButton({
             Text = "Destroy UI",
@@ -498,13 +486,35 @@ function Library:CreateWindow(config)
         applyThemeColor(TabBtn, "Element")
         TabBtn.BackgroundTransparency = 1
         TabBtn.AutoButtonColor = false
-        TabBtn.Text = (icon and (icon .. "  ") or "  ") .. name
-        applyThemeColor(TabBtn, "SubText", "TextColor3")
-        TabBtn.Font = Enum.Font.GothamSemibold
-        TabBtn.TextSize = 13
-        TabBtn.TextXAlignment = Enum.TextXAlignment.Left
+        TabBtn.Text = ""
         TabBtn.Parent = TabList
         corner(TabBtn, 8)
+
+        -- ระบบ Icon แบบ ImageLabel
+        local iconOffset = 10
+        if icon then
+            local IconImg = Instance.new("ImageLabel")
+            IconImg.Size = UDim2.new(0, 18, 0, 18)
+            IconImg.Position = UDim2.new(0, 10, 0.5, 0)
+            IconImg.AnchorPoint = Vector2.new(0, 0.5)
+            IconImg.BackgroundTransparency = 1
+            IconImg.Image = Library.Icons[icon] or icon -- รองรับชื่อย่อหรือ rbxassetid ตรงๆ
+            IconImg.ScaleType = Enum.ScaleType.Fit
+            applyThemeColor(IconImg, "SubText", "ImageColor3")
+            IconImg.Parent = TabBtn
+            iconOffset = 36
+        end
+
+        local TabTitle = Instance.new("TextLabel")
+        TabTitle.Size = UDim2.new(1, -iconOffset - 10, 1, 0)
+        TabTitle.Position = UDim2.new(0, iconOffset, 0, 0)
+        TabTitle.BackgroundTransparency = 1
+        TabTitle.Text = name
+        applyThemeColor(TabTitle, "SubText", "TextColor3")
+        TabTitle.Font = Enum.Font.GothamSemibold
+        TabTitle.TextSize = 13
+        TabTitle.TextXAlignment = Enum.TextXAlignment.Left
+        TabTitle.Parent = TabBtn
 
         local ActiveBar = Instance.new("Frame")
         ActiveBar.Size = UDim2.new(0, 3, 0, 0)
@@ -546,7 +556,13 @@ function Library:CreateWindow(config)
                 BackgroundColor3 = active and Theme.AccentA or Theme.Element
             }):Play()
             TweenService:Create(ActiveBar, TweenInfo.new(0.18), {Size = UDim2.new(0, 3, 0, active and 20 or 0)}):Play()
-            TabBtn.TextColor3 = active and Theme.Text or Theme.SubText
+            TabTitle.TextColor3 = active and Theme.Text or Theme.SubText
+            if icon then
+                local iconImg = TabBtn:FindFirstChildOfClass("ImageLabel")
+                if iconImg then
+                    TweenService:Create(iconImg, TweenInfo.new(0.18), {ImageColor3 = active and Theme.Text or Theme.SubText}):Play()
+                end
+            end
         end
 
         TabBtn.MouseButton1Click:Connect(function()
@@ -639,15 +655,38 @@ function Library:CreateWindow(config)
             local Btn = Instance.new("TextButton")
             Btn.Size = UDim2.new(1, 0, 0, 40)
             applyThemeColor(Btn, "Element")
-            Btn.Text = c.Text or "Button"
-            applyThemeColor(Btn, "Text", "TextColor3")
-            Btn.Font = Enum.Font.GothamSemibold
-            Btn.TextSize = 14
             Btn.AutoButtonColor = false
+            Btn.Text = ""
             Btn.Parent = TabContent
             corner(Btn, 9)
             applyHoverEffect(Btn, "Element", "ElementHover")
             applyGlowOnHover(Btn)
+
+            local iconOffset = 12
+            if c.Icon then
+                local IconImg = Instance.new("ImageLabel")
+                IconImg.Size = UDim2.new(0, 18, 0, 18)
+                IconImg.Position = UDim2.new(0, 12, 0.5, 0)
+                IconImg.AnchorPoint = Vector2.new(0, 0.5)
+                IconImg.BackgroundTransparency = 1
+                IconImg.Image = Library.Icons[c.Icon] or c.Icon
+                IconImg.ScaleType = Enum.ScaleType.Fit
+                applyThemeColor(IconImg, "SubText", "ImageColor3")
+                IconImg.Parent = Btn
+                iconOffset = 38
+            end
+
+            local Label = Instance.new("TextLabel")
+            Label.Size = UDim2.new(1, -iconOffset - 12, 1, 0)
+            Label.Position = UDim2.new(0, iconOffset, 0, 0)
+            Label.BackgroundTransparency = 1
+            Label.Text = c.Text or "Button"
+            applyThemeColor(Label, "Text", "TextColor3")
+            Label.Font = Enum.Font.GothamSemibold
+            Label.TextSize = 14
+            Label.TextXAlignment = Enum.TextXAlignment.Left
+            Label.Parent = Btn
+
             Btn.MouseButton1Click:Connect(function()
                 if c.Notify ~= false then
                     Library:Notify({
@@ -659,7 +698,7 @@ function Library:CreateWindow(config)
                 end
                 if c.Callback then c.Callback() end
             end)
-            return newElement(Btn, nil, function(_, newText) Btn.Text = newText end)
+            return newElement(Btn, nil, function(_, newText) Label.Text = newText end)
         end
 
         function Tab:CreateToggle(c)
@@ -829,14 +868,32 @@ function Library:CreateWindow(config)
             Drop.Size = UDim2.new(1, 0, 0, 40)
             applyThemeColor(Drop, "Element")
             Drop.AutoButtonColor = false
-            Drop.Text = (c.Text or "Dropdown") .. ": " .. selected
-            applyThemeColor(Drop, "Text", "TextColor3")
-            Drop.Font = Enum.Font.GothamSemibold
-            Drop.TextSize = 14
+            Drop.Text = ""
             Drop.Parent = TabContent
             corner(Drop, 9)
             applyHoverEffect(Drop, "Element", "ElementHover")
             applyGlowOnHover(Drop)
+
+            local Label = Instance.new("TextLabel")
+            Label.Size = UDim2.new(1, -40, 1, 0)
+            Label.Position = UDim2.new(0, 12, 0, 0)
+            Label.BackgroundTransparency = 1
+            Label.Text = (c.Text or "Dropdown") .. ": " .. selected
+            applyThemeColor(Label, "Text", "TextColor3")
+            Label.Font = Enum.Font.GothamSemibold
+            Label.TextSize = 14
+            Label.TextXAlignment = Enum.TextXAlignment.Left
+            Label.Parent = Drop
+
+            local Arrow = Instance.new("ImageLabel")
+            Arrow.Size = UDim2.new(0, 18, 0, 18)
+            Arrow.Position = UDim2.new(1, -30, 0.5, 0)
+            Arrow.AnchorPoint = Vector2.new(0, 0.5)
+            Arrow.BackgroundTransparency = 1
+            Arrow.Image = Library.Icons.chevronDown
+            applyThemeColor(Arrow, "SubText", "ImageColor3")
+            Arrow.ScaleType = Enum.ScaleType.Fit
+            Arrow.Parent = Drop
 
             local isOpen, list, outsideConn = false, nil, nil
             local function closeDropdown()
@@ -845,7 +902,7 @@ function Library:CreateWindow(config)
             end
             local function selectOption(opt, fireCallback)
                 selected = opt
-                Drop.Text = (c.Text or "Dropdown") .. ": " .. opt
+                Label.Text = (c.Text or "Dropdown") .. ": " .. opt
                 bindFlag(c.Flag, selected)
                 closeDropdown()
                 if fireCallback and c.Callback then c.Callback(opt) end
@@ -914,18 +971,27 @@ function Library:CreateWindow(config)
             Btn.Size = UDim2.new(1, 0, 0, 40)
             applyThemeColor(Btn, "Element")
             Btn.AutoButtonColor = false
-            Btn.Text = c.Text or "ColorPicker"
-            applyThemeColor(Btn, "Text", "TextColor3")
-            Btn.Font = Enum.Font.GothamSemibold
-            Btn.TextSize = 14
+            Btn.Text = ""
             Btn.Parent = TabContent
             corner(Btn, 9)
             applyHoverEffect(Btn, "Element", "ElementHover")
             applyGlowOnHover(Btn)
 
+            local Label = Instance.new("TextLabel")
+            Label.Size = UDim2.new(1, -40, 1, 0)
+            Label.Position = UDim2.new(0, 12, 0, 0)
+            Label.BackgroundTransparency = 1
+            Label.Text = c.Text or "ColorPicker"
+            applyThemeColor(Label, "Text", "TextColor3")
+            Label.Font = Enum.Font.GothamSemibold
+            Label.TextSize = 14
+            Label.TextXAlignment = Enum.TextXAlignment.Left
+            Label.Parent = Btn
+
             local colorPreview = Instance.new("Frame")
             colorPreview.Size = UDim2.new(0, 20, 0, 20)
             colorPreview.Position = UDim2.new(1, -30, 0.5, -10)
+            colorPreview.AnchorPoint = Vector2.new(0, 0.5)
             colorPreview.BackgroundColor3 = selectedColor
             colorPreview.Parent = Btn
             corner(colorPreview, 6)
@@ -997,8 +1063,14 @@ function Library:CreateWindow(config)
             Box.Font = Enum.Font.GothamSemibold
             Box.TextSize = 14
             Box.ClearTextOnFocus = false
+            Box.TextXAlignment = Enum.TextXAlignment.Left
             Box.Parent = TabContent
             corner(Box, 9)
+            
+            local Pad = Instance.new("UIPadding")
+            Pad.PaddingLeft = UDim.new(0, 12)
+            Pad.Parent = Box
+            
             applyGlowOnHover(Box)
             Box.FocusLost:Connect(function()
                 Library.Flags[c.Flag or ""] = Box.Text
@@ -1017,26 +1089,34 @@ function Library:CreateWindow(config)
             Btn.Size = UDim2.new(1, 0, 0, 40)
             applyThemeColor(Btn, "Element")
             Btn.AutoButtonColor = false
-            Btn.Text = (c.Text or "Keybind") .. ": " .. (selectedKey and selectedKey.Name or "None")
-            applyThemeColor(Btn, "Text", "TextColor3")
-            Btn.Font = Enum.Font.GothamSemibold
-            Btn.TextSize = 14
+            Btn.Text = ""
             Btn.Parent = TabContent
             corner(Btn, 9)
             applyHoverEffect(Btn, "Element", "ElementHover")
             applyGlowOnHover(Btn)
+
+            local Label = Instance.new("TextLabel")
+            Label.Size = UDim2.new(1, -60, 1, 0)
+            Label.Position = UDim2.new(0, 12, 0, 0)
+            Label.BackgroundTransparency = 1
+            Label.Text = (c.Text or "Keybind") .. ": " .. (selectedKey and selectedKey.Name or "None")
+            applyThemeColor(Label, "Text", "TextColor3")
+            Label.Font = Enum.Font.GothamSemibold
+            Label.TextSize = 14
+            Label.TextXAlignment = Enum.TextXAlignment.Left
+            Label.Parent = Btn
 
             local waiting, bindConn = false, nil
             Btn.MouseButton1Click:Connect(function()
                 if waiting then return end
                 if bindConn then bindConn:Disconnect(); bindConn = nil end
                 waiting = true
-                Btn.Text = (c.Text or "Keybind") .. ": Press..."
+                Label.Text = (c.Text or "Keybind") .. ": Press..."
                 bindConn = UserInputService.InputBegan:Connect(function(input)
                     if waiting and input.UserInputType == Enum.UserInputType.Keyboard then
                         selectedKey = input.KeyCode
                         bindFlag(c.Flag, selectedKey)
-                        Btn.Text = (c.Text or "Keybind") .. ": " .. selectedKey.Name
+                        Label.Text = (c.Text or "Keybind") .. ": " .. selectedKey.Name
                         waiting = false
                         if bindConn then bindConn:Disconnect(); bindConn = nil end
                         if c.Callback then c.Callback(selectedKey) end
@@ -1046,7 +1126,7 @@ function Library:CreateWindow(config)
             return newElement(Btn, function() return selectedKey end, function(_, newKey)
                 selectedKey = newKey
                 bindFlag(c.Flag, selectedKey)
-                Btn.Text = (c.Text or "Keybind") .. ": " .. (newKey and newKey.Name or "None")
+                Label.Text = (c.Text or "Keybind") .. ": " .. (newKey and newKey.Name or "None")
             end)
         end
 
