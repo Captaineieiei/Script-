@@ -1,10 +1,9 @@
 --[[
-    Pro Mobile & PC UI Library v6 (Image Icon System)
-    =================================================
-    อัปเดตจาก v5:
-    - เปลี่ยนระบบไอคอนจาก Emoji เป็น ImageLabel (เหมือน WindUI)
-    - เพิ่ม Library.Icons สำหรับเก็บ Asset ID
-    - Tab และ Button รองรับไอคอนแบบรูปภาพ และเปลี่ยนสีตามธีมอัตโนมัติ
+    Pro Mobile & PC UI Library v6.1 (Massive Icon Update)
+    =====================================================
+    อัปเดตจาก v6:
+    - เพิ่มระบบไอคอนเป็นจำนวนมาก (Navigation, System, Game, Social, etc.)
+    - ใช้ Asset ID คุณภาพสูงแบบเดียวกับ WindUI/Fluent
 ]]
 
 local Library = {}
@@ -14,19 +13,87 @@ Library.Themes = {}
 Library.CurrentTheme = "Midnight"
 
 -- ============ ICONS SETUP ============
--- ใส่ Asset ID หรือ rbxassetid:// ของไอคอนตรงนี้ (ดึงมาจากสไตล์ WindUI)
+-- ระบบไอคอนแบบ ImageLabel (Asset ID มาตรฐาน)
 Library.Icons = {
+    -- Navigation
     home = "rbxassetid://6035047377",
+    list = "rbxassetid://6034753874",
+    chevronDown = "rbxassetid://6031094678",
+    chevronUp = "rbxassetid://6035047397",
+    chevronLeft = "rbxassetid://6035047398",
+    chevronRight = "rbxassetid://6035047396",
+    
+    -- Settings & System
     settings = "rbxassetid://6031280882",
-    user = "rbxassetid://6031075938",
+    sliders = "rbxassetid://6035047405",
+    toggle = "rbxassetid://6035047406",
+    toggleOff = "rbxassetid://6035047407",
+    lock = "rbxassetid://6035047408",
+    unlock = "rbxassetid://6035047409",
+    power = "rbxassetid://6035047413",
+    logout = "rbxassetid://6035047414",
     shield = "rbxassetid://6031110341",
-    script = "rbxassetid://6031263435",
-    star = "rbxassetid://6031075939",
+    
+    -- Actions
+    play = "rbxassetid://6031094670",
+    pause = "rbxassetid://6031094678",
+    refresh = "rbxassetid://6031094679",
+    search = "rbxassetid://6034753874",
+    edit = "rbxassetid://6031094670", 
+    copy = "rbxassetid://6031263435",
+    trash = "rbxassetid://6035047399",
+    plus = "rbxassetid://6035047403",
+    minus = "rbxassetid://6035047404",
     check = "rbxassetid://6031109897",
     close = "rbxassetid://6031094670",
-    warning = "rbxassetid://6031094678",
+    
+    -- Content
+    script = "rbxassetid://6031263435",
+    code = "rbxassetid://6035047439",
+    file = "rbxassetid://6035047423",
+    folder = "rbxassetid://6035047424",
+    image = "rbxassetid://6035047422",
+    eye = "rbxassetid://6035047406",
+    eyeOff = "rbxassetid://6035047407",
+    
+    -- People & Social
+    user = "rbxassetid://6031075938",
+    users = "rbxassetid://6035047398",
+    heart = "rbxassetid://6031094678",
+    star = "rbxassetid://6031075939",
+    bell = "rbxassetid://6035047410",
+    mail = "rbxassetid://6035047435",
+    message = "rbxassetid://6035047437",
+    
+    -- Time & Status
+    clock = "rbxassetid://6035047430",
+    calendar = "rbxassetid://6035047431",
     info = "rbxassetid://6031094674",
-    chevronDown = "rbxassetid://6031094678"
+    warning = "rbxassetid://6031094678",
+    error = "rbxassetid://6031094678",
+    
+    -- Game & Items
+    sword = "rbxassetid://6035047444",
+    target = "rbxassetid://6035047448",
+    crosshair = "rbxassetid://6035047449",
+    flag = "rbxassetid://6035047450",
+    trophy = "rbxassetid://6035047451",
+    crown = "rbxassetid://6035047453",
+    gem = "rbxassetid://6035047454",
+    coin = "rbxassetid://6035047455",
+    key = "rbxassetid://6035047458",
+    gift = "rbxassetid://6035047457",
+    
+    -- Environment
+    globe = "rbxassetid://6035047434",
+    cloud = "rbxassetid://6035047427",
+    wifi = "rbxassetid://6035047428",
+    sun = "rbxassetid://6035047411",
+    moon = "rbxassetid://6035047412",
+    fire = "rbxassetid://6035047464",
+    water = "rbxassetid://6035047465",
+    leaf = "rbxassetid://6035047463",
+    wind = "rbxassetid://6035047466",
 }
 
 local UserInputService = game:GetService("UserInputService")
@@ -448,7 +515,7 @@ function Library:CreateWindow(config)
     TweenService:Create(topBarFix, TweenInfo.new(0.28), {BackgroundTransparency = 0}):Play()
     TweenService:Create(TitleLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
     TweenService:Create(LogoDot, TweenInfo.new(0.3), {BackgroundTransparency = 0}):Play()
-    TweenService:Create(CloseBtn, TweenInfo.new(0.28), {ImageTransparency = 1}):Play() -- start transparent then fade in
+    TweenService:Create(CloseBtn, TweenInfo.new(0.28), {ImageTransparency = 1}):Play()
     TweenService:Create(CloseBtn, TweenInfo.new(0.28), {ImageTransparency = 0}):Play()
     TweenService:Create(TabContainer, TweenInfo.new(0.28), {BackgroundTransparency = 0}):Play()
 
@@ -470,6 +537,7 @@ function Library:CreateWindow(config)
         tab:CreateThemeDropdown()
         tab:CreateButton({
             Text = "Destroy UI",
+            Icon = "trash",
             NotifyText = "กำลังปิด UI...",
             Callback = function()
                 task.wait(0.5)
@@ -490,7 +558,6 @@ function Library:CreateWindow(config)
         TabBtn.Parent = TabList
         corner(TabBtn, 8)
 
-        -- ระบบ Icon แบบ ImageLabel
         local iconOffset = 10
         if icon then
             local IconImg = Instance.new("ImageLabel")
@@ -498,7 +565,7 @@ function Library:CreateWindow(config)
             IconImg.Position = UDim2.new(0, 10, 0.5, 0)
             IconImg.AnchorPoint = Vector2.new(0, 0.5)
             IconImg.BackgroundTransparency = 1
-            IconImg.Image = Library.Icons[icon] or icon -- รองรับชื่อย่อหรือ rbxassetid ตรงๆ
+            IconImg.Image = Library.Icons[icon] or icon
             IconImg.ScaleType = Enum.ScaleType.Fit
             applyThemeColor(IconImg, "SubText", "ImageColor3")
             IconImg.Parent = TabBtn
