@@ -11,7 +11,12 @@ Library.__index = Library
 Library.Flags = {}
 Library.Themes = {}
 Library.CurrentTheme = "Midnight"
-Library.Version = "6.2.0"
+Library.Version = "6.3.0"
+
+-- ============ FLAG SYSTEM (ต่อขยาย: registry + event สำหรับ Config save/load และ dependency) ============
+Library.FlagElements = {}                    -- ชื่อ Flag -> element object (ใช้ตอน LoadConfig เพื่อ Set ค่ากลับเข้า UI จริง)
+Library.FlagChanged = Instance.new("BindableEvent") -- ยิงทุกครั้งที่ Flag เปลี่ยนค่า (flag, value) ใช้กับ LinkVisibility/KeyList
+Library.ConfigFolder = "SpectreUI_Config"     -- โฟลเดอร์เก็บไฟล์ config (เปลี่ยนได้ผ่าน CreateWindow({ConfigFolder = "..."}))
 
 -- คืนค่าปัจจุบันของ Flag ตามชื่อ (เทียบเท่าการอ่าน Library.Flags[name] ตรงๆ)
 function Library:GetFlag(name)
@@ -111,6 +116,9 @@ Library.Icons = {
 
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
+local HttpService = game:GetService("HttpService")
+local RunService = game:GetService("RunService")
+local StatsService = game:GetService("Stats")
 
 -- ============ CACHED TWEENINFO (avoid re-allocating identical TweenInfo objects on every hover/click) ============
 local TI = {
@@ -188,6 +196,112 @@ Library.Themes.Light = resolveTheme({
 function Library:AddTheme(name, overrides)
     if type(name) ~= "string" or name == "" then return end
     Library.Themes[name] = resolveTheme(overrides)
+end
+
+-- ============ CONFIG SAVE/LOAD ============
+-- บันทึก/โหลดค่า Library.Flags ทั้งหมดเป็นไฟล์ .json ผ่าน executor (writefile/readfile ฯลฯ)
+-- ถ้า executor ไม่รองรับไฟล์ (เช่นบางตัวบล็อกไว้) จะแจ้งเตือนแทนการ error ทิ้งเงียบๆ
+local function hasFileSupport()
+    return type(writefile) == "function" and type(readfile) == "function"
+       and type(isfile) == "function" and type(isfolder) == "function" and type(makefolder) == "function"
+end
+
+local function ensureConfigFolder()
+    if not isfolder(Library.ConfigFolder) then
+        makefolder(Library.ConfigFolder)
+    end
+end
+
+local function safeNotify(opts)
+    -- Library:Notify ถูกกำหนดจริงตอนเรียก CreateWindow เท่านั้น ถ้ายังไม่มีหน้าต่างเปิดอยู่ให้เงียบไว้ ไม่ error
+    if Library.Notify then
+        pcall(function() Library:Notify(opts) end)
+    end
+end
+
+-- คืน path เต็มของไฟล์ config ชื่อ name (sanitize ชื่อไฟล์กันอักขระที่ใช้ทำ path แตก)
+local function configPath(name)
+    name = tostring(name or "default"):gsub("[^%w_%- ]", "_")
+    return Library.ConfigFolder .. "/" .. name .. ".json"
+end
+
+-- บันทึกค่าปัจจุบันของทุก Flag ลงไฟล์ ชื่อ config ตาม `name` (ไม่ระบุ = "default")
+function Library:SaveConfig(name)
+    if not hasFileSupport() then
+        safeNotify({Title = "Config", Content = "Executor นี้ไม่รองรับการเขียนไฟล์ (writefile)", Type = "error"})
+        return false
+    end
+    local ok, encoded = pcall(function() return HttpService:JSONEncode(Library.Flags) end)
+    if not ok then
+        safeNotify({Title = "Config", Content = "แปลงค่า Config เป็น JSON ไม่สำเร็จ", Type = "error"})
+        return false
+    end
+    ensureConfigFolder()
+    local wok = pcall(writefile, configPath(name), encoded)
+    if not wok then
+        safeNotify({Title = "Config", Content = "บันทึกไฟล์ไม่สำเร็จ", Type = "error"})
+        return false
+    end
+    safeNotify({Title = "Config", Content = "บันทึก \"" .. tostring(name or "default") .. "\" แล้ว", Type = "success", Duration = 2})
+    return true
+end
+
+-- โหลด config กลับเข้าไปทั้ง Library.Flags และ Element จริงบนหน้าจอ (ถ้า element นั้นถูกสร้างไว้แล้วและมี Flag ตรงกัน)
+function Library:LoadConfig(name)
+    if not hasFileSupport() then
+        safeNotify({Title = "Config", Content = "Executor นี้ไม่รองรับการอ่านไฟล์ (readfile)", Type = "error"})
+        return false
+    end
+    local path = configPath(name)
+    if not isfile(path) then
+        safeNotify({Title = "Config", Content = "ไม่พบไฟล์ config \"" .. tostring(name or "default") .. "\"", Type = "warning", Duration = 2})
+        return false
+    end
+    local rok, raw = pcall(readfile, path)
+    if not rok then
+        safeNotify({Title = "Config", Content = "อ่านไฟล์ config ไม่สำเร็จ", Type = "error"})
+        return false
+    end
+    local dok, data = pcall(function() return HttpService:JSONDecode(raw) end)
+    if not dok or type(data) ~= "table" then
+        safeNotify({Title = "Config", Content = "ไฟล์ config เสียหายหรือไม่ใช่ JSON", Type = "error"})
+        return false
+    end
+    for flag, value in pairs(data) do
+        local elem = Library.FlagElements[flag]
+        if elem and elem.Set then
+            pcall(function() elem:Set(value) end)
+        else
+            Library.Flags[flag] = value
+        end
+    end
+    safeNotify({Title = "Config", Content = "โหลด \"" .. tostring(name or "default") .. "\" แล้ว", Type = "success", Duration = 2})
+    return true
+end
+
+-- ลิสต์ชื่อ config ทั้งหมดที่มีอยู่ในโฟลเดอร์ (ไม่รวมนามสกุล .json)
+function Library:ListConfigs()
+    local list = {}
+    if not hasFileSupport() or type(listfiles) ~= "function" then return list end
+    if not isfolder(Library.ConfigFolder) then return list end
+    for _, filePath in ipairs(listfiles(Library.ConfigFolder)) do
+        local fname = filePath:match("([^/\\]+)%.json$")
+        if fname then table.insert(list, fname) end
+    end
+    table.sort(list)
+    return list
+end
+
+-- ลบไฟล์ config ชื่อ name ทิ้ง
+function Library:DeleteConfig(name)
+    if not hasFileSupport() or type(delfile) ~= "function" then return false end
+    local path = configPath(name)
+    if isfile(path) then
+        pcall(delfile, path)
+        safeNotify({Title = "Config", Content = "ลบ \"" .. tostring(name or "default") .. "\" แล้ว", Type = "warning", Duration = 2})
+        return true
+    end
+    return false
 end
 
 -- Theme คือตารางที่ "ใช้งานจริง" ต้องเป็นก้อนของตัวเองแยกจากธีมทุกอันข้างบนเสมอ (ห้ามชี้ตัวเดียวกัน)
@@ -318,14 +432,41 @@ local function isPointOverGui(pos, guiObject)
        and pos.Y >= topLeft.Y and pos.Y <= topLeft.Y + size.Y
 end
 
-local function newElement(root, getter, setter, destroyer)
-    return {
+-- flag = ชื่อ Flag ของ element นี้เอง (ถ้ามี) เอาไว้ลงทะเบียนใน Library.FlagElements
+-- เพื่อให้ Library:LoadConfig สามารถเรียก element:Set(value) แล้วอัปเดต UI จริงได้ (ไม่ใช่แค่ทับ Flags table เงียบๆ)
+local function newElement(root, getter, setter, destroyer, flag)
+    local elem
+    elem = {
         Instance = root,
         Get = getter or function() return nil end,
         Set = setter or function() end,
         SetVisible = function(_, visible) root.Visible = visible end,
-        Destroy = destroyer or function() root:Destroy() end,
+        Destroy = function()
+            if elem._depConn then elem._depConn:Disconnect() end
+            if destroyer then destroyer() else root:Destroy() end
+        end,
     }
+    -- ผูก element นี้ให้โชว์/ซ่อนตามค่าของอีก Flag หนึ่ง (คล้าย "Dependency Box")
+    -- ตัวอย่าง: sliderElem:LinkVisibility("AdvancedMode", true)  -- โชว์เฉพาะตอน AdvancedMode == true
+    -- opts.Invert = true  -> กลับด้านลอจิก (โชว์ตอน "ไม่เท่ากับ" expectedValue)
+    function elem:LinkVisibility(depFlag, expectedValue, opts)
+        opts = type(opts) == "table" and opts or {}
+        if expectedValue == nil then expectedValue = true end
+        local invert = opts.Invert == true
+        local function apply(value)
+            local match = (value == expectedValue)
+            if invert then match = not match end
+            root.Visible = match
+        end
+        apply(Library.Flags[depFlag])
+        if elem._depConn then elem._depConn:Disconnect() end
+        elem._depConn = Library.FlagChanged.Event:Connect(function(changedFlag, value)
+            if changedFlag == depFlag then apply(value) end
+        end)
+        return elem
+    end
+    if flag then Library.FlagElements[flag] = elem end
+    return elem
 end
 
 -- ============ MAIN LIBRARY ============
@@ -346,70 +487,6 @@ function Library:CreateWindow(config)
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     local UiParent = getUiParent()
     ScreenGui.Parent = UiParent
-
-    -- ============ Off-screen protection (สำคัญมากบนมือถือจอเล็ก) ============
-    -- ScreenGui ไม่ได้ตั้ง IgnoreGuiInset ดังนั้น AbsoluteSize/AbsolutePosition ของมันคำนวณเผื่อ
-    -- พื้นที่ inset (เช่นรอยบาก, status bar) ให้แล้วโดยอัตโนมัติ ใช้ค่านี้เป็นขอบเขตจอที่ "ปลอดภัย" ได้เลย
-    local POPUP_MARGIN = 8
-
-    -- ใช้กับ popup ที่รู้ขนาด (กว้าง/สูง) ล่วงหน้า เช่น Dropdown list, ColorPicker
-    -- คืนค่าตำแหน่ง x, y ที่ถูกเลื่อนเข้ามาในจอแล้วถ้าล้นขอบขวา/ล่าง
-    -- ถ้าด้านล่าง anchor ไม่พอที่จะกาง popup จะสลับไปกางด้านบน anchor แทนอัตโนมัติ
-    local function clampPopupPosition(anchor, width, height, gap)
-        gap = gap or 6
-        local screenSize = ScreenGui.AbsoluteSize
-        local aPos, aSize = anchor.AbsolutePosition, anchor.AbsoluteSize
-
-        local x = aPos.X
-        if x + width > screenSize.X - POPUP_MARGIN then
-            x = screenSize.X - POPUP_MARGIN - width
-        end
-        x = math.max(POPUP_MARGIN, x)
-
-        local y = aPos.Y + aSize.Y + gap
-        if y + height > screenSize.Y - POPUP_MARGIN then
-            local yAbove = aPos.Y - gap - height
-            if yAbove >= POPUP_MARGIN then
-                y = yAbove -- พอที่จะกางขึ้นด้านบน anchor แทน
-            else
-                y = math.max(POPUP_MARGIN, screenSize.Y - POPUP_MARGIN - height) -- ไม่พอทั้งบนล่าง ชิดขอบล่างสุดที่พอดีจอ
-            end
-        end
-
-        return x, y
-    end
-
-    -- ใช้ตอนลาก GuiObject (หน้าต่างหลัก / ปุ่มลอย) กันไม่ให้ลากหลุดขอบจอไปเลย
-    -- ดัน Position กลับเข้ามาทันทีถ้าตำแหน่งปัจจุบันล้นขอบ โดยขยับแค่ offset เท่าที่จำเป็น
-    -- (ไม่แตะ Scale เดิม เลยใช้ได้ทั้งกับ object ที่ anchor กลางจอและ anchor มุมซ้ายบน)
-    --
-    -- boundsObj (ถ้ามี): ใช้ขนาด/ตำแหน่งของ object นี้ในการคำนวณขอบเขตแทน guiObj เอง
-    -- จำเป็นสำหรับ Shadow ที่มีรูปเงาป้ายขนาด +60px ล้อมรอบ MainFrame จริง
-    -- ถ้าใช้ขนาด Shadow มาคำนวณตรงๆ บนจอมือถือเล็กๆ ขนาด Shadow (บวก padding) อาจกว้าง/สูงกว่าจอ
-    -- ทำให้ maxX/maxY ติดลบ แล้ว clamp ไปล็อกตำแหน่งเดียวค้างตลอด (อาการ "ลากแล้วติด" ที่เจอ)
-    local function clampAxis(pos, size, screenSize, margin)
-        local available = screenSize - margin * 2
-        if size >= available then
-            -- object ใหญ่กว่าพื้นที่จอที่เหลือ (เช่น resize ใหญ่สุดบนจอเล็ก) ให้จัดกึ่งกลางแกนนั้นแทนการล็อกมุมเดียว
-            return (screenSize - size) / 2
-        end
-        return math.clamp(pos, margin, screenSize - margin - size)
-    end
-
-    local function clampToScreen(guiObj, margin, boundsObj)
-        margin = margin or POPUP_MARGIN
-        boundsObj = boundsObj or guiObj
-        local screenSize = ScreenGui.AbsoluteSize
-        local absPos, absSize = boundsObj.AbsolutePosition, boundsObj.AbsoluteSize
-        local clampedX = clampAxis(absPos.X, absSize.X, screenSize.X, margin)
-        local clampedY = clampAxis(absPos.Y, absSize.Y, screenSize.Y, margin)
-        local dx, dy = clampedX - absPos.X, clampedY - absPos.Y
-        if dx ~= 0 or dy ~= 0 then
-            local pos = guiObj.Position
-            guiObj.Position = UDim2.new(pos.X.Scale, pos.X.Offset + dx, pos.Y.Scale, pos.Y.Offset + dy)
-        end
-    end
-
 
     function Library:SetTheme(themeName)
         local newTheme = Library.Themes[themeName]
@@ -1010,7 +1087,6 @@ function Library:CreateWindow(config)
                             local delta = input2.Position - rDragStart
                             if delta.Magnitude > 4 then rMoved = true end
                             RestoreBtn.Position = UDim2.new(rStartPos.X.Scale, rStartPos.X.Offset + delta.X, rStartPos.Y.Scale, rStartPos.Y.Offset + delta.Y)
-                            clampToScreen(RestoreBtn) -- กันลากปุ่มลอยหลุดขอบจอ
                         end
                     end
                 end)
@@ -1134,11 +1210,17 @@ function Library:CreateWindow(config)
         if type(callback) == "function" then table.insert(closeCallbacks, callback) end
     end
 
+    -- อ้างอิงถึง Watermark/KeyList ที่อาจถูกสร้างทีหลัง (Window:CreateWatermark / Window:CreateKeyList)
+    -- เก็บไว้ตรงนี้เพื่อให้ Window:Destroy() เก็บกวาดทิ้งด้วยตอนปิด UI ทั้งระบบ
+    local activeWatermark, activeKeyList = nil, nil
+
     function Window:Destroy()
         local function finalize()
             for _, cb in ipairs(closeCallbacks) do
                 pcall(cb)
             end
+            if activeWatermark then pcall(function() activeWatermark:Destroy() end) end
+            if activeKeyList then pcall(function() activeKeyList:Destroy() end) end
             ScreenGui:Destroy(); RestoreGui:Destroy(); NotifyGui:Destroy()
         end
         if ScreenGui.Enabled then
@@ -1152,6 +1234,202 @@ function Library:CreateWindow(config)
         else
             finalize()
         end
+    end
+
+    -- ============ Watermark (แถบสถานะลอย มุมจอ, โชว์ได้แม้ UI หลักถูกซ่อน) ============
+    -- config.Text      = ข้อความหลัก (default "SpectreWare")
+    -- config.Position  = UDim2 ตำแหน่ง (default มุมซ้ายบน)
+    -- config.ShowFPS   = true/false โชว์ FPS อัปเดตทุก 1 วิ
+    -- config.ShowPing  = true/false โชว์ Ping (ms) อัปเดตทุก 1 วิ
+    -- คืน object ที่มี :SetText(text) :Show() :Hide() :Toggle() :Destroy()
+    function Window:CreateWatermark(config)
+        config = type(config) == "table" and config or {}
+
+        local oldWM = UiParent:FindFirstChild("WatermarkGui")
+        if oldWM then oldWM:Destroy() end
+
+        local WatermarkGui = Instance.new("ScreenGui")
+        WatermarkGui.Name = "WatermarkGui"
+        WatermarkGui.ResetOnSpawn = false
+        WatermarkGui.IgnoreGuiInset = true
+        WatermarkGui.DisplayOrder = 999
+        WatermarkGui.Parent = UiParent
+
+        local Pill = Instance.new("Frame")
+        Pill.Position = config.Position or UDim2.new(0, 12, 0, 12)
+        Pill.Size = UDim2.new(0, 0, 0, 30)
+        Pill.AutomaticSize = Enum.AutomaticSize.X
+        applyThemeColor(Pill, "Element")
+        Pill.Visible = config.Visible ~= false
+        Pill.Parent = WatermarkGui
+        corner(Pill, 8)
+        stroke(Pill)
+
+        local AccentDot = Instance.new("Frame")
+        AccentDot.AnchorPoint = Vector2.new(0, 0.5)
+        AccentDot.Size = UDim2.new(0, 6, 0, 6)
+        AccentDot.Position = UDim2.new(0, 10, 0.5, 0)
+        applyThemeColor(AccentDot, "AccentA")
+        AccentDot.Parent = Pill
+        corner(AccentDot, 3)
+        accentGradient(AccentDot, 0)
+
+        local Label = Instance.new("TextLabel")
+        Label.BackgroundTransparency = 1
+        Label.Position = UDim2.new(0, 24, 0, 0)
+        Label.Size = UDim2.new(0, 0, 1, 0)
+        Label.AutomaticSize = Enum.AutomaticSize.X
+        Label.Font = Enum.Font.GothamSemibold
+        Label.TextSize = 12
+        applyThemeColor(Label, "Text", "TextColor3")
+        Label.Text = config.Text or "SpectreWare"
+        Label.Parent = Pill
+
+        local Pad = Instance.new("UIPadding")
+        Pad.PaddingRight = UDim.new(0, 12)
+        Pad.Parent = Pill
+
+        local heartbeatConn
+        if config.ShowFPS or config.ShowPing then
+            local frames, lastClock, fps = 0, os.clock(), 0
+            local function refreshStatsText()
+                local parts = {config.Text or "SpectreWare"}
+                if config.ShowFPS then table.insert(parts, fps .. " FPS") end
+                if config.ShowPing then
+                    local ok, ping = pcall(function()
+                        return math.floor(StatsService.Network.ServerStatsItem["Data Ping"]:GetValue())
+                    end)
+                    table.insert(parts, (ok and ping or "--") .. " ms")
+                end
+                Label.Text = table.concat(parts, "  •  ")
+            end
+            refreshStatsText()
+            heartbeatConn = RunService.Heartbeat:Connect(function()
+                frames = frames + 1
+                local now = os.clock()
+                if now - lastClock >= 1 then
+                    fps, frames, lastClock = frames, 0, now
+                    refreshStatsText()
+                end
+            end)
+        end
+
+        local Watermark = {}
+        function Watermark:SetText(text)
+            config.Text = text
+            if not (config.ShowFPS or config.ShowPing) then Label.Text = text end
+        end
+        function Watermark:Show() Pill.Visible = true end
+        function Watermark:Hide() Pill.Visible = false end
+        function Watermark:Toggle() Pill.Visible = not Pill.Visible end
+        function Watermark:Destroy()
+            if heartbeatConn then heartbeatConn:Disconnect() end
+            WatermarkGui:Destroy()
+        end
+        activeWatermark = Watermark
+        return Watermark
+    end
+
+    -- ============ KeyList (กล่องลอยแสดงปุ่มลัดที่ตั้งไว้ อัปเดตอัตโนมัติตาม Flag) ============
+    -- config.Items = { {Text = "ชื่อฟังก์ชัน", Flag = "ชื่อ Flag ของ Tab:CreateKeybind ตัวนั้น"}, ... }
+    -- รายชื่อปุ่มจะอัปเดตสดเมื่อผู้ใช้เปลี่ยนคีย์ผ่าน Keybind element (ผ่าน Library.FlagChanged)
+    -- คืน object ที่มี :AddItem({Text=, Flag=}) :Show() :Hide() :Destroy()
+    function Window:CreateKeyList(config)
+        config = type(config) == "table" and config or {}
+
+        local oldKL = UiParent:FindFirstChild("KeyListGui")
+        if oldKL then oldKL:Destroy() end
+
+        local KeyListGui = Instance.new("ScreenGui")
+        KeyListGui.Name = "KeyListGui"
+        KeyListGui.ResetOnSpawn = false
+        KeyListGui.IgnoreGuiInset = true
+        KeyListGui.DisplayOrder = 997
+        KeyListGui.Parent = UiParent
+
+        local Holder = Instance.new("Frame")
+        Holder.AnchorPoint = Vector2.new(1, 0.5)
+        Holder.Position = config.Position or UDim2.new(1, -12, 0.5, 0)
+        Holder.Size = UDim2.new(0, 176, 0, 0)
+        Holder.AutomaticSize = Enum.AutomaticSize.Y
+        applyThemeColor(Holder, "Element")
+        Holder.Visible = config.Visible ~= false
+        Holder.Parent = KeyListGui
+        corner(Holder, 10)
+        stroke(Holder)
+
+        local Pad = Instance.new("UIPadding")
+        Pad.PaddingLeft = UDim.new(0, 10); Pad.PaddingRight = UDim.new(0, 10)
+        Pad.PaddingTop = UDim.new(0, 8); Pad.PaddingBottom = UDim.new(0, 8)
+        Pad.Parent = Holder
+
+        local Layout = Instance.new("UIListLayout")
+        Layout.Padding = UDim.new(0, 4)
+        Layout.Parent = Holder
+
+        local Title = Instance.new("TextLabel")
+        Title.Size = UDim2.new(1, 0, 0, 18)
+        Title.LayoutOrder = 0
+        Title.BackgroundTransparency = 1
+        Title.Text = config.Title or "KEYBINDS"
+        Title.Font = Enum.Font.GothamBold
+        Title.TextSize = 11
+        applyThemeColor(Title, "SubText", "TextColor3")
+        Title.TextXAlignment = Enum.TextXAlignment.Left
+        Title.Parent = Holder
+
+        local rowConns = {}
+        local KeyList = {}
+
+        function KeyList:AddItem(item)
+            item = type(item) == "table" and item or {}
+            local Row = Instance.new("Frame")
+            Row.Size = UDim2.new(1, 0, 0, 20)
+            Row.BackgroundTransparency = 1
+            Row.LayoutOrder = #Holder:GetChildren()
+            Row.Parent = Holder
+
+            local NameLbl = Instance.new("TextLabel")
+            NameLbl.Size = UDim2.new(0.58, 0, 1, 0)
+            NameLbl.BackgroundTransparency = 1
+            NameLbl.Text = item.Text or "Action"
+            NameLbl.Font = Enum.Font.Gotham
+            NameLbl.TextSize = 12
+            NameLbl.TextXAlignment = Enum.TextXAlignment.Left
+            NameLbl.TextTruncate = Enum.TextTruncate.AtEnd
+            applyThemeColor(NameLbl, "SubText", "TextColor3")
+            NameLbl.Parent = Row
+
+            local KeyLbl = Instance.new("TextLabel")
+            KeyLbl.Size = UDim2.new(0.42, 0, 1, 0)
+            KeyLbl.Position = UDim2.new(0.58, 0, 0, 0)
+            KeyLbl.BackgroundTransparency = 1
+            KeyLbl.Font = Enum.Font.GothamBold
+            KeyLbl.TextSize = 12
+            KeyLbl.TextXAlignment = Enum.TextXAlignment.Right
+            applyThemeColor(KeyLbl, "AccentA", "TextColor3")
+            KeyLbl.Parent = Row
+
+            local function updateKey()
+                local kc = Library.Flags[item.Flag]
+                KeyLbl.Text = (kc and kc.Name) or "None"
+            end
+            updateKey()
+            table.insert(rowConns, Library.FlagChanged.Event:Connect(function(changedFlag)
+                if changedFlag == item.Flag then updateKey() end
+            end))
+        end
+
+        for _, item in ipairs(config.Items or {}) do KeyList:AddItem(item) end
+
+        function KeyList:Show() Holder.Visible = true end
+        function KeyList:Hide() Holder.Visible = false end
+        function KeyList:Destroy()
+            for _, conn in ipairs(rowConns) do conn:Disconnect() end
+            KeyListGui:Destroy()
+        end
+        activeKeyList = KeyList
+        return KeyList
     end
 
     -- ============ Modal Dialogs ============
@@ -1419,7 +1697,11 @@ function Library:CreateWindow(config)
             CurrentTab = {Btn = TabBtn, Content = TabContent, SetActive = setActive}
         end)
 
-        local function bindFlag(flag, value) if flag then Library.Flags[flag] = value end end
+        local function bindFlag(flag, value)
+            if not flag then return end
+            Library.Flags[flag] = value
+            Library.FlagChanged:Fire(flag, value)
+        end
 
         function Tab:CreateSection(title)
             local Holder = Instance.new("Frame")
@@ -1617,7 +1899,7 @@ function Library:CreateWindow(config)
             applyState(state, false)
 
             Switch.MouseButton1Click:Connect(function() applyState(not state, true) end)
-            return newElement(Frame, function() return state end, function(_, newState) applyState(newState, true) end)
+            return newElement(Frame, function() return state end, function(_, newState) applyState(newState, true) end, nil, c.Flag)
         end
 
         function Tab:CreateSlider(c)
@@ -1731,7 +2013,7 @@ function Library:CreateWindow(config)
                 newVal = math.clamp(newVal, min, max)
                 local percent = (newVal - min) / (max - min)
                 updateFromPos(Bar.AbsolutePosition.X + percent * Bar.AbsoluteSize.X, true)
-            end)
+            end, nil, c.Flag)
         end
 
         function Tab:CreateDropdown(c)
@@ -1823,10 +2105,6 @@ function Library:CreateWindow(config)
                 local fullH = pad * 2 + math.min(contentH, maxVisible * itemH + (maxVisible - 1) * gap)
                 local needsScroll = #c.Options > maxVisible
 
-                -- คำนวณตำแหน่งที่ไม่ล้นขอบจอไว้ล่วงหน้า (รู้ขนาด fullH แน่นอนแล้วก่อนสร้าง list)
-                -- ถ้าด้านล่าง Drop ไม่พอที่จอ จะสลับไปกางขึ้นด้านบนให้อัตโนมัติ
-                local listX, listY = clampPopupPosition(Drop, Drop.AbsoluteSize.X, fullH, 6)
-
                 -- soft drop shadow for elevation
                 shadow = Instance.new("ImageLabel")
                 shadow.Name = "DropShadow"
@@ -1839,13 +2117,13 @@ function Library:CreateWindow(config)
                 shadow.ZIndex = 9
                 shadow.Parent = ScreenGui
                 shadow.AnchorPoint = Vector2.new(0, 0)
-                shadow.Position = UDim2.new(0, listX - 14, 0, listY - 14)
+                shadow.Position = UDim2.new(0, Drop.AbsolutePosition.X - 14, 0, Drop.AbsolutePosition.Y + Drop.AbsoluteSize.Y + 6 - 14)
                 shadow.Size = UDim2.new(0, Drop.AbsoluteSize.X + 28, 0, 28)
                 TweenService:Create(shadow, TI.d018_Sine_Out, {ImageTransparency = 0.55}):Play()
 
                 list = Instance.new(needsScroll and "ScrollingFrame" or "Frame")
                 list.Size = UDim2.new(0, Drop.AbsoluteSize.X, 0, 0)
-                list.Position = UDim2.new(0, listX, 0, listY)
+                list.Position = UDim2.new(0, Drop.AbsolutePosition.X, 0, Drop.AbsolutePosition.Y + Drop.AbsoluteSize.Y + 6)
                 applyThemeColor(list, "Element")
                 list.BackgroundTransparency = 1
                 list.ClipsDescendants = true
@@ -1949,7 +2227,7 @@ function Library:CreateWindow(config)
                 end)
             end
             Drop.MouseButton1Click:Connect(function() if isOpen then closeDropdown() else openDropdown() end end)
-            return newElement(Drop, function() return selected end, function(_, newVal) selectOption(newVal, true) end)
+            return newElement(Drop, function() return selected end, function(_, newVal) selectOption(newVal, true) end, nil, c.Flag)
         end
 
         function Tab:CreateThemeDropdown(c)
@@ -2032,16 +2310,10 @@ function Library:CreateWindow(config)
                 isOpen = true
                 h, s, v = selectedColor:ToHSV()
 
-                -- ความสูงจริงของ popup คงที่เสมอ (SVBox 110 + HueBar 16 + Hex 16 + swatch 22 + gap*3 + padding*2)
-                -- ใช้ค่านี้คำนวณตำแหน่งไม่ให้ล้นขอบจอ ก่อนที่ AutomaticSize จะ resolve จริง
-                local pickerWidth = math.max(Btn.AbsoluteSize.X, 224)
-                local pickerHeight = 218
-                local pickerX, pickerY = clampPopupPosition(Btn, pickerWidth, pickerHeight, 6)
-
                 picker = Instance.new("Frame")
-                picker.Size = UDim2.new(0, pickerWidth, 0, 0)
+                picker.Size = UDim2.new(0, math.max(Btn.AbsoluteSize.X, 224), 0, 0)
                 picker.AutomaticSize = Enum.AutomaticSize.Y
-                picker.Position = UDim2.new(0, pickerX, 0, pickerY)
+                picker.Position = UDim2.new(0, Btn.AbsolutePosition.X, 0, Btn.AbsolutePosition.Y + 46)
                 applyThemeColor(picker, "Background")
                 picker.ZIndex = 10
                 picker.Active = true
@@ -2298,7 +2570,7 @@ function Library:CreateWindow(config)
                 h, s, v = newColor:ToHSV()
                 if refreshVisuals then refreshVisuals() end
                 applyColor(newColor, true)
-            end)
+            end, nil, c.Flag)
         end
 
         function Tab:CreateInput(c)
@@ -2329,7 +2601,7 @@ function Library:CreateWindow(config)
             end)
             return newElement(Box, function() return Box.Text end, function(_, newText)
                 Box.Text = newText; if c.Callback then c.Callback(newText) end
-            end)
+            end, nil, c.Flag)
         end
 
         function Tab:CreateKeybind(c)
@@ -2378,7 +2650,7 @@ function Library:CreateWindow(config)
                 selectedKey = newKey
                 bindFlag(c.Flag, selectedKey)
                 Label.Text = (c.Text or "Keybind") .. ": " .. (newKey and newKey.Name or "None")
-            end)
+            end, nil, c.Flag)
         end
 
         function Tab:CreateLabel(c)
@@ -2430,7 +2702,7 @@ function Library:CreateWindow(config)
             end)
             return newElement(Box, function() return Box.Text end, function(_, newText)
                 Box.Text = newText; if c.Callback then c.Callback(newText) end
-            end)
+            end, nil, c.Flag)
         end
 
         function Tab:CreateProgressBar(c)
@@ -2567,7 +2839,7 @@ function Library:CreateWindow(config)
             return newElement(Frame, function() return selected end, function(_, newVal)
                 selected = newVal; bindFlag(c.Flag, selected); refresh()
                 if c.Callback then c.Callback(newVal) end
-            end)
+            end, nil, c.Flag)
         end
 
         function Tab:CreateMultiDropdown(c)
@@ -2676,7 +2948,7 @@ function Library:CreateWindow(config)
                     b.Check.ImageTransparency = selected[opt] and 0 or 1
                 end
                 fireCallback()
-            end)
+            end, nil, c.Flag)
         end
 
         function Tab:CreateSearchBox(c)
@@ -2768,6 +3040,60 @@ function Library:CreateWindow(config)
             end)
         end
 
+        -- ============ Config Manager (UI สำเร็จรูปสำหรับ Save/Load/Delete config) ============
+        -- ใช้ค่าจาก Library:SaveConfig/LoadConfig/ListConfigs/DeleteConfig ที่ประกาศไว้ระดับ Library
+        -- c.Title      = หัวข้อ section (default "Config")
+        -- c.AutoLoad   = true(default) -> โหลด config ล่าสุดที่เจอให้อัตโนมัติตอนสร้าง UI นี้
+        function Tab:CreateConfigManager(c)
+            c = type(c) == "table" and c or {}
+            Tab:CreateSection(c.Title or "Config")
+
+            local existing = Library:ListConfigs()
+            local startName = existing[1] or c.Default or "default"
+
+            local nameInput = Tab:CreateInput({
+                Text = "ชื่อ Config",
+                Default = startName,
+            })
+
+            if #existing > 0 then
+                Tab:CreateDropdown({
+                    Text = "Config ที่มีอยู่",
+                    Options = existing,
+                    Default = existing[1],
+                    Callback = function(pickedName)
+                        nameInput:Set(pickedName)
+                    end,
+                })
+            end
+
+            local function currentName()
+                local n = nameInput:Get()
+                if not n or n == "" then n = "default" end
+                return n
+            end
+
+            Tab:CreateButton({
+                Text = "💾  บันทึก Config",
+                Notify = false,
+                Callback = function() Library:SaveConfig(currentName()) end,
+            })
+            Tab:CreateButton({
+                Text = "📂  โหลด Config",
+                Notify = false,
+                Callback = function() Library:LoadConfig(currentName()) end,
+            })
+            Tab:CreateButton({
+                Text = "🗑  ลบ Config",
+                Notify = false,
+                Callback = function() Library:DeleteConfig(currentName()) end,
+            })
+
+            if c.AutoLoad ~= false and #existing > 0 then
+                Library:LoadConfig(existing[1])
+            end
+        end
+
         -- ล้างทุก element ที่เคยสร้างไว้ในแท็บนี้ทิ้งทั้งหมด (เก็บ layout ไว้)
         function Tab:Clear()
             for _, child in ipairs(TabContent:GetChildren()) do
@@ -2813,7 +3139,6 @@ function Library:CreateWindow(config)
                     if input2.UserInputType == Enum.UserInputType.MouseMovement or input2 == activeTouch then
                         local delta = input2.Position - dragStart
                         Shadow.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-                        clampToScreen(Shadow, nil, MainFrame) -- กันลากหน้าต่างหลุดขอบจอ (วัดขอบเขตจาก MainFrame ที่มองเห็นจริง ไม่ใช่ Shadow ที่ padding ใหญ่กว่า)
                     end
                 end
             end)
