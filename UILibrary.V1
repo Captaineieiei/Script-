@@ -1915,7 +1915,7 @@ function Library:CreateWindow(config)
             applyGlowOnHover(Btn)
 
             local Label = Instance.new("TextLabel")
-            Label.Size = UDim2.new(1, -40, 1, 0)
+            Label.Size = UDim2.new(1, -48, 1, 0)
             Label.Position = UDim2.new(0, 12, 0, 0)
             Label.BackgroundTransparency = 1
             Label.Text = c.Text or "ColorPicker"
@@ -1925,19 +1925,30 @@ function Library:CreateWindow(config)
             Label.TextXAlignment = Enum.TextXAlignment.Left
             Label.Parent = Btn
 
+            -- พรีวิวสีปุ่มหลัก: ใหญ่ขึ้นเล็กน้อย + ขอบสีขาวจางๆ ให้ดูเหมือน swatch การ์ดจริง ไม่ใช่กล่องแบนๆ
             local colorPreview = Instance.new("Frame")
-            colorPreview.Size = UDim2.new(0, 20, 0, 20)
-            colorPreview.Position = UDim2.new(1, -30, 0.5, -10)
+            colorPreview.Size = UDim2.new(0, 26, 0, 26)
+            colorPreview.Position = UDim2.new(1, -34, 0.5, -13)
             colorPreview.AnchorPoint = Vector2.new(0, 0.5)
             colorPreview.BackgroundColor3 = selectedColor
             colorPreview.Parent = Btn
-            corner(colorPreview, 6)
-            stroke(colorPreview)
+            corner(colorPreview, 8)
+            local previewStroke = Instance.new("UIStroke")
+            previewStroke.Color = Color3.fromRGB(255, 255, 255)
+            previewStroke.Thickness = 1.5
+            previewStroke.Transparency = 0.75
+            previewStroke.Parent = colorPreview
 
             local isOpen, picker, outsideConn = false, nil, nil
+            local h, s, v = selectedColor:ToHSV()
+
+            -- อ้างอิงถูก set ให้ตอนเปิด popup เพื่อใช้ sync ระหว่าง SV box / Hue bar / Hex label
+            local refreshVisuals
+
             local function closePicker()
                 if picker then isOpen = false; picker:Destroy(); picker = nil end
                 if outsideConn then outsideConn:Disconnect(); outsideConn = nil end
+                refreshVisuals = nil
             end
             local function applyColor(col, fireCallback)
                 selectedColor = col
@@ -1950,32 +1961,256 @@ function Library:CreateWindow(config)
                 if isOpen then closePicker() return end
                 closeActivePopup()
                 isOpen = true
+                h, s, v = selectedColor:ToHSV()
+
                 picker = Instance.new("Frame")
-                picker.Size = UDim2.new(0, Btn.AbsoluteSize.X, 0, 100)
-                picker.Position = UDim2.new(0, Btn.AbsolutePosition.X, 0, Btn.AbsolutePosition.Y + 40)
+                picker.Size = UDim2.new(0, math.max(Btn.AbsoluteSize.X, 224), 0, 0)
+                picker.AutomaticSize = Enum.AutomaticSize.Y
+                picker.Position = UDim2.new(0, Btn.AbsolutePosition.X, 0, Btn.AbsolutePosition.Y + 46)
                 applyThemeColor(picker, "Background")
                 picker.ZIndex = 10
                 picker.Active = true
                 picker.Parent = ScreenGui
-                corner(picker, 9)
-                stroke(picker)
-                local colors = {
-                    Color3.fromRGB(255, 0, 0), Color3.fromRGB(0, 255, 0), Color3.fromRGB(0, 0, 255),
-                    Color3.fromRGB(255, 255, 0), Color3.fromRGB(0, 255, 255), Color3.fromRGB(255, 0, 255),
-                    Color3.fromRGB(255, 255, 255), Color3.fromRGB(0, 0, 0), Color3.fromRGB(150, 150, 150)
+                corner(picker, 12)
+                local pStroke = stroke(picker)
+                pStroke.Transparency = 0.4
+
+                local pPad = Instance.new("UIPadding")
+                pPad.PaddingLeft = UDim.new(0, 12)
+                pPad.PaddingRight = UDim.new(0, 12)
+                pPad.PaddingTop = UDim.new(0, 12)
+                pPad.PaddingBottom = UDim.new(0, 12)
+                pPad.Parent = picker
+
+                local pLayout = Instance.new("UIListLayout")
+                pLayout.Padding = UDim.new(0, 10)
+                pLayout.SortOrder = Enum.SortOrder.LayoutOrder
+                pLayout.Parent = picker
+
+                -- ============ SV Box (Saturation x, Value y) ============
+                local SVBox = Instance.new("Frame")
+                SVBox.LayoutOrder = 1
+                SVBox.Size = UDim2.new(1, 0, 0, 110)
+                SVBox.BackgroundColor3 = Color3.fromHSV(h, 1, 1)
+                SVBox.BorderSizePixel = 0
+                SVBox.ClipsDescendants = true
+                SVBox.ZIndex = 11
+                SVBox.Parent = picker
+                corner(SVBox, 8)
+
+                -- ขาว(ซ้าย) -> โปร่งใส(ขวา) = แกน Saturation
+                local SatOverlay = Instance.new("Frame")
+                SatOverlay.Size = UDim2.new(1, 0, 1, 0)
+                SatOverlay.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                SatOverlay.BorderSizePixel = 0
+                SatOverlay.ZIndex = 11
+                SatOverlay.Parent = SVBox
+                local satGradient = Instance.new("UIGradient")
+                satGradient.Transparency = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, 0),
+                    NumberSequenceKeypoint.new(1, 1),
+                })
+                satGradient.Parent = SatOverlay
+
+                -- โปร่งใส(บน) -> ดำ(ล่าง) = แกน Value
+                local ValOverlay = Instance.new("Frame")
+                ValOverlay.Size = UDim2.new(1, 0, 1, 0)
+                ValOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+                ValOverlay.BorderSizePixel = 0
+                ValOverlay.ZIndex = 12
+                ValOverlay.Parent = SVBox
+                local valGradient = Instance.new("UIGradient")
+                valGradient.Rotation = 90
+                valGradient.Transparency = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, 1),
+                    NumberSequenceKeypoint.new(1, 0),
+                })
+                valGradient.Parent = ValOverlay
+
+                local SVCursor = Instance.new("Frame")
+                SVCursor.Size = UDim2.new(0, 14, 0, 14)
+                SVCursor.AnchorPoint = Vector2.new(0.5, 0.5)
+                SVCursor.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                SVCursor.BorderSizePixel = 0
+                SVCursor.ZIndex = 13
+                SVCursor.Parent = SVBox
+                corner(SVCursor, 7)
+                local svCursorStroke = Instance.new("UIStroke")
+                svCursorStroke.Thickness = 2
+                svCursorStroke.Color = Color3.fromRGB(25, 25, 25)
+                svCursorStroke.Parent = SVCursor
+
+                -- ============ Hue Bar ============
+                local HueBar = Instance.new("Frame")
+                HueBar.LayoutOrder = 2
+                HueBar.Size = UDim2.new(1, 0, 0, 16)
+                HueBar.BorderSizePixel = 0
+                HueBar.ZIndex = 11
+                HueBar.Parent = picker
+                corner(HueBar, 8)
+                local hueGradient = Instance.new("UIGradient")
+                hueGradient.Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0.000, Color3.fromRGB(255, 0, 0)),
+                    ColorSequenceKeypoint.new(0.167, Color3.fromRGB(255, 255, 0)),
+                    ColorSequenceKeypoint.new(0.333, Color3.fromRGB(0, 255, 0)),
+                    ColorSequenceKeypoint.new(0.500, Color3.fromRGB(0, 255, 255)),
+                    ColorSequenceKeypoint.new(0.667, Color3.fromRGB(0, 0, 255)),
+                    ColorSequenceKeypoint.new(0.833, Color3.fromRGB(255, 0, 255)),
+                    ColorSequenceKeypoint.new(1.000, Color3.fromRGB(255, 0, 0)),
+                })
+                hueGradient.Parent = HueBar
+
+                local HueCursor = Instance.new("Frame")
+                HueCursor.Size = UDim2.new(0, 4, 1, 4)
+                HueCursor.AnchorPoint = Vector2.new(0.5, 0.5)
+                HueCursor.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                HueCursor.BorderSizePixel = 0
+                HueCursor.ZIndex = 12
+                HueCursor.Parent = HueBar
+                corner(HueCursor, 2)
+                local hueCursorStroke = Instance.new("UIStroke")
+                hueCursorStroke.Thickness = 1.5
+                hueCursorStroke.Color = Color3.fromRGB(25, 25, 25)
+                hueCursorStroke.Parent = HueCursor
+
+                -- ============ Hex readout ============
+                local HexLabel = Instance.new("TextLabel")
+                HexLabel.LayoutOrder = 3
+                HexLabel.Size = UDim2.new(1, 0, 0, 16)
+                HexLabel.BackgroundTransparency = 1
+                HexLabel.Font = Enum.Font.GothamSemibold
+                HexLabel.TextSize = 12
+                HexLabel.TextXAlignment = Enum.TextXAlignment.Left
+                HexLabel.ZIndex = 11
+                applyThemeColor(HexLabel, "SubText", "TextColor3")
+                HexLabel.Parent = picker
+
+                -- ============ Preset swatches (แถวสีสำเร็จรูป กดเปลี่ยนไว) ============
+                local swatchRow = Instance.new("Frame")
+                swatchRow.LayoutOrder = 4
+                swatchRow.Size = UDim2.new(1, 0, 0, 22)
+                swatchRow.BackgroundTransparency = 1
+                swatchRow.ZIndex = 11
+                swatchRow.Parent = picker
+                local swatchLayout = Instance.new("UIListLayout")
+                swatchLayout.FillDirection = Enum.FillDirection.Horizontal
+                swatchLayout.Padding = UDim.new(0, 6)
+                swatchLayout.SortOrder = Enum.SortOrder.LayoutOrder
+                swatchLayout.Parent = swatchRow
+
+                local presets = {
+                    Color3.fromRGB(255, 255, 255), Color3.fromRGB(0, 0, 0),
+                    Color3.fromRGB(255, 59, 48), Color3.fromRGB(255, 149, 0),
+                    Color3.fromRGB(255, 204, 0), Color3.fromRGB(52, 199, 89),
+                    Color3.fromRGB(0, 199, 190), Color3.fromRGB(0, 122, 255),
+                    Color3.fromRGB(175, 82, 222),
                 }
-                for i, col in ipairs(colors) do
-                    local colBtn = Instance.new("TextButton")
-                    colBtn.Size = UDim2.new(0, 25, 0, 25)
-                    colBtn.Position = UDim2.new(0, 10 + ((i - 1) % 5) * 30, 0, 10 + math.floor((i - 1) / 5) * 30)
-                    colBtn.BackgroundColor3 = col
-                    colBtn.AutoButtonColor = false
-                    colBtn.Text = ""
-                    colBtn.ZIndex = 11
-                    colBtn.Parent = picker
-                    corner(colBtn, 6)
-                    colBtn.MouseButton1Click:Connect(function() applyColor(col, true); closePicker() end)
+
+                local function refreshHex()
+                    local col = Color3.fromHSV(h, s, v)
+                    HexLabel.Text = string.format(
+                        "#%02X%02X%02X",
+                        math.floor(col.R * 255 + 0.5),
+                        math.floor(col.G * 255 + 0.5),
+                        math.floor(col.B * 255 + 0.5)
+                    )
                 end
+
+                refreshVisuals = function()
+                    SVCursor.Position = UDim2.new(s, 0, 1 - v, 0)
+                    HueCursor.Position = UDim2.new(h, 0, 0.5, 0)
+                    SVBox.BackgroundColor3 = Color3.fromHSV(h, 1, 1)
+                    refreshHex()
+                end
+                refreshVisuals()
+
+                local function updateSV(x, y)
+                    s = math.clamp((x - SVBox.AbsolutePosition.X) / SVBox.AbsoluteSize.X, 0, 1)
+                    v = 1 - math.clamp((y - SVBox.AbsolutePosition.Y) / SVBox.AbsoluteSize.Y, 0, 1)
+                    refreshVisuals()
+                    applyColor(Color3.fromHSV(h, s, v), true)
+                end
+                local function updateHue(x)
+                    h = math.clamp((x - HueBar.AbsolutePosition.X) / HueBar.AbsoluteSize.X, 0, 1)
+                    refreshVisuals()
+                    applyColor(Color3.fromHSV(h, s, v), true)
+                end
+
+                -- ลาก SV box / Hue bar: connect เฉพาะช่วงลากจริง (แพทเทิร์นเดียวกับ Slider ด้านบน)
+                local svDragging, svChangedConn, svEndedConn = false, nil, nil
+                local function stopSVDrag()
+                    svDragging = false
+                    if svChangedConn then svChangedConn:Disconnect(); svChangedConn = nil end
+                    if svEndedConn then svEndedConn:Disconnect(); svEndedConn = nil end
+                end
+                SVBox.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                        svDragging = true
+                        updateSV(input.Position.X, input.Position.Y)
+                        svChangedConn = UserInputService.InputChanged:Connect(function(input2)
+                            if svDragging and (input2.UserInputType == Enum.UserInputType.MouseMovement or input2.UserInputType == Enum.UserInputType.Touch) then
+                                updateSV(input2.Position.X, input2.Position.Y)
+                            end
+                        end)
+                        svEndedConn = UserInputService.InputEnded:Connect(function(input2)
+                            if input2.UserInputType == Enum.UserInputType.MouseButton1 or input2.UserInputType == Enum.UserInputType.Touch then
+                                stopSVDrag()
+                            end
+                        end)
+                    end
+                end)
+
+                local hueDragging, hueChangedConn, hueEndedConn = false, nil, nil
+                local function stopHueDrag()
+                    hueDragging = false
+                    if hueChangedConn then hueChangedConn:Disconnect(); hueChangedConn = nil end
+                    if hueEndedConn then hueEndedConn:Disconnect(); hueEndedConn = nil end
+                end
+                HueBar.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                        hueDragging = true
+                        updateHue(input.Position.X)
+                        hueChangedConn = UserInputService.InputChanged:Connect(function(input2)
+                            if hueDragging and (input2.UserInputType == Enum.UserInputType.MouseMovement or input2.UserInputType == Enum.UserInputType.Touch) then
+                                updateHue(input2.Position.X)
+                            end
+                        end)
+                        hueEndedConn = UserInputService.InputEnded:Connect(function(input2)
+                            if input2.UserInputType == Enum.UserInputType.MouseButton1 or input2.UserInputType == Enum.UserInputType.Touch then
+                                stopHueDrag()
+                            end
+                        end)
+                    end
+                end)
+
+                for _, col in ipairs(presets) do
+                    local sw = Instance.new("TextButton")
+                    sw.Size = UDim2.new(0, 22, 0, 22)
+                    sw.BackgroundColor3 = col
+                    sw.AutoButtonColor = false
+                    sw.Text = ""
+                    sw.ZIndex = 11
+                    sw.Parent = swatchRow
+                    corner(sw, 6)
+                    local swStroke = Instance.new("UIStroke")
+                    swStroke.Color = Color3.fromRGB(255, 255, 255)
+                    swStroke.Thickness = 1
+                    swStroke.Transparency = 0.7
+                    swStroke.Parent = sw
+                    -- hover ใช้ tween ความหนา/ความจางของขอบแทนการขยับ Size กันไม่ให้แถว swatch เด้งจัด layout ใหม่
+                    sw.MouseEnter:Connect(function()
+                        TweenService:Create(swStroke, TI.d012_Sine_Out, {Thickness = 2, Transparency = 0.15}):Play()
+                    end)
+                    sw.MouseLeave:Connect(function()
+                        TweenService:Create(swStroke, TI.d012_Sine_Out, {Thickness = 1, Transparency = 0.7}):Play()
+                    end)
+                    sw.MouseButton1Click:Connect(function()
+                        h, s, v = col:ToHSV()
+                        refreshVisuals()
+                        applyColor(col, true)
+                    end)
+                end
+
                 closeActivePopup = closePicker
                 outsideConn = UserInputService.InputBegan:Connect(function(input2)
                     if input2.UserInputType == Enum.UserInputType.MouseButton1 or input2.UserInputType == Enum.UserInputType.Touch then
@@ -1984,7 +2219,11 @@ function Library:CreateWindow(config)
                     end
                 end)
             end)
-            return newElement(Btn, function() return selectedColor end, function(_, newColor) applyColor(newColor, true) end)
+            return newElement(Btn, function() return selectedColor end, function(_, newColor)
+                h, s, v = newColor:ToHSV()
+                if refreshVisuals then refreshVisuals() end
+                applyColor(newColor, true)
+            end)
         end
 
         function Tab:CreateInput(c)
