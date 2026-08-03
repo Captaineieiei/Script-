@@ -111,6 +111,21 @@ Library.Icons = {
 
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
+
+-- ============ CACHED TWEENINFO (avoid re-allocating identical TweenInfo objects on every hover/click) ============
+local TI = {
+    d012_Sine_Out = TweenInfo.new(0.12, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
+    d014_Sine_Out = TweenInfo.new(0.14, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
+    d015_Sine_Out = TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
+    d016_Sine_In = TweenInfo.new(0.16, Enum.EasingStyle.Sine, Enum.EasingDirection.In),
+    d018_Quint_In = TweenInfo.new(0.18, Enum.EasingStyle.Quint, Enum.EasingDirection.In),
+    d018_Sine_Out = TweenInfo.new(0.18, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
+    d02_Quint_Out = TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+    d02_Sine_Out = TweenInfo.new(0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
+    d022_Sine_Out = TweenInfo.new(0.22, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
+    d028_Sine_Out = TweenInfo.new(0.28, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
+    d03_Sine_Out = TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
+}
 local CoreGui = game:GetService("CoreGui")
 
 -- ============ THEMES SETUP ============
@@ -253,10 +268,10 @@ end
 
 local function applyHoverEffect(btn, defKey, hovKey)
     btn.MouseEnter:Connect(function()
-        TweenService:Create(btn, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundColor3 = Theme[hovKey]}):Play()
+        TweenService:Create(btn, TI.d015_Sine_Out, {BackgroundColor3 = Theme[hovKey]}):Play()
     end)
     btn.MouseLeave:Connect(function()
-        TweenService:Create(btn, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundColor3 = Theme[defKey]}):Play()
+        TweenService:Create(btn, TI.d015_Sine_Out, {BackgroundColor3 = Theme[defKey]}):Play()
     end)
 end
 
@@ -264,10 +279,10 @@ local function applyGlowOnHover(frame)
     local glow = stroke(frame, "AccentA", 1)
     glow.Transparency = 1
     frame.MouseEnter:Connect(function()
-        TweenService:Create(glow, TweenInfo.new(0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Transparency = 0.6}):Play()
+        TweenService:Create(glow, TI.d02_Sine_Out, {Transparency = 0.6}):Play()
     end)
     frame.MouseLeave:Connect(function()
-        TweenService:Create(glow, TweenInfo.new(0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Transparency = 1}):Play()
+        TweenService:Create(glow, TI.d02_Sine_Out, {Transparency = 1}):Play()
     end)
 end
 
@@ -536,10 +551,10 @@ function Library:CreateWindow(config)
         CloseX.ZIndex = 4
         CloseX.Parent = Toast
         CloseX.MouseEnter:Connect(function()
-            TweenService:Create(CloseX, TweenInfo.new(0.12, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {ImageColor3 = Theme.Text}):Play()
+            TweenService:Create(CloseX, TI.d012_Sine_Out, {ImageColor3 = Theme.Text}):Play()
         end)
         CloseX.MouseLeave:Connect(function()
-            TweenService:Create(CloseX, TweenInfo.new(0.12, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {ImageColor3 = Theme.SubText}):Play()
+            TweenService:Create(CloseX, TI.d012_Sine_Out, {ImageColor3 = Theme.SubText}):Play()
         end)
 
         -- (เดิมมี UIPadding ตรงนี้เพื่อเว้นระยะล่าง แต่ Padding ไม่ถูกนับใน AutomaticSize
@@ -580,9 +595,9 @@ function Library:CreateWindow(config)
         -- ลำดับการเข้า: การ์ดป๊อปก่อน -> แถบสีวาดตัวเองลงมา -> ไอคอนหมุนเด้งตาม -> ข้อความค่อยๆ ไล่จางเข้าทีละบรรทัด -> ปุ่มปิด/แถบเวลาเข้ามาปิดท้าย
         -- ใช้ DelayTime ใน TweenInfo (พารามิเตอร์ตัวที่ 6) เพื่อไล่จังหวะ แทนที่จะขึ้นพร้อมกันหมดทีเดียวซึ่งดูแข็งทื่อ
         TweenService:Create(ToastScale, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Scale = 1}):Play()
-        TweenService:Create(Toast, TweenInfo.new(0.22, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundTransparency = 0}):Play()
-        TweenService:Create(outline, TweenInfo.new(0.22, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Transparency = 0.6}):Play()
-        TweenService:Create(Shadow, TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {ImageTransparency = 0.65}):Play()
+        TweenService:Create(Toast, TI.d022_Sine_Out, {BackgroundTransparency = 0}):Play()
+        TweenService:Create(outline, TI.d022_Sine_Out, {Transparency = 0.6}):Play()
+        TweenService:Create(Shadow, TI.d03_Sine_Out, {ImageTransparency = 0.65}):Play()
 
         TweenService:Create(AccentBar, TweenInfo.new(0.38, Enum.EasingStyle.Quint, Enum.EasingDirection.Out, 0, false, 0.04), {Size = UDim2.new(0, 4, 1, -28), BackgroundTransparency = 0}):Play()
 
@@ -606,19 +621,19 @@ function Library:CreateWindow(config)
             if dismissed or not Toast or not Toast.Parent then return end
             dismissed = true
             -- ทางออก: กระชับและไวกว่าตอนเข้า ทุกอย่างจางพร้อมกันแบบ Quint In ให้ความรู้สึก "ถูกดึงหายไป" หนักแน่น ไม่ยืดเยื้อ
-            TweenService:Create(ToastScale, TweenInfo.new(0.18, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {Scale = 0.88}):Play()
-            TweenService:Create(IconBadge, TweenInfo.new(0.16, Enum.EasingStyle.Sine, Enum.EasingDirection.In), {Rotation = 12, BackgroundTransparency = 1}):Play()
-            TweenService:Create(IconGlow, TweenInfo.new(0.16, Enum.EasingStyle.Sine, Enum.EasingDirection.In), {BackgroundTransparency = 1}):Play()
+            TweenService:Create(ToastScale, TI.d018_Quint_In, {Scale = 0.88}):Play()
+            TweenService:Create(IconBadge, TI.d016_Sine_In, {Rotation = 12, BackgroundTransparency = 1}):Play()
+            TweenService:Create(IconGlow, TI.d016_Sine_In, {BackgroundTransparency = 1}):Play()
             TweenService:Create(Toast, TweenInfo.new(0.18, Enum.EasingStyle.Sine, Enum.EasingDirection.In), {BackgroundTransparency = 1}):Play()
-            TweenService:Create(outline, TweenInfo.new(0.18, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Transparency = 1}):Play()
-            TweenService:Create(Shadow, TweenInfo.new(0.18, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {ImageTransparency = 1}):Play()
-            TweenService:Create(AccentBar, TweenInfo.new(0.16, Enum.EasingStyle.Sine, Enum.EasingDirection.In), {BackgroundTransparency = 1}):Play()
-            TweenService:Create(IconImg, TweenInfo.new(0.14, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {ImageTransparency = 1}):Play()
-            TweenService:Create(TitleLbl, TweenInfo.new(0.14, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {TextTransparency = 1}):Play()
-            TweenService:Create(ContentLbl, TweenInfo.new(0.14, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {TextTransparency = 1}):Play()
-            TweenService:Create(CloseX, TweenInfo.new(0.14, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {ImageTransparency = 1}):Play()
-            TweenService:Create(ProgressTrack, TweenInfo.new(0.14, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
-            TweenService:Create(ProgressBar, TweenInfo.new(0.14, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
+            TweenService:Create(outline, TI.d018_Sine_Out, {Transparency = 1}):Play()
+            TweenService:Create(Shadow, TI.d018_Sine_Out, {ImageTransparency = 1}):Play()
+            TweenService:Create(AccentBar, TI.d016_Sine_In, {BackgroundTransparency = 1}):Play()
+            TweenService:Create(IconImg, TI.d014_Sine_Out, {ImageTransparency = 1}):Play()
+            TweenService:Create(TitleLbl, TI.d014_Sine_Out, {TextTransparency = 1}):Play()
+            TweenService:Create(ContentLbl, TI.d014_Sine_Out, {TextTransparency = 1}):Play()
+            TweenService:Create(CloseX, TI.d014_Sine_Out, {ImageTransparency = 1}):Play()
+            TweenService:Create(ProgressTrack, TI.d014_Sine_Out, {BackgroundTransparency = 1}):Play()
+            TweenService:Create(ProgressBar, TI.d014_Sine_Out, {BackgroundTransparency = 1}):Play()
             task.delay(0.2, function()
                 for _, c in ipairs(shadowConns) do c:Disconnect() end
                 Shadow:Destroy()
@@ -747,7 +762,7 @@ function Library:CreateWindow(config)
         SubTitleLabel.TextSize = 11
         SubTitleLabel.TextXAlignment = Enum.TextXAlignment.Left
         SubTitleLabel.Parent = TopBar
-        TweenService:Create(SubTitleLabel, TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {TextTransparency = 0}):Play()
+        TweenService:Create(SubTitleLabel, TI.d03_Sine_Out, {TextTransparency = 0}):Play()
     end
 
     local CloseBtn = Instance.new("ImageButton")
@@ -765,10 +780,10 @@ function Library:CreateWindow(config)
     corner(CloseBtn, 8)
     applyPressAnimation(CloseBtn, 0.8)
     CloseBtn.MouseEnter:Connect(function()
-        TweenService:Create(CloseBtn, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundColor3 = Theme.Danger, ImageColor3 = Color3.fromRGB(255,255,255)}):Play()
+        TweenService:Create(CloseBtn, TI.d015_Sine_Out, {BackgroundColor3 = Theme.Danger, ImageColor3 = Color3.fromRGB(255,255,255)}):Play()
     end)
     CloseBtn.MouseLeave:Connect(function()
-        TweenService:Create(CloseBtn, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundColor3 = Theme.Element, ImageColor3 = Theme.SubText}):Play()
+        TweenService:Create(CloseBtn, TI.d015_Sine_Out, {BackgroundColor3 = Theme.Element, ImageColor3 = Theme.SubText}):Play()
     end)
     CloseBtn.MouseButton1Click:Connect(function()
         Window:Confirm({
@@ -800,10 +815,10 @@ function Library:CreateWindow(config)
     corner(HideBtn, 8)
     applyPressAnimation(HideBtn, 0.8)
     HideBtn.MouseEnter:Connect(function()
-        TweenService:Create(HideBtn, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundColor3 = Theme.ElementHover, BackgroundTransparency = 0.3}):Play()
+        TweenService:Create(HideBtn, TI.d015_Sine_Out, {BackgroundColor3 = Theme.ElementHover, BackgroundTransparency = 0.3}):Play()
     end)
     HideBtn.MouseLeave:Connect(function()
-        TweenService:Create(HideBtn, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
+        TweenService:Create(HideBtn, TI.d015_Sine_Out, {BackgroundTransparency = 1}):Play()
     end)
 
     -- ปุ่มลอยไว้กด "เรียก UI กลับมา" ตอน UI ถูกซ่อน (โลโก้ผู้ใช้ ถ้ามี ไม่งั้นขึ้นตัวอักษรแรกของชื่อ)
@@ -881,7 +896,7 @@ function Library:CreateWindow(config)
             TweenService:Create(mainStroke, easeIn, {Transparency = 0.5}):Play()
         else
             -- ย่อ+เลื่อนลง+จางหายพร้อมกันแบบนุ่มๆ ก่อนค่อยปิด ScreenGui จริงตอนจบ tween
-            local easeOut = TweenInfo.new(0.18, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
+            local easeOut = TI.d018_Quint_In
             local t = TweenService:Create(WindowScale, easeOut, {Scale = 0.92})
             TweenService:Create(Shadow, easeOut, {Position = hiddenShadowPos}):Play()
             TweenService:Create(MainFrame, easeOut, {BackgroundTransparency = 1}):Play()
@@ -903,7 +918,20 @@ function Library:CreateWindow(config)
 
     -- ลาก RestoreBtn ได้ + กดเพื่อเรียก UI กลับ (แยกจากการลากด้วยระยะที่ขยับ)
     do
+        -- OPTIMIZED: connect เฉพาะตอนเริ่มลาก ไม่ปล่อยให้ InputChanged วิ่งฟรีตลอดเวลาที่ไม่ได้ลาก
         local rDragging, rDragStart, rStartPos, rTouch, rMoved = false, nil, nil, nil, false
+        local rChangedConn, rEndedConn = nil, nil
+
+        local function stopRestoreDrag(input)
+            if rDragging and not rMoved then
+                setUiVisible(true)
+            end
+            rDragging = false
+            if input and input == rTouch then rTouch = nil end
+            if rChangedConn then rChangedConn:Disconnect(); rChangedConn = nil end
+            if rEndedConn then rEndedConn:Disconnect(); rEndedConn = nil end
+        end
+
         RestoreBtn.InputBegan:Connect(function(input)
             if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                 rDragging = true
@@ -911,24 +939,21 @@ function Library:CreateWindow(config)
                 rDragStart = input.Position
                 rStartPos = RestoreBtn.Position
                 if input.UserInputType == Enum.UserInputType.Touch then rTouch = input end
-            end
-        end)
-        UserInputService.InputChanged:Connect(function(input)
-            if rDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-                if input.UserInputType == Enum.UserInputType.MouseMovement or input == rTouch then
-                    local delta = input.Position - rDragStart
-                    if delta.Magnitude > 4 then rMoved = true end
-                    RestoreBtn.Position = UDim2.new(rStartPos.X.Scale, rStartPos.X.Offset + delta.X, rStartPos.Y.Scale, rStartPos.Y.Offset + delta.Y)
-                end
-            end
-        end)
-        UserInputService.InputEnded:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                if rDragging and not rMoved then
-                    setUiVisible(true)
-                end
-                rDragging = false
-                if input == rTouch then rTouch = nil end
+
+                rChangedConn = UserInputService.InputChanged:Connect(function(input2)
+                    if rDragging and (input2.UserInputType == Enum.UserInputType.MouseMovement or input2.UserInputType == Enum.UserInputType.Touch) then
+                        if input2.UserInputType == Enum.UserInputType.MouseMovement or input2 == rTouch then
+                            local delta = input2.Position - rDragStart
+                            if delta.Magnitude > 4 then rMoved = true end
+                            RestoreBtn.Position = UDim2.new(rStartPos.X.Scale, rStartPos.X.Offset + delta.X, rStartPos.Y.Scale, rStartPos.Y.Offset + delta.Y)
+                        end
+                    end
+                end)
+                rEndedConn = UserInputService.InputEnded:Connect(function(input2)
+                    if input2.UserInputType == Enum.UserInputType.MouseButton1 or input2.UserInputType == Enum.UserInputType.Touch then
+                        stopRestoreDrag(input2)
+                    end
+                end)
             end
         end)
     end
@@ -981,11 +1006,11 @@ function Library:CreateWindow(config)
     ResizeHandle.ZIndex = 6
     ResizeHandle.Parent = MainFrame
     ResizeHandle.MouseEnter:Connect(function()
-        TweenService:Create(ResizeHandle, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {ImageTransparency = 0}):Play()
+        TweenService:Create(ResizeHandle, TI.d015_Sine_Out, {ImageTransparency = 0}):Play()
     end)
     ResizeHandle.MouseLeave:Connect(function()
         if not resizing then
-            TweenService:Create(ResizeHandle, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {ImageTransparency = 0.4}):Play()
+            TweenService:Create(ResizeHandle, TI.d015_Sine_Out, {ImageTransparency = 0.4}):Play()
         end
     end)
 
@@ -994,20 +1019,20 @@ function Library:CreateWindow(config)
     local closeActivePopup = function() end
     local tabOrderCounter = 0
 
-    TweenService:Create(MainFrame, TweenInfo.new(0.28, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+    TweenService:Create(MainFrame, TI.d028_Sine_Out, {
         BackgroundTransparency = 0
     }):Play()
-    TweenService:Create(mainStroke, TweenInfo.new(0.28, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Transparency = 0.5}):Play()
+    TweenService:Create(mainStroke, TI.d028_Sine_Out, {Transparency = 0.5}):Play()
     -- Shadow ปิดไว้ (ไม่แสดง) ตามที่ขอ
-    TweenService:Create(TopBar, TweenInfo.new(0.28, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundTransparency = 0}):Play()
-    TweenService:Create(topBarFix, TweenInfo.new(0.28, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundTransparency = 0}):Play()
-    TweenService:Create(TitleLabel, TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {TextTransparency = 0}):Play()
-    TweenService:Create(LogoDot, TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundTransparency = 0}):Play()
-    TweenService:Create(CloseBtn, TweenInfo.new(0.28, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {ImageTransparency = 1}):Play()
-    TweenService:Create(CloseBtn, TweenInfo.new(0.28, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {ImageTransparency = 0}):Play()
+    TweenService:Create(TopBar, TI.d028_Sine_Out, {BackgroundTransparency = 0}):Play()
+    TweenService:Create(topBarFix, TI.d028_Sine_Out, {BackgroundTransparency = 0}):Play()
+    TweenService:Create(TitleLabel, TI.d03_Sine_Out, {TextTransparency = 0}):Play()
+    TweenService:Create(LogoDot, TI.d03_Sine_Out, {BackgroundTransparency = 0}):Play()
+    TweenService:Create(CloseBtn, TI.d028_Sine_Out, {ImageTransparency = 1}):Play()
+    TweenService:Create(CloseBtn, TI.d028_Sine_Out, {ImageTransparency = 0}):Play()
     HideBtn.ImageTransparency = 1
-    TweenService:Create(HideBtn, TweenInfo.new(0.28, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {ImageTransparency = 0}):Play()
-    TweenService:Create(TabContainer, TweenInfo.new(0.28, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundTransparency = 0}):Play()
+    TweenService:Create(HideBtn, TI.d028_Sine_Out, {ImageTransparency = 0}):Play()
+    TweenService:Create(TabContainer, TI.d028_Sine_Out, {BackgroundTransparency = 0}):Play()
 
     if config.ToggleKeybind then
         UserInputService.InputBegan:Connect(function(input, gpe)
@@ -1126,10 +1151,10 @@ function Library:CreateWindow(config)
         corner(OkBtn, 9)
         applyPressAnimation(OkBtn, 0.95)
 
-        TweenService:Create(Overlay, TweenInfo.new(0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
+        TweenService:Create(Overlay, TI.d02_Sine_Out, {BackgroundTransparency = 1}):Play()
 
         local function closeAlert()
-            TweenService:Create(Overlay, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
+            TweenService:Create(Overlay, TI.d015_Sine_Out, {BackgroundTransparency = 1}):Play()
             task.delay(0.15, function() if Overlay then Overlay:Destroy() end end)
             if opts.Callback then opts.Callback() end
         end
@@ -1212,10 +1237,10 @@ function Library:CreateWindow(config)
         corner(ConfirmBtn, 9)
         applyPressAnimation(ConfirmBtn, 0.95)
 
-        TweenService:Create(Overlay, TweenInfo.new(0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
+        TweenService:Create(Overlay, TI.d02_Sine_Out, {BackgroundTransparency = 1}):Play()
 
         local function close(result)
-            TweenService:Create(Overlay, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
+            TweenService:Create(Overlay, TI.d015_Sine_Out, {BackgroundTransparency = 1}):Play()
             task.delay(0.15, function() if Overlay then Overlay:Destroy() end end)
             if opts.Callback then opts.Callback(result) end
         end
@@ -1282,11 +1307,11 @@ function Library:CreateWindow(config)
 
         TabBtn.MouseEnter:Connect(function()
             if CurrentTab and CurrentTab.Btn == TabBtn then return end
-            TweenService:Create(TabBtn, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundTransparency = 0.4, BackgroundColor3 = Theme.Element}):Play()
+            TweenService:Create(TabBtn, TI.d015_Sine_Out, {BackgroundTransparency = 0.4, BackgroundColor3 = Theme.Element}):Play()
         end)
         TabBtn.MouseLeave:Connect(function()
             if CurrentTab and CurrentTab.Btn == TabBtn then return end
-            TweenService:Create(TabBtn, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
+            TweenService:Create(TabBtn, TI.d015_Sine_Out, {BackgroundTransparency = 1}):Play()
         end)
 
         local TabContent = Instance.new("ScrollingFrame")
@@ -1305,16 +1330,16 @@ function Library:CreateWindow(config)
         ContentLayout.Parent = TabContent
 
         local function setActive(active)
-            TweenService:Create(TabBtn, TweenInfo.new(0.18, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+            TweenService:Create(TabBtn, TI.d018_Sine_Out, {
                 BackgroundTransparency = active and 0.85 or 1,
                 BackgroundColor3 = active and Theme.AccentA or Theme.Element
             }):Play()
-            TweenService:Create(ActiveBar, TweenInfo.new(0.18, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Size = UDim2.new(0, 3, 0, active and 20 or 0)}):Play()
+            TweenService:Create(ActiveBar, TI.d018_Sine_Out, {Size = UDim2.new(0, 3, 0, active and 20 or 0)}):Play()
             TabTitle.TextColor3 = active and Theme.Text or Theme.SubText
             if icon then
                 local iconImg = TabBtn:FindFirstChildOfClass("ImageLabel")
                 if iconImg then
-                    TweenService:Create(iconImg, TweenInfo.new(0.18, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {ImageColor3 = active and Theme.Text or Theme.SubText}):Play()
+                    TweenService:Create(iconImg, TI.d018_Sine_Out, {ImageColor3 = active and Theme.Text or Theme.SubText}):Play()
                 end
             end
         end
@@ -1507,9 +1532,9 @@ function Library:CreateWindow(config)
             local function applyState(newState, fireCallback)
                 state = newState
                 bindFlag(c.Flag, state)
-                TweenService:Create(Switch, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundColor3 = state and Theme.AccentA or Theme.ToggleOff}):Play()
-                TweenService:Create(switchGradProxy, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Value = state and 0 or 1}):Play()
-                TweenService:Create(Circle, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+                TweenService:Create(Switch, TI.d015_Sine_Out, {BackgroundColor3 = state and Theme.AccentA or Theme.ToggleOff}):Play()
+                TweenService:Create(switchGradProxy, TI.d015_Sine_Out, {Value = state and 0 or 1}):Play()
+                TweenService:Create(Circle, TI.d015_Sine_Out, {
                     Position = state and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
                 }):Play()
                 if fireCallback then
@@ -1593,36 +1618,47 @@ function Library:CreateWindow(config)
                 if fireCallback and c.Callback then c.Callback(value) end
             end
 
+            -- OPTIMIZED: แต่ละ Slider เคยผูก UserInputService.InputChanged/InputEnded แบบถาวร
+            -- (fire ทุกครั้งที่เมาส์ขยับ "ทั้งเกม" ตลอดไป แม้ไม่ได้ลากอยู่เลย)
+            -- ถ้า UI มีหลาย Slider จะกลายเป็นหลาย listener ที่วิ่งฟรีตลอดเวลา
+            -- แก้เป็น connect เฉพาะตอนเริ่มลาก แล้ว disconnect ทันทีที่ปล่อยนิ้ว/เมาส์
+            local inputChangedConn, inputEndedConn = nil, nil
+            local function stopSliderDrag()
+                dragging = false; activeType = nil
+                TabContent.ScrollingEnabled = true
+                if inputChangedConn then inputChangedConn:Disconnect(); inputChangedConn = nil end
+                if inputEndedConn then inputEndedConn:Disconnect(); inputEndedConn = nil end
+            end
+
             Bar.InputBegan:Connect(function(input)
                 if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                     dragging = true
                     activeType = input.UserInputType
                     TabContent.ScrollingEnabled = false -- กันไม่ให้การเลื่อน scroll แย่ง gesture ตอนลาก ทำให้กระตุก
                     updateFromPos(input.Position.X, true)
+
+                    -- เช็คแค่ "ประเภท" ของ input (Touch/MouseMovement) แทนการเทียบ InputObject ตรงๆ
+                    -- เพราะบาง executor มือถือส่ง InputObject คนละตัวกันในแต่ละ event ของการลากนิ้วเดียวกัน
+                    -- ถ้าเทียบ object ตรงๆ จะมี event ตกหล่นเป็นบางจังหวะ ทำให้แถบลากดูค้าง/กระตุก
+                    inputChangedConn = UserInputService.InputChanged:Connect(function(input2)
+                        if not dragging then return end
+                        if activeType == Enum.UserInputType.Touch and input2.UserInputType == Enum.UserInputType.Touch then
+                            updateFromPos(input2.Position.X, true)
+                        elseif activeType == Enum.UserInputType.MouseButton1 and input2.UserInputType == Enum.UserInputType.MouseMovement then
+                            updateFromPos(input2.Position.X, true)
+                        end
+                    end)
+                    -- fallback: เผื่อ Bar.InputEnded ไม่ fire (เช่นนิ้วเลื่อนหลุดกรอบ Bar ระหว่างลากแล้วปล่อย) กันไม่ให้ scroll ถูกปิดค้าง
+                    inputEndedConn = UserInputService.InputEnded:Connect(function(input2)
+                        if dragging and input2.UserInputType == activeType then
+                            stopSliderDrag()
+                        end
+                    end)
                 end
             end)
             Bar.InputEnded:Connect(function(input)
                 if input.UserInputType == activeType then
-                    dragging = false; activeType = nil
-                    TabContent.ScrollingEnabled = true
-                end
-            end)
-            -- เช็คแค่ "ประเภท" ของ input (Touch/MouseMovement) แทนการเทียบ InputObject ตรงๆ
-            -- เพราะบาง executor มือถือส่ง InputObject คนละตัวกันในแต่ละ event ของการลากนิ้วเดียวกัน
-            -- ถ้าเทียบ object ตรงๆ จะมี event ตกหล่นเป็นบางจังหวะ ทำให้แถบลากดูค้าง/กระตุก
-            UserInputService.InputChanged:Connect(function(input)
-                if not dragging then return end
-                if activeType == Enum.UserInputType.Touch and input.UserInputType == Enum.UserInputType.Touch then
-                    updateFromPos(input.Position.X, true)
-                elseif activeType == Enum.UserInputType.MouseButton1 and input.UserInputType == Enum.UserInputType.MouseMovement then
-                    updateFromPos(input.Position.X, true)
-                end
-            end)
-            -- fallback: เผื่อ Bar.InputEnded ไม่ fire (เช่นนิ้วเลื่อนหลุดกรอบ Bar ระหว่างลากแล้วปล่อย) กันไม่ให้ scroll ถูกปิดค้าง
-            UserInputService.InputEnded:Connect(function(input)
-                if dragging and input.UserInputType == activeType then
-                    dragging = false; activeType = nil
-                    TabContent.ScrollingEnabled = true
+                    stopSliderDrag()
                 end
             end)
 
@@ -1688,14 +1724,14 @@ function Library:CreateWindow(config)
                     isOpen = false
                     local closingList, closingShadow = list, shadow
                     list, shadow = nil, nil
-                    TweenService:Create(dropStroke, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Transparency = 0.75}):Play()
-                    TweenService:Create(Arrow, TweenInfo.new(0.18, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Rotation = 0}):Play()
+                    TweenService:Create(dropStroke, TI.d015_Sine_Out, {Transparency = 0.75}):Play()
+                    TweenService:Create(Arrow, TI.d018_Sine_Out, {Rotation = 0}):Play()
                     local t = TweenService:Create(closingList, TweenInfo.new(0.15, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
                         Size = UDim2.new(closingList.Size.X.Scale, closingList.Size.X.Offset, 0, 0),
                         BackgroundTransparency = 1
                     })
                     if closingShadow then
-                        TweenService:Create(closingShadow, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {ImageTransparency = 1}):Play()
+                        TweenService:Create(closingShadow, TI.d015_Sine_Out, {ImageTransparency = 1}):Play()
                         task.delay(0.15, function() closingShadow:Destroy() end)
                     end
                     t:Play()
@@ -1713,7 +1749,7 @@ function Library:CreateWindow(config)
             local function openDropdown()
                 closeActivePopup()
                 isOpen = true
-                TweenService:Create(dropStroke, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Transparency = 0.15}):Play()
+                TweenService:Create(dropStroke, TI.d015_Sine_Out, {Transparency = 0.15}):Play()
                 TweenService:Create(Arrow, TweenInfo.new(0.2, Enum.EasingStyle.Back), {Rotation = 180}):Play()
 
                 local itemH, gap, pad = 38, 6, 8
@@ -1736,7 +1772,7 @@ function Library:CreateWindow(config)
                 shadow.AnchorPoint = Vector2.new(0, 0)
                 shadow.Position = UDim2.new(0, Drop.AbsolutePosition.X - 14, 0, Drop.AbsolutePosition.Y + Drop.AbsoluteSize.Y + 6 - 14)
                 shadow.Size = UDim2.new(0, Drop.AbsoluteSize.X + 28, 0, 28)
-                TweenService:Create(shadow, TweenInfo.new(0.18, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {ImageTransparency = 0.55}):Play()
+                TweenService:Create(shadow, TI.d018_Sine_Out, {ImageTransparency = 0.55}):Play()
 
                 list = Instance.new(needsScroll and "ScrollingFrame" or "Frame")
                 list.Size = UDim2.new(0, Drop.AbsoluteSize.X, 0, 0)
@@ -1827,11 +1863,11 @@ function Library:CreateWindow(config)
                     optBtn.MouseButton1Click:Connect(function() selectOption(opt, true) end)
                 end
 
-                TweenService:Create(list, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                TweenService:Create(list, TI.d02_Quint_Out, {
                     Size = UDim2.new(0, Drop.AbsoluteSize.X, 0, fullH),
                     BackgroundTransparency = 0
                 }):Play()
-                TweenService:Create(shadow, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                TweenService:Create(shadow, TI.d02_Quint_Out, {
                     Size = UDim2.new(0, Drop.AbsoluteSize.X + 28, 0, fullH + 28)
                 }):Play()
 
@@ -1906,7 +1942,7 @@ function Library:CreateWindow(config)
             local function applyColor(col, fireCallback)
                 selectedColor = col
                 bindFlag(c.Flag, selectedColor)
-                TweenService:Create(colorPreview, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundColor3 = col}):Play()
+                TweenService:Create(colorPreview, TI.d015_Sine_Out, {BackgroundColor3 = col}):Play()
                 if fireCallback and c.Callback then c.Callback(col) end
             end
 
@@ -2123,7 +2159,7 @@ function Library:CreateWindow(config)
                 newVal = math.clamp(newVal, min, max)
                 val = newVal
                 local percent = max > min and (val - min) / (max - min) or 0
-                TweenService:Create(Fill, TweenInfo.new(0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Size = UDim2.new(percent, 0, 1, 0)}):Play()
+                TweenService:Create(Fill, TI.d02_Sine_Out, {Size = UDim2.new(percent, 0, 1, 0)}):Play()
             end
 
             return newElement(Frame, function() return val end, function(_, newVal) setValue(newVal) end)
@@ -2167,7 +2203,7 @@ function Library:CreateWindow(config)
             local function refresh()
                 for opt, circle in pairs(circles) do
                     local isSel = (opt == selected)
-                    TweenService:Create(circle, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundColor3 = isSel and Theme.AccentA or Theme.ToggleOff}):Play()
+                    TweenService:Create(circle, TI.d015_Sine_Out, {BackgroundColor3 = isSel and Theme.AccentA or Theme.ToggleOff}):Play()
                 end
             end
 
@@ -2312,8 +2348,8 @@ function Library:CreateWindow(config)
                 boxes[opt] = {Box = CheckBox, Check = Check}
                 Row.MouseButton1Click:Connect(function()
                     selected[opt] = not selected[opt]
-                    TweenService:Create(CheckBox, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundColor3 = selected[opt] and Theme.AccentA or Theme.ToggleOff}):Play()
-                    TweenService:Create(Check, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {ImageTransparency = selected[opt] and 0 or 1}):Play()
+                    TweenService:Create(CheckBox, TI.d015_Sine_Out, {BackgroundColor3 = selected[opt] and Theme.AccentA or Theme.ToggleOff}):Play()
+                    TweenService:Create(Check, TI.d015_Sine_Out, {ImageTransparency = selected[opt] and 0 or 1}):Play()
                     fireCallback()
                 end)
             end
@@ -2437,7 +2473,19 @@ function Library:CreateWindow(config)
     end
 
     -- ============ Draggable ============
+    -- OPTIMIZED: เดิม InputChanged/InputEnded ผูกแบบถาวรตั้งแต่สร้างหน้าต่าง
+    -- ทำให้ทุก mouse move ทั้งเกมต้องวิ่งผ่าน callback นี้แม้ไม่ได้ลากอยู่เลย
+    -- เปลี่ยนเป็น connect ตอนเริ่มลากเท่านั้น แล้ว disconnect ทันทีที่ปล่อย
     local dragging, dragStart, startPos, activeTouch = false, nil, nil, nil
+    local dragChangedConn, dragEndedConn = nil, nil
+
+    local function stopWindowDrag(input)
+        dragging = false
+        if input and input == activeTouch then activeTouch = nil end
+        if dragChangedConn then dragChangedConn:Disconnect(); dragChangedConn = nil end
+        if dragEndedConn then dragEndedConn:Disconnect(); dragEndedConn = nil end
+    end
+
     TopBar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             if isPointOverGui(input.Position, CloseBtn) then return end
@@ -2445,52 +2493,62 @@ function Library:CreateWindow(config)
             dragStart = input.Position
             startPos = Shadow.Position
             if input.UserInputType == Enum.UserInputType.Touch then activeTouch = input end
-        end
-    end)
-    UserInputService.InputChanged:Connect(function(input)
-        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            if input.UserInputType == Enum.UserInputType.MouseMovement or input == activeTouch then
-                local delta = input.Position - dragStart
-                Shadow.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-            end
-        end
-    end)
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = false
-            if input == activeTouch then activeTouch = nil end
+
+            dragChangedConn = UserInputService.InputChanged:Connect(function(input2)
+                if dragging and (input2.UserInputType == Enum.UserInputType.MouseMovement or input2.UserInputType == Enum.UserInputType.Touch) then
+                    if input2.UserInputType == Enum.UserInputType.MouseMovement or input2 == activeTouch then
+                        local delta = input2.Position - dragStart
+                        Shadow.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+                    end
+                end
+            end)
+            dragEndedConn = UserInputService.InputEnded:Connect(function(input2)
+                if input2.UserInputType == Enum.UserInputType.MouseButton1 or input2.UserInputType == Enum.UserInputType.Touch then
+                    stopWindowDrag(input2)
+                end
+            end)
         end
     end)
 
     -- ============ Resizable ============
     -- MIN_SIZE ล็อกเท่ากับขนาดเริ่มต้นของหน้าต่าง (380x340) ลากขยายได้อย่างเดียว ย่อให้เล็กกว่าเดิมไม่ได้
     local MIN_SIZE, MAX_SIZE = Vector2.new(380, 340), Vector2.new(650, 550)
+    -- OPTIMIZED: เช่นเดียวกับ Draggable ด้านบน — connect เฉพาะช่วง resize จริง
     local resizeStart, startSize, resizeTouch = nil, nil, nil
+    local resizeChangedConn, resizeEndedConn = nil, nil
+
+    local function stopResize(input)
+        if resizing then
+            resizing = false
+            TweenService:Create(ResizeHandle, TI.d015_Sine_Out, {ImageTransparency = 0.4}):Play()
+        end
+        if input and input == resizeTouch then resizeTouch = nil end
+        if resizeChangedConn then resizeChangedConn:Disconnect(); resizeChangedConn = nil end
+        if resizeEndedConn then resizeEndedConn:Disconnect(); resizeEndedConn = nil end
+    end
+
     ResizeHandle.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             resizing = true
             resizeStart = input.Position
             startSize = MainFrame.Size
             if input.UserInputType == Enum.UserInputType.Touch then resizeTouch = input end
-        end
-    end)
-    UserInputService.InputChanged:Connect(function(input)
-        if resizing and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            if input.UserInputType == Enum.UserInputType.MouseMovement or input == resizeTouch then
-                local delta = input.Position - resizeStart
-                local newW = math.clamp(startSize.X.Offset + delta.X, MIN_SIZE.X, MAX_SIZE.X)
-                local newH = math.clamp(startSize.Y.Offset + delta.Y, MIN_SIZE.Y, MAX_SIZE.Y)
-                MainFrame.Size = UDim2.new(0, newW, 0, newH)
-            end
-        end
-    end)
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            if resizing then
-                resizing = false
-                TweenService:Create(ResizeHandle, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {ImageTransparency = 0.4}):Play()
-            end
-            if input == resizeTouch then resizeTouch = nil end
+
+            resizeChangedConn = UserInputService.InputChanged:Connect(function(input2)
+                if resizing and (input2.UserInputType == Enum.UserInputType.MouseMovement or input2.UserInputType == Enum.UserInputType.Touch) then
+                    if input2.UserInputType == Enum.UserInputType.MouseMovement or input2 == resizeTouch then
+                        local delta = input2.Position - resizeStart
+                        local newW = math.clamp(startSize.X.Offset + delta.X, MIN_SIZE.X, MAX_SIZE.X)
+                        local newH = math.clamp(startSize.Y.Offset + delta.Y, MIN_SIZE.Y, MAX_SIZE.Y)
+                        MainFrame.Size = UDim2.new(0, newW, 0, newH)
+                    end
+                end
+            end)
+            resizeEndedConn = UserInputService.InputEnded:Connect(function(input2)
+                if input2.UserInputType == Enum.UserInputType.MouseButton1 or input2.UserInputType == Enum.UserInputType.Touch then
+                    stopResize(input2)
+                end
+            end)
         end
     end)
 
