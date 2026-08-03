@@ -382,20 +382,34 @@ function Library:CreateWindow(config)
     -- ใช้ตอนลาก GuiObject (หน้าต่างหลัก / ปุ่มลอย) กันไม่ให้ลากหลุดขอบจอไปเลย
     -- ดัน Position กลับเข้ามาทันทีถ้าตำแหน่งปัจจุบันล้นขอบ โดยขยับแค่ offset เท่าที่จำเป็น
     -- (ไม่แตะ Scale เดิม เลยใช้ได้ทั้งกับ object ที่ anchor กลางจอและ anchor มุมซ้ายบน)
-    local function clampToScreen(guiObj, margin)
+    --
+    -- boundsObj (ถ้ามี): ใช้ขนาด/ตำแหน่งของ object นี้ในการคำนวณขอบเขตแทน guiObj เอง
+    -- จำเป็นสำหรับ Shadow ที่มีรูปเงาป้ายขนาด +60px ล้อมรอบ MainFrame จริง
+    -- ถ้าใช้ขนาด Shadow มาคำนวณตรงๆ บนจอมือถือเล็กๆ ขนาด Shadow (บวก padding) อาจกว้าง/สูงกว่าจอ
+    -- ทำให้ maxX/maxY ติดลบ แล้ว clamp ไปล็อกตำแหน่งเดียวค้างตลอด (อาการ "ลากแล้วติด" ที่เจอ)
+    local function clampAxis(pos, size, screenSize, margin)
+        local available = screenSize - margin * 2
+        if size >= available then
+            -- object ใหญ่กว่าพื้นที่จอที่เหลือ (เช่น resize ใหญ่สุดบนจอเล็ก) ให้จัดกึ่งกลางแกนนั้นแทนการล็อกมุมเดียว
+            return (screenSize - size) / 2
+        end
+        return math.clamp(pos, margin, screenSize - margin - size)
+    end
+
+    local function clampToScreen(guiObj, margin, boundsObj)
         margin = margin or POPUP_MARGIN
+        boundsObj = boundsObj or guiObj
         local screenSize = ScreenGui.AbsoluteSize
-        local absPos, absSize = guiObj.AbsolutePosition, guiObj.AbsoluteSize
-        local maxX = math.max(margin, screenSize.X - margin - absSize.X)
-        local maxY = math.max(margin, screenSize.Y - margin - absSize.Y)
-        local clampedX = math.clamp(absPos.X, margin, maxX)
-        local clampedY = math.clamp(absPos.Y, margin, maxY)
+        local absPos, absSize = boundsObj.AbsolutePosition, boundsObj.AbsoluteSize
+        local clampedX = clampAxis(absPos.X, absSize.X, screenSize.X, margin)
+        local clampedY = clampAxis(absPos.Y, absSize.Y, screenSize.Y, margin)
         local dx, dy = clampedX - absPos.X, clampedY - absPos.Y
         if dx ~= 0 or dy ~= 0 then
             local pos = guiObj.Position
             guiObj.Position = UDim2.new(pos.X.Scale, pos.X.Offset + dx, pos.Y.Scale, pos.Y.Offset + dy)
         end
     end
+
 
     function Library:SetTheme(themeName)
         local newTheme = Library.Themes[themeName]
@@ -2799,7 +2813,7 @@ function Library:CreateWindow(config)
                     if input2.UserInputType == Enum.UserInputType.MouseMovement or input2 == activeTouch then
                         local delta = input2.Position - dragStart
                         Shadow.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-                        clampToScreen(Shadow) -- กันลากหน้าต่างหลุดขอบจอ (สำคัญมากบนมือถือ)
+                        clampToScreen(Shadow, nil, MainFrame) -- กันลากหน้าต่างหลุดขอบจอ (วัดขอบเขตจาก MainFrame ที่มองเห็นจริง ไม่ใช่ Shadow ที่ padding ใหญ่กว่า)
                     end
                 end
             end)
