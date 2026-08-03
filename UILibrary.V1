@@ -11,7 +11,7 @@ Library.__index = Library
 Library.Flags = {}
 Library.Themes = {}
 Library.CurrentTheme = "Midnight"
-Library.Version = "6.3.0"
+Library.Version = "6.3.1"
 
 -- ============ FLAG SYSTEM (ต่อขยาย: registry + event สำหรับ Config save/load และ dependency) ============
 Library.FlagElements = {}                    -- ชื่อ Flag -> element object (ใช้ตอน LoadConfig เพื่อ Set ค่ากลับเข้า UI จริง)
@@ -216,6 +216,18 @@ local function safeNotify(opts)
     -- Library:Notify ถูกกำหนดจริงตอนเรียก CreateWindow เท่านั้น ถ้ายังไม่มีหน้าต่างเปิดอยู่ให้เงียบไว้ ไม่ error
     if Library.Notify then
         pcall(function() Library:Notify(opts) end)
+    end
+end
+
+-- เรียก callback ของผู้ใช้ (Tab:CreateButton/Toggle/Slider/... ทุกตัว) แบบมี pcall คลุมไว้เสมอ
+-- เหตุผล: ถ้า error เกิดในโค้ดของผู้ใช้ (เช่น index nil, exploit ฝั่งเกม error) ของเดิมจะพัง error หลุดขึ้นมา
+-- แล้วบางกรณี "ตัด" การทำงานของ element/ระบบ event ถัดไปในเฟรมเดียวกันไปด้วย ห่อด้วย pcall ให้ error ของ user
+-- ไม่ลามไปกระทบ element อื่นหรือ UI หลัก แค่ print เตือนใน console เฉยๆ
+local function safeCallback(fn, ...)
+    if type(fn) ~= "function" then return end
+    local ok, err = pcall(fn, ...)
+    if not ok then
+        warn("[" .. Library.Version .. "] Callback error: " .. tostring(err))
     end
 end
 
@@ -1292,6 +1304,7 @@ function Library:CreateWindow(config)
         local heartbeatConn
         if config.ShowFPS or config.ShowPing then
             local frames, lastClock, fps = 0, os.clock(), 0
+            local lastPing = nil -- เก็บค่า ping ล่าสุดที่อ่านสำเร็จไว้ กันตัวเลขกระพริบเป็น "--" ทุกครั้งที่ StatsService อ่านพลาดชั่วคราว
             local function refreshStatsText()
                 local parts = {config.Text or "SpectreWare"}
                 if config.ShowFPS then table.insert(parts, fps .. " FPS") end
@@ -1299,7 +1312,8 @@ function Library:CreateWindow(config)
                     local ok, ping = pcall(function()
                         return math.floor(StatsService.Network.ServerStatsItem["Data Ping"]:GetValue())
                     end)
-                    table.insert(parts, (ok and ping or "--") .. " ms")
+                    if ok and ping then lastPing = ping end
+                    table.insert(parts, (lastPing or "--") .. " ms")
                 end
                 Label.Text = table.concat(parts, "  •  ")
             end
@@ -1813,7 +1827,14 @@ function Library:CreateWindow(config)
             Label.TextXAlignment = Enum.TextXAlignment.Left
             Label.Parent = Btn
 
+            -- Debounce กันกรณีผู้ใช้กดรัวๆ (double click เร็ว/สแปมบนมือถือ) ยิง callback ซ้อนกันหลายรอบ
+            -- ปรับ cooldown ได้ผ่าน c.Debounce (วินาที) ค่า default 0.3s พอสำหรับปุ่มทั่วไป ไม่รู้สึกหน่วง
+            local debounceUntil = 0
             Btn.MouseButton1Click:Connect(function()
+                local now = os.clock()
+                if now < debounceUntil then return end
+                debounceUntil = now + (c.Debounce or 0.3)
+
                 if c.Notify ~= false then
                     Library:Notify({
                         Title = c.Text or "Button",
@@ -1822,7 +1843,7 @@ function Library:CreateWindow(config)
                         Duration = 1.5
                     })
                 end
-                if c.Callback then c.Callback() end
+                safeCallback(c.Callback)
             end)
             return newElement(Btn, nil, function(_, newText) Label.Text = newText end)
         end
@@ -1893,7 +1914,7 @@ function Library:CreateWindow(config)
                             Duration = 1.5
                         })
                     end
-                    if c.Callback then c.Callback(state) end
+                    safeCallback(c.Callback, state)
                 end
             end
             applyState(state, false)
@@ -1962,7 +1983,7 @@ function Library:CreateWindow(config)
                 Label.Text = (c.Text or "Slider") .. ": " .. string.format("%." .. places .. "f", value) .. suffix
                 val = value
                 bindFlag(c.Flag, val)
-                if fireCallback and c.Callback then c.Callback(value) end
+                if fireCallback then safeCallback(c.Callback, value) end
             end
 
             -- OPTIMIZED: แต่ละ Slider เคยผูก UserInputService.InputChanged/InputEnded แบบถาวร
@@ -2091,7 +2112,7 @@ function Library:CreateWindow(config)
                 Label.Text = (c.Text or "Dropdown") .. ": " .. opt
                 bindFlag(c.Flag, selected)
                 closeDropdown()
-                if fireCallback and c.Callback then c.Callback(opt) end
+                if fireCallback then safeCallback(c.Callback, opt) end
             end
             local function openDropdown()
                 closeActivePopup()
@@ -2301,7 +2322,7 @@ function Library:CreateWindow(config)
                 selectedColor = col
                 bindFlag(c.Flag, selectedColor)
                 TweenService:Create(colorPreview, TI.d015_Sine_Out, {BackgroundColor3 = col}):Play()
-                if fireCallback and c.Callback then c.Callback(col) end
+                if fireCallback then safeCallback(c.Callback, col) end
             end
 
             Btn.MouseButton1Click:Connect(function()
@@ -2597,10 +2618,10 @@ function Library:CreateWindow(config)
             applyGlowOnHover(Box)
             Box.FocusLost:Connect(function()
                 Library.Flags[c.Flag or ""] = Box.Text
-                if c.Callback then c.Callback(Box.Text) end
+                safeCallback(c.Callback, Box.Text)
             end)
             return newElement(Box, function() return Box.Text end, function(_, newText)
-                Box.Text = newText; if c.Callback then c.Callback(newText) end
+                Box.Text = newText; safeCallback(c.Callback, newText)
             end, nil, c.Flag)
         end
 
@@ -2642,7 +2663,7 @@ function Library:CreateWindow(config)
                         Label.Text = (c.Text or "Keybind") .. ": " .. selectedKey.Name
                         waiting = false
                         if bindConn then bindConn:Disconnect(); bindConn = nil end
-                        if c.Callback then c.Callback(selectedKey) end
+                        safeCallback(c.Callback, selectedKey)
                     end
                 end)
             end)
@@ -2698,10 +2719,10 @@ function Library:CreateWindow(config)
 
             Box.FocusLost:Connect(function()
                 Library.Flags[c.Flag or ""] = Box.Text
-                if c.Callback then c.Callback(Box.Text) end
+                safeCallback(c.Callback, Box.Text)
             end)
             return newElement(Box, function() return Box.Text end, function(_, newText)
-                Box.Text = newText; if c.Callback then c.Callback(newText) end
+                Box.Text = newText; safeCallback(c.Callback, newText)
             end, nil, c.Flag)
         end
 
@@ -2832,13 +2853,13 @@ function Library:CreateWindow(config)
                     selected = opt
                     bindFlag(c.Flag, selected)
                     refresh()
-                    if c.Callback then c.Callback(opt) end
+                    safeCallback(c.Callback, opt)
                 end)
             end
 
             return newElement(Frame, function() return selected end, function(_, newVal)
                 selected = newVal; bindFlag(c.Flag, selected); refresh()
-                if c.Callback then c.Callback(newVal) end
+                safeCallback(c.Callback, newVal)
             end, nil, c.Flag)
         end
 
@@ -2890,7 +2911,7 @@ function Library:CreateWindow(config)
             local function fireCallback()
                 local list = getList()
                 bindFlag(c.Flag, list)
-                if c.Callback then c.Callback(list) end
+                safeCallback(c.Callback, list)
             end
 
             for _, opt in ipairs(c.Options) do
@@ -3011,7 +3032,7 @@ function Library:CreateWindow(config)
 
             Box:GetPropertyChangedSignal("Text"):Connect(function()
                 PlaceholderLbl.Visible = Box.Text == ""
-                if c.Callback then c.Callback(Box.Text) end
+                safeCallback(c.Callback, Box.Text)
             end)
             return newElement(Outer, function() return Box.Text end, function(_, newText)
                 Box.Text = newText
