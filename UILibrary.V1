@@ -347,6 +347,56 @@ function Library:CreateWindow(config)
     local UiParent = getUiParent()
     ScreenGui.Parent = UiParent
 
+    -- ============ Off-screen protection (สำคัญมากบนมือถือจอเล็ก) ============
+    -- ScreenGui ไม่ได้ตั้ง IgnoreGuiInset ดังนั้น AbsoluteSize/AbsolutePosition ของมันคำนวณเผื่อ
+    -- พื้นที่ inset (เช่นรอยบาก, status bar) ให้แล้วโดยอัตโนมัติ ใช้ค่านี้เป็นขอบเขตจอที่ "ปลอดภัย" ได้เลย
+    local POPUP_MARGIN = 8
+
+    -- ใช้กับ popup ที่รู้ขนาด (กว้าง/สูง) ล่วงหน้า เช่น Dropdown list, ColorPicker
+    -- คืนค่าตำแหน่ง x, y ที่ถูกเลื่อนเข้ามาในจอแล้วถ้าล้นขอบขวา/ล่าง
+    -- ถ้าด้านล่าง anchor ไม่พอที่จะกาง popup จะสลับไปกางด้านบน anchor แทนอัตโนมัติ
+    local function clampPopupPosition(anchor, width, height, gap)
+        gap = gap or 6
+        local screenSize = ScreenGui.AbsoluteSize
+        local aPos, aSize = anchor.AbsolutePosition, anchor.AbsoluteSize
+
+        local x = aPos.X
+        if x + width > screenSize.X - POPUP_MARGIN then
+            x = screenSize.X - POPUP_MARGIN - width
+        end
+        x = math.max(POPUP_MARGIN, x)
+
+        local y = aPos.Y + aSize.Y + gap
+        if y + height > screenSize.Y - POPUP_MARGIN then
+            local yAbove = aPos.Y - gap - height
+            if yAbove >= POPUP_MARGIN then
+                y = yAbove -- พอที่จะกางขึ้นด้านบน anchor แทน
+            else
+                y = math.max(POPUP_MARGIN, screenSize.Y - POPUP_MARGIN - height) -- ไม่พอทั้งบนล่าง ชิดขอบล่างสุดที่พอดีจอ
+            end
+        end
+
+        return x, y
+    end
+
+    -- ใช้ตอนลาก GuiObject (หน้าต่างหลัก / ปุ่มลอย) กันไม่ให้ลากหลุดขอบจอไปเลย
+    -- ดัน Position กลับเข้ามาทันทีถ้าตำแหน่งปัจจุบันล้นขอบ โดยขยับแค่ offset เท่าที่จำเป็น
+    -- (ไม่แตะ Scale เดิม เลยใช้ได้ทั้งกับ object ที่ anchor กลางจอและ anchor มุมซ้ายบน)
+    local function clampToScreen(guiObj, margin)
+        margin = margin or POPUP_MARGIN
+        local screenSize = ScreenGui.AbsoluteSize
+        local absPos, absSize = guiObj.AbsolutePosition, guiObj.AbsoluteSize
+        local maxX = math.max(margin, screenSize.X - margin - absSize.X)
+        local maxY = math.max(margin, screenSize.Y - margin - absSize.Y)
+        local clampedX = math.clamp(absPos.X, margin, maxX)
+        local clampedY = math.clamp(absPos.Y, margin, maxY)
+        local dx, dy = clampedX - absPos.X, clampedY - absPos.Y
+        if dx ~= 0 or dy ~= 0 then
+            local pos = guiObj.Position
+            guiObj.Position = UDim2.new(pos.X.Scale, pos.X.Offset + dx, pos.Y.Scale, pos.Y.Offset + dy)
+        end
+    end
+
     function Library:SetTheme(themeName)
         local newTheme = Library.Themes[themeName]
         if not newTheme then return end
@@ -946,6 +996,7 @@ function Library:CreateWindow(config)
                             local delta = input2.Position - rDragStart
                             if delta.Magnitude > 4 then rMoved = true end
                             RestoreBtn.Position = UDim2.new(rStartPos.X.Scale, rStartPos.X.Offset + delta.X, rStartPos.Y.Scale, rStartPos.Y.Offset + delta.Y)
+                            clampToScreen(RestoreBtn) -- กันลากปุ่มลอยหลุดขอบจอ
                         end
                     end
                 end)
@@ -1758,6 +1809,10 @@ function Library:CreateWindow(config)
                 local fullH = pad * 2 + math.min(contentH, maxVisible * itemH + (maxVisible - 1) * gap)
                 local needsScroll = #c.Options > maxVisible
 
+                -- คำนวณตำแหน่งที่ไม่ล้นขอบจอไว้ล่วงหน้า (รู้ขนาด fullH แน่นอนแล้วก่อนสร้าง list)
+                -- ถ้าด้านล่าง Drop ไม่พอที่จอ จะสลับไปกางขึ้นด้านบนให้อัตโนมัติ
+                local listX, listY = clampPopupPosition(Drop, Drop.AbsoluteSize.X, fullH, 6)
+
                 -- soft drop shadow for elevation
                 shadow = Instance.new("ImageLabel")
                 shadow.Name = "DropShadow"
@@ -1770,13 +1825,13 @@ function Library:CreateWindow(config)
                 shadow.ZIndex = 9
                 shadow.Parent = ScreenGui
                 shadow.AnchorPoint = Vector2.new(0, 0)
-                shadow.Position = UDim2.new(0, Drop.AbsolutePosition.X - 14, 0, Drop.AbsolutePosition.Y + Drop.AbsoluteSize.Y + 6 - 14)
+                shadow.Position = UDim2.new(0, listX - 14, 0, listY - 14)
                 shadow.Size = UDim2.new(0, Drop.AbsoluteSize.X + 28, 0, 28)
                 TweenService:Create(shadow, TI.d018_Sine_Out, {ImageTransparency = 0.55}):Play()
 
                 list = Instance.new(needsScroll and "ScrollingFrame" or "Frame")
                 list.Size = UDim2.new(0, Drop.AbsoluteSize.X, 0, 0)
-                list.Position = UDim2.new(0, Drop.AbsolutePosition.X, 0, Drop.AbsolutePosition.Y + Drop.AbsoluteSize.Y + 6)
+                list.Position = UDim2.new(0, listX, 0, listY)
                 applyThemeColor(list, "Element")
                 list.BackgroundTransparency = 1
                 list.ClipsDescendants = true
@@ -1963,10 +2018,16 @@ function Library:CreateWindow(config)
                 isOpen = true
                 h, s, v = selectedColor:ToHSV()
 
+                -- ความสูงจริงของ popup คงที่เสมอ (SVBox 110 + HueBar 16 + Hex 16 + swatch 22 + gap*3 + padding*2)
+                -- ใช้ค่านี้คำนวณตำแหน่งไม่ให้ล้นขอบจอ ก่อนที่ AutomaticSize จะ resolve จริง
+                local pickerWidth = math.max(Btn.AbsoluteSize.X, 224)
+                local pickerHeight = 218
+                local pickerX, pickerY = clampPopupPosition(Btn, pickerWidth, pickerHeight, 6)
+
                 picker = Instance.new("Frame")
-                picker.Size = UDim2.new(0, math.max(Btn.AbsoluteSize.X, 224), 0, 0)
+                picker.Size = UDim2.new(0, pickerWidth, 0, 0)
                 picker.AutomaticSize = Enum.AutomaticSize.Y
-                picker.Position = UDim2.new(0, Btn.AbsolutePosition.X, 0, Btn.AbsolutePosition.Y + 46)
+                picker.Position = UDim2.new(0, pickerX, 0, pickerY)
                 applyThemeColor(picker, "Background")
                 picker.ZIndex = 10
                 picker.Active = true
@@ -2738,6 +2799,7 @@ function Library:CreateWindow(config)
                     if input2.UserInputType == Enum.UserInputType.MouseMovement or input2 == activeTouch then
                         local delta = input2.Position - dragStart
                         Shadow.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+                        clampToScreen(Shadow) -- กันลากหน้าต่างหลุดขอบจอ (สำคัญมากบนมือถือ)
                     end
                 end
             end)
