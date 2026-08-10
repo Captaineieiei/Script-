@@ -11,7 +11,7 @@ Library.__index = Library
 Library.Flags = {}
 Library.Themes = {}
 Library.CurrentTheme = "Midnight"
-Library.Version = "6.3.2"
+Library.Version = "6.3.3"
 
 -- ============ FLAG SYSTEM (ต่อขยาย: registry + event สำหรับ Config save/load และ dependency) ============
 Library.FlagElements = {}                    -- ชื่อ Flag -> element object (ใช้ตอน LoadConfig เพื่อ Set ค่ากลับเข้า UI จริง)
@@ -599,6 +599,19 @@ function Library:CreateWindow(config)
         Shadow.ZIndex = 0
         Shadow.Parent = NotifyGui
 
+        -- Slot = ตัวที่อยู่ใน UIListLayout จริง (Toast อยู่ข้างในอีกที) เดิม Toast เป็นสมาชิก list ตรงๆ
+        -- ทำให้ตอนแจ้งเตือนใหม่โผล่ หรือแจ้งเตือนเก่าถูกปิด รายการที่เหลือ "กระโดด" ไปตำแหน่งใหม่ทันที
+        -- ไม่มีการเคลื่อนไหวคั่นกลาง ถ้าจังหวะพอดีกับ toast ใบอื่นกำลัง fade อยู่ จะดูเหมือนภาพซ้อน/ทับกันแวบหนึ่ง
+        -- เปลี่ยนให้ Slot คุม "ความสูงที่จองไว้ใน list" เอง แล้ว tween ความสูงนี้ตอนเข้า/ออก
+        -- ผลคือ toast ใบอื่นๆ จะเลื่อนขึ้น-ลงอย่างนุ่มนวลตามจังหวะ แทนที่จะกระตุกทันที
+        local Slot = Instance.new("Frame")
+        Slot.Name = "ToastSlot"
+        Slot.BackgroundTransparency = 1
+        Slot.Size = UDim2.new(1, 0, 0, 0)
+        Slot.ClipsDescendants = true
+        Slot.ZIndex = 2
+        Slot.Parent = NotifyHolder
+
         local Toast = Instance.new("Frame")
         applyThemeColor(Toast, "Element")
         Toast.Size = UDim2.new(1, 0, 0, 0)
@@ -606,7 +619,7 @@ function Library:CreateWindow(config)
         Toast.BackgroundTransparency = 1
         Toast.ClipsDescendants = true
         Toast.ZIndex = 2
-        Toast.Parent = NotifyHolder
+        Toast.Parent = Slot
         corner(Toast, 16)
         local outline = stroke(Toast)
         outline.Thickness = 1
@@ -779,6 +792,15 @@ function Library:CreateWindow(config)
         IconScale.Parent = IconBadge
         IconBadge.Rotation = -25
 
+        -- ทุกอย่างข้างในสร้างเสร็จแล้ว ณ จุดนี้ AutomaticSize ของ Toast ควรคำนวณความสูงจริงเสร็จแล้ว
+        -- ใช้ความสูงนี้เป็นเป้าหมาย tween ของ Slot เพื่อให้ toast ใบอื่นเลื่อนตามจังหวะเดียวกันแบบนุ่มนวล
+        local targetHeight = Toast.AbsoluteSize.Y
+        TweenService:Create(Slot, TI.d024_Quint_Out, {Size = UDim2.new(1, 0, 0, targetHeight)}):Play()
+        -- เผื่อเนื้อหาเปลี่ยนความสูงหลังจากนี้ (เช่น TextLabel wrap คำนวณใหม่อีกเฟรม) ให้ Slot ตามความสูงจริงต่อเนื่อง
+        local heightSyncConn = Toast:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+            Slot.Size = UDim2.new(1, 0, 0, Toast.AbsoluteSize.Y)
+        end)
+
         -- ลำดับการเข้า: การ์ดป๊อปก่อน -> แถบสีวาดตัวเองลงมา -> ไอคอนหมุนเด้งตาม -> ข้อความค่อยๆ ไล่จางเข้าทีละบรรทัด -> ปุ่มปิด/แถบเวลาเข้ามาปิดท้าย
         -- ใช้ DelayTime ใน TweenInfo (พารามิเตอร์ตัวที่ 6) เพื่อไล่จังหวะ แทนที่จะขึ้นพร้อมกันหมดทีเดียวซึ่งดูแข็งทื่อ
         TweenService:Create(ToastScale, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Scale = 1}):Play()
@@ -807,6 +829,7 @@ function Library:CreateWindow(config)
         local function dismiss()
             if dismissed or not Toast or not Toast.Parent then return end
             dismissed = true
+            if heightSyncConn then heightSyncConn:Disconnect(); heightSyncConn = nil end
             -- ทางออก: กระชับและไวกว่าตอนเข้า ทุกอย่างจางพร้อมกันแบบ Quint In ให้ความรู้สึก "ถูกดึงหายไป" หนักแน่น ไม่ยืดเยื้อ
             TweenService:Create(ToastScale, TI.d018_Quint_In, {Scale = 0.88}):Play()
             TweenService:Create(IconBadge, TI.d016_Sine_In, {Rotation = 12, BackgroundTransparency = 1}):Play()
@@ -821,10 +844,13 @@ function Library:CreateWindow(config)
             TweenService:Create(CloseX, TI.d014_Sine_Out, {ImageTransparency = 1}):Play()
             TweenService:Create(ProgressTrack, TI.d014_Sine_Out, {BackgroundTransparency = 1}):Play()
             TweenService:Create(ProgressBar, TI.d014_Sine_Out, {BackgroundTransparency = 1}):Play()
+            -- ยุบพื้นที่ที่ Slot จองไว้ใน list พร้อมๆ กับ fade เพื่อให้ toast ใบอื่นเลื่อนขึ้นมาเติมช่องว่างแบบนุ่มนวล
+            -- แทนที่จะยังเว้นช่องว่างเปล่าค้างไว้เต็ม 0.2s แล้วค่อยกระโดดปิดตอน Destroy ทีเดียว
+            TweenService:Create(Slot, TI.d018_Quint_In, {Size = UDim2.new(1, 0, 0, 0)}):Play()
             task.delay(0.2, function()
                 for _, c in ipairs(shadowConns) do c:Disconnect() end
                 Shadow:Destroy()
-                if Toast then Toast:Destroy() end
+                if Slot then Slot:Destroy() end
             end)
         end
 
