@@ -11,7 +11,7 @@ Library.__index = Library
 Library.Flags = {}
 Library.Themes = {}
 Library.CurrentTheme = "Midnight"
-Library.Version = "6.3.1"
+Library.Version = "6.3.2"
 
 -- ============ FLAG SYSTEM (ต่อขยาย: registry + event สำหรับ Config save/load และ dependency) ============
 Library.FlagElements = {}                    -- ชื่อ Flag -> element object (ใช้ตอน LoadConfig เพื่อ Set ค่ากลับเข้า UI จริง)
@@ -133,8 +133,42 @@ local TI = {
     d022_Sine_Out = TweenInfo.new(0.22, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
     d028_Sine_Out = TweenInfo.new(0.28, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
     d03_Sine_Out = TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
+    d008_Quad_Out = TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+    d015_Quint_In = TweenInfo.new(0.15, Enum.EasingStyle.Quint, Enum.EasingDirection.In),
+    d02_Back_Out = TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+    d022_Back_Out = TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+    d024_Quint_Out = TweenInfo.new(0.24, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+    d02_Quint_In = TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.In),
 }
 local CoreGui = game:GetService("CoreGui")
+
+-- ============ RENDER-SYNCED DRAG HELPER ============
+-- ปัญหาเดิม: การลาก (หน้าต่าง/resize/slider/color picker) อัปเดตตำแหน่ง/ค่าจริงทันทีทุกครั้งที่
+-- UserInputService.InputChanged ยิง ซึ่งบนมือถือ/เมาส์โพลเรทสูง event นี้ยิงถี่กว่าเฟรมเรนเดอร์จริงหลายเท่า
+-- ทำให้เกิดการคำนวณ+อัปเดต UI (บางจุดรวมถึง string.format, callback ผู้ใช้) ซ้ำเกินความจำเป็นต่อเฟรม
+-- แย่งเวลากับการเรนเดอร์จนรู้สึกกระตุก/หน่วงเวลาโดยเฉพาะตอนลากเร็วๆ
+-- แก้โดยเก็บค่าล่าสุดไว้ก่อน แล้วค่อย apply UI จริงแค่ครั้งเดียวต่อเฟรมผ่าน RenderStepped
+local function createRenderSyncedDrag(applyFn)
+    local conn, pending, hasPending = nil, nil, false
+    local function push(...)
+        pending = {...}
+        hasPending = true
+    end
+    local function start()
+        if conn then return end
+        conn = RunService.RenderStepped:Connect(function()
+            if hasPending then
+                hasPending = false
+                applyFn(table.unpack(pending))
+            end
+        end)
+    end
+    local function stop()
+        if conn then conn:Disconnect(); conn = nil end
+        hasPending, pending = false, nil
+    end
+    return push, start, stop
+end
 
 -- ============ THEMES SETUP ============
 local BaseTheme = {
@@ -421,10 +455,10 @@ local function applyPressAnimation(btn, pressScale)
         uiScale.Parent = btn
     end
     local function pressDown()
-        TweenService:Create(uiScale, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Scale = pressScale}):Play()
+        TweenService:Create(uiScale, TI.d008_Quad_Out, {Scale = pressScale}):Play()
     end
     local function pressUp()
-        TweenService:Create(uiScale, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Scale = 1}):Play()
+        TweenService:Create(uiScale, TI.d022_Back_Out, {Scale = 1}):Play()
     end
     btn.MouseButton1Down:Connect(pressDown)
     btn.MouseButton1Up:Connect(pressUp)
@@ -1043,7 +1077,7 @@ function Library:CreateWindow(config)
             Shadow.Position = hiddenShadowPos
             MainFrame.BackgroundTransparency = 1
             mainStroke.Transparency = 1
-            local easeIn = TweenInfo.new(0.24, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+            local easeIn = TI.d024_Quint_Out
             TweenService:Create(Shadow, easeIn, {Position = baseShadowPos}):Play()
             TweenService:Create(MainFrame, easeIn, {BackgroundTransparency = 0}):Play()
             TweenService:Create(mainStroke, easeIn, {Transparency = 0.5}):Play()
@@ -1062,7 +1096,7 @@ function Library:CreateWindow(config)
                 RestoreBtn.Visible = true
                 -- ปุ่มลอย pop เข้ามาแบบเบาๆ ผ่าน UIScale (จุดหมุนกึ่งกลางจริง ไม่เอียงมุม)
                 RestoreBtnScale.Scale = 0.5
-                TweenService:Create(RestoreBtnScale, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out, 0, false, 0), {Scale = 1}):Play()
+                TweenService:Create(RestoreBtnScale, TI.d022_Back_Out, {Scale = 1}):Play()
             end)
         end
     end
@@ -1074,6 +1108,9 @@ function Library:CreateWindow(config)
         -- OPTIMIZED: connect เฉพาะตอนเริ่มลาก ไม่ปล่อยให้ InputChanged วิ่งฟรีตลอดเวลาที่ไม่ได้ลาก
         local rDragging, rDragStart, rStartPos, rTouch, rMoved = false, nil, nil, nil, false
         local rChangedConn, rEndedConn = nil, nil
+        local pushRestoreDrag, startRestoreDragSync, stopRestoreDragSync = createRenderSyncedDrag(function(delta)
+            RestoreBtn.Position = UDim2.new(rStartPos.X.Scale, rStartPos.X.Offset + delta.X, rStartPos.Y.Scale, rStartPos.Y.Offset + delta.Y)
+        end)
 
         local function stopRestoreDrag(input)
             if rDragging and not rMoved then
@@ -1083,6 +1120,7 @@ function Library:CreateWindow(config)
             if input and input == rTouch then rTouch = nil end
             if rChangedConn then rChangedConn:Disconnect(); rChangedConn = nil end
             if rEndedConn then rEndedConn:Disconnect(); rEndedConn = nil end
+            stopRestoreDragSync()
         end
 
         RestoreBtn.InputBegan:Connect(function(input)
@@ -1092,13 +1130,14 @@ function Library:CreateWindow(config)
                 rDragStart = input.Position
                 rStartPos = RestoreBtn.Position
                 if input.UserInputType == Enum.UserInputType.Touch then rTouch = input end
+                startRestoreDragSync()
 
                 rChangedConn = UserInputService.InputChanged:Connect(function(input2)
                     if rDragging and (input2.UserInputType == Enum.UserInputType.MouseMovement or input2.UserInputType == Enum.UserInputType.Touch) then
                         if input2.UserInputType == Enum.UserInputType.MouseMovement or input2 == rTouch then
                             local delta = input2.Position - rDragStart
                             if delta.Magnitude > 4 then rMoved = true end
-                            RestoreBtn.Position = UDim2.new(rStartPos.X.Scale, rStartPos.X.Offset + delta.X, rStartPos.Y.Scale, rStartPos.Y.Offset + delta.Y)
+                            pushRestoreDrag(delta)
                         end
                     end
                 end)
@@ -1237,7 +1276,7 @@ function Library:CreateWindow(config)
         end
         if ScreenGui.Enabled then
             -- ย่อ+เลื่อนลง+จางหายนุ่มๆ ก่อนค่อยลบจริง ไม่ตัดหายวับทันที
-            local easeOut = TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
+            local easeOut = TI.d02_Quint_In
             TweenService:Create(WindowScale, easeOut, {Scale = 0.9}):Play()
             TweenService:Create(Shadow, easeOut, {Position = hiddenShadowPos, ImageTransparency = 1}):Play()
             TweenService:Create(MainFrame, easeOut, {BackgroundTransparency = 1}):Play()
@@ -1991,11 +2030,17 @@ function Library:CreateWindow(config)
             -- ถ้า UI มีหลาย Slider จะกลายเป็นหลาย listener ที่วิ่งฟรีตลอดเวลา
             -- แก้เป็น connect เฉพาะตอนเริ่มลาก แล้ว disconnect ทันทีที่ปล่อยนิ้ว/เมาส์
             local inputChangedConn, inputEndedConn = nil, nil
+            -- OPTIMIZED: updateFromPos ทำงานหนัก (string.format + Label.Text + user Callback) เดิมรันทุกครั้งที่ InputChanged ยิง
+            -- ซึ่งถี่กว่าเฟรมเรนเดอร์จริงได้มาก ทำให้ระหว่างลาก slider รู้สึกกระตุก -> batch ให้รันแค่ครั้งเดียวต่อเฟรม
+            local pushSliderDrag, startSliderDragSync, stopSliderDragSync = createRenderSyncedDrag(function(x)
+                updateFromPos(x, true)
+            end)
             local function stopSliderDrag()
                 dragging = false; activeType = nil
                 TabContent.ScrollingEnabled = true
                 if inputChangedConn then inputChangedConn:Disconnect(); inputChangedConn = nil end
                 if inputEndedConn then inputEndedConn:Disconnect(); inputEndedConn = nil end
+                stopSliderDragSync()
             end
 
             Bar.InputBegan:Connect(function(input)
@@ -2004,6 +2049,7 @@ function Library:CreateWindow(config)
                     activeType = input.UserInputType
                     TabContent.ScrollingEnabled = false -- กันไม่ให้การเลื่อน scroll แย่ง gesture ตอนลาก ทำให้กระตุก
                     updateFromPos(input.Position.X, true)
+                    startSliderDragSync()
 
                     -- เช็คแค่ "ประเภท" ของ input (Touch/MouseMovement) แทนการเทียบ InputObject ตรงๆ
                     -- เพราะบาง executor มือถือส่ง InputObject คนละตัวกันในแต่ละ event ของการลากนิ้วเดียวกัน
@@ -2011,9 +2057,9 @@ function Library:CreateWindow(config)
                     inputChangedConn = UserInputService.InputChanged:Connect(function(input2)
                         if not dragging then return end
                         if activeType == Enum.UserInputType.Touch and input2.UserInputType == Enum.UserInputType.Touch then
-                            updateFromPos(input2.Position.X, true)
+                            pushSliderDrag(input2.Position.X)
                         elseif activeType == Enum.UserInputType.MouseButton1 and input2.UserInputType == Enum.UserInputType.MouseMovement then
-                            updateFromPos(input2.Position.X, true)
+                            pushSliderDrag(input2.Position.X)
                         end
                     end)
                     -- fallback: เผื่อ Bar.InputEnded ไม่ fire (เช่นนิ้วเลื่อนหลุดกรอบ Bar ระหว่างลากแล้วปล่อย) กันไม่ให้ scroll ถูกปิดค้าง
@@ -2094,7 +2140,7 @@ function Library:CreateWindow(config)
                     list, shadow = nil, nil
                     TweenService:Create(dropStroke, TI.d015_Sine_Out, {Transparency = 0.75}):Play()
                     TweenService:Create(Arrow, TI.d018_Sine_Out, {Rotation = 0}):Play()
-                    local t = TweenService:Create(closingList, TweenInfo.new(0.15, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
+                    local t = TweenService:Create(closingList, TI.d015_Quint_In, {
                         Size = UDim2.new(closingList.Size.X.Scale, closingList.Size.X.Offset, 0, 0),
                         BackgroundTransparency = 1
                     })
@@ -2118,7 +2164,7 @@ function Library:CreateWindow(config)
                 closeActivePopup()
                 isOpen = true
                 TweenService:Create(dropStroke, TI.d015_Sine_Out, {Transparency = 0.15}):Play()
-                TweenService:Create(Arrow, TweenInfo.new(0.2, Enum.EasingStyle.Back), {Rotation = 180}):Play()
+                TweenService:Create(Arrow, TI.d02_Back_Out, {Rotation = 180}):Play()
 
                 local itemH, gap, pad = 38, 6, 8
                 local maxVisible = 5
@@ -2505,19 +2551,27 @@ function Library:CreateWindow(config)
                 end
 
                 -- ลาก SV box / Hue bar: connect เฉพาะช่วงลากจริง (แพทเทิร์นเดียวกับ Slider ด้านบน)
+                -- OPTIMIZED: updateSV/updateHue ทำงานหนัก (คำนวณ HSV + เลื่อน cursor + เปลี่ยนสีพื้น + refreshHex + user Callback)
+                -- เดิมรันทุกครั้งที่ InputChanged ยิง (ถี่กว่าเฟรมเรนเดอร์จริงได้บนมือถือ) ทำให้ลากแล้วรู้สึกหน่วง
+                -- -> batch ให้รันแค่ครั้งเดียวต่อเฟรมผ่าน RenderStepped เหมือน window drag/slider ด้านบน
                 local svDragging, svChangedConn, svEndedConn = false, nil, nil
+                local pushSVDrag, startSVDragSync, stopSVDragSync = createRenderSyncedDrag(function(x, y)
+                    updateSV(x, y)
+                end)
                 local function stopSVDrag()
                     svDragging = false
                     if svChangedConn then svChangedConn:Disconnect(); svChangedConn = nil end
                     if svEndedConn then svEndedConn:Disconnect(); svEndedConn = nil end
+                    stopSVDragSync()
                 end
                 SVBox.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                         svDragging = true
                         updateSV(input.Position.X, input.Position.Y)
+                        startSVDragSync()
                         svChangedConn = UserInputService.InputChanged:Connect(function(input2)
                             if svDragging and (input2.UserInputType == Enum.UserInputType.MouseMovement or input2.UserInputType == Enum.UserInputType.Touch) then
-                                updateSV(input2.Position.X, input2.Position.Y)
+                                pushSVDrag(input2.Position.X, input2.Position.Y)
                             end
                         end)
                         svEndedConn = UserInputService.InputEnded:Connect(function(input2)
@@ -2529,18 +2583,23 @@ function Library:CreateWindow(config)
                 end)
 
                 local hueDragging, hueChangedConn, hueEndedConn = false, nil, nil
+                local pushHueDrag, startHueDragSync, stopHueDragSync = createRenderSyncedDrag(function(x)
+                    updateHue(x)
+                end)
                 local function stopHueDrag()
                     hueDragging = false
                     if hueChangedConn then hueChangedConn:Disconnect(); hueChangedConn = nil end
                     if hueEndedConn then hueEndedConn:Disconnect(); hueEndedConn = nil end
+                    stopHueDragSync()
                 end
                 HueBar.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                         hueDragging = true
                         updateHue(input.Position.X)
+                        startHueDragSync()
                         hueChangedConn = UserInputService.InputChanged:Connect(function(input2)
                             if hueDragging and (input2.UserInputType == Enum.UserInputType.MouseMovement or input2.UserInputType == Enum.UserInputType.Touch) then
-                                updateHue(input2.Position.X)
+                                pushHueDrag(input2.Position.X)
                             end
                         end)
                         hueEndedConn = UserInputService.InputEnded:Connect(function(input2)
@@ -3139,12 +3198,18 @@ function Library:CreateWindow(config)
     -- เปลี่ยนเป็น connect ตอนเริ่มลากเท่านั้น แล้ว disconnect ทันทีที่ปล่อย
     local dragging, dragStart, startPos, activeTouch = false, nil, nil, nil
     local dragChangedConn, dragEndedConn = nil, nil
+    -- OPTIMIZED: เดิม Shadow.Position ถูก set ทันทีทุกครั้งที่ InputChanged ยิง (ถี่กว่าเฟรมเรนเดอร์จริงได้บนมือถือ/เมาส์โพลเรทสูง)
+    -- เปลี่ยนมาเก็บ delta ล่าสุดไว้ก่อน แล้ว apply ตำแหน่งจริงแค่ครั้งเดียวต่อเฟรมผ่าน RenderStepped ให้ลื่นไม่กระตุก
+    local pushWindowDrag, startWindowDragSync, stopWindowDragSync = createRenderSyncedDrag(function(delta)
+        Shadow.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end)
 
     local function stopWindowDrag(input)
         dragging = false
         if input and input == activeTouch then activeTouch = nil end
         if dragChangedConn then dragChangedConn:Disconnect(); dragChangedConn = nil end
         if dragEndedConn then dragEndedConn:Disconnect(); dragEndedConn = nil end
+        stopWindowDragSync()
     end
 
     TopBar.InputBegan:Connect(function(input)
@@ -3154,12 +3219,12 @@ function Library:CreateWindow(config)
             dragStart = input.Position
             startPos = Shadow.Position
             if input.UserInputType == Enum.UserInputType.Touch then activeTouch = input end
+            startWindowDragSync()
 
             dragChangedConn = UserInputService.InputChanged:Connect(function(input2)
                 if dragging and (input2.UserInputType == Enum.UserInputType.MouseMovement or input2.UserInputType == Enum.UserInputType.Touch) then
                     if input2.UserInputType == Enum.UserInputType.MouseMovement or input2 == activeTouch then
-                        local delta = input2.Position - dragStart
-                        Shadow.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+                        pushWindowDrag(input2.Position - dragStart)
                     end
                 end
             end)
@@ -3177,6 +3242,12 @@ function Library:CreateWindow(config)
     -- OPTIMIZED: เช่นเดียวกับ Draggable ด้านบน — connect เฉพาะช่วง resize จริง
     local resizeStart, startSize, resizeTouch = nil, nil, nil
     local resizeChangedConn, resizeEndedConn = nil, nil
+    -- OPTIMIZED: batch การ set MainFrame.Size ให้เกิดแค่ครั้งเดียวต่อเฟรมผ่าน RenderStepped (เหตุผลเดียวกับ window drag ด้านบน)
+    local pushResize, startResizeSync, stopResizeSync = createRenderSyncedDrag(function(delta)
+        local newW = math.clamp(startSize.X.Offset + delta.X, MIN_SIZE.X, MAX_SIZE.X)
+        local newH = math.clamp(startSize.Y.Offset + delta.Y, MIN_SIZE.Y, MAX_SIZE.Y)
+        MainFrame.Size = UDim2.new(0, newW, 0, newH)
+    end)
 
     local function stopResize(input)
         if resizing then
@@ -3186,6 +3257,7 @@ function Library:CreateWindow(config)
         if input and input == resizeTouch then resizeTouch = nil end
         if resizeChangedConn then resizeChangedConn:Disconnect(); resizeChangedConn = nil end
         if resizeEndedConn then resizeEndedConn:Disconnect(); resizeEndedConn = nil end
+        stopResizeSync()
     end
 
     ResizeHandle.InputBegan:Connect(function(input)
@@ -3194,14 +3266,12 @@ function Library:CreateWindow(config)
             resizeStart = input.Position
             startSize = MainFrame.Size
             if input.UserInputType == Enum.UserInputType.Touch then resizeTouch = input end
+            startResizeSync()
 
             resizeChangedConn = UserInputService.InputChanged:Connect(function(input2)
                 if resizing and (input2.UserInputType == Enum.UserInputType.MouseMovement or input2.UserInputType == Enum.UserInputType.Touch) then
                     if input2.UserInputType == Enum.UserInputType.MouseMovement or input2 == resizeTouch then
-                        local delta = input2.Position - resizeStart
-                        local newW = math.clamp(startSize.X.Offset + delta.X, MIN_SIZE.X, MAX_SIZE.X)
-                        local newH = math.clamp(startSize.Y.Offset + delta.Y, MIN_SIZE.Y, MAX_SIZE.Y)
-                        MainFrame.Size = UDim2.new(0, newW, 0, newH)
+                        pushResize(input2.Position - resizeStart)
                     end
                 end
             end)
