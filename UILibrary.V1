@@ -11,7 +11,7 @@ Library.__index = Library
 Library.Flags = {}
 Library.Themes = {}
 Library.CurrentTheme = "Midnight"
-Library.Version = "6.3.3"
+Library.Version = "6.3.4"
 
 -- ============ FLAG SYSTEM (ต่อขยาย: registry + event สำหรับ Config save/load และ dependency) ============
 Library.FlagElements = {}                    -- ชื่อ Flag -> element object (ใช้ตอน LoadConfig เพื่อ Set ค่ากลับเข้า UI จริง)
@@ -143,11 +143,6 @@ local TI = {
 local CoreGui = game:GetService("CoreGui")
 
 -- ============ RENDER-SYNCED DRAG HELPER ============
--- ปัญหาเดิม: การลาก (หน้าต่าง/resize/slider/color picker) อัปเดตตำแหน่ง/ค่าจริงทันทีทุกครั้งที่
--- UserInputService.InputChanged ยิง ซึ่งบนมือถือ/เมาส์โพลเรทสูง event นี้ยิงถี่กว่าเฟรมเรนเดอร์จริงหลายเท่า
--- ทำให้เกิดการคำนวณ+อัปเดต UI (บางจุดรวมถึง string.format, callback ผู้ใช้) ซ้ำเกินความจำเป็นต่อเฟรม
--- แย่งเวลากับการเรนเดอร์จนรู้สึกกระตุก/หน่วงเวลาโดยเฉพาะตอนลากเร็วๆ
--- แก้โดยเก็บค่าล่าสุดไว้ก่อน แล้วค่อย apply UI จริงแค่ครั้งเดียวต่อเฟรมผ่าน RenderStepped
 local function createRenderSyncedDrag(applyFn)
     local conn, pending, hasPending = nil, nil, false
     local function push(...)
@@ -189,11 +184,6 @@ local BaseTheme = {
     Info = Color3.fromRGB(94, 176, 255)
 }
 
--- สร้างธีมแบบ "resolve ค่าเต็มไว้ล่วงหน้า" เป็นตารางแยกอิสระของตัวเอง ไม่ใช้ metatable/__index fallback
--- เหตุผล: ของเดิมใช้ setmetatable({...}, {__index = BaseTheme}) ทำให้ธีมที่ไม่ได้กำหนดค่าเอง (เช่น Text)
--- ไปอ้างอิง BaseTheme ตัวเดียวกันแบบ "เชื่อมถึงกัน" ตลอดเวลา ถ้ามีจุดไหนในโค้ด (ปัจจุบันหรืออนาคต)
--- เผลอเขียนทับ BaseTheme โดยตรง สีจะรั่วข้ามธีมกันทันที ฟังก์ชันนี้ตัดปัญหาด้วยการ "ก็อปปี้ค่าจริง"
--- ออกมาเป็นตารางของตัวเองเลยตั้งแต่ตอนโหลด ธีมแต่ละอันจึงเป็นอิสระต่อกัน 100%
 local function resolveTheme(overrides)
     local t = {}
     for k, v in pairs(BaseTheme) do t[k] = v end
@@ -225,16 +215,12 @@ Library.Themes.Light = resolveTheme({
     Success = Color3.fromRGB(22, 163, 106), Danger = Color3.fromRGB(224, 54, 54), Warning = Color3.fromRGB(217, 130, 0), Info = Color3.fromRGB(37, 108, 224)
 })
 
--- เพิ่มธีมของผู้ใช้เองเข้าไปใน Library.Themes ได้ตอนรันไทม์ (จะไปโผล่ใน CreateThemeDropdown อัตโนมัติ)
--- overrides คือตารางสีบางส่วน ค่าไหนไม่ใส่จะ fallback ไปที่ BaseTheme ให้เอง
 function Library:AddTheme(name, overrides)
     if type(name) ~= "string" or name == "" then return end
     Library.Themes[name] = resolveTheme(overrides)
 end
 
 -- ============ CONFIG SAVE/LOAD ============
--- บันทึก/โหลดค่า Library.Flags ทั้งหมดเป็นไฟล์ .json ผ่าน executor (writefile/readfile ฯลฯ)
--- ถ้า executor ไม่รองรับไฟล์ (เช่นบางตัวบล็อกไว้) จะแจ้งเตือนแทนการ error ทิ้งเงียบๆ
 local function hasFileSupport()
     return type(writefile) == "function" and type(readfile) == "function"
        and type(isfile) == "function" and type(isfolder) == "function" and type(makefolder) == "function"
@@ -247,16 +233,11 @@ local function ensureConfigFolder()
 end
 
 local function safeNotify(opts)
-    -- Library:Notify ถูกกำหนดจริงตอนเรียก CreateWindow เท่านั้น ถ้ายังไม่มีหน้าต่างเปิดอยู่ให้เงียบไว้ ไม่ error
     if Library.Notify then
         pcall(function() Library:Notify(opts) end)
     end
 end
 
--- เรียก callback ของผู้ใช้ (Tab:CreateButton/Toggle/Slider/... ทุกตัว) แบบมี pcall คลุมไว้เสมอ
--- เหตุผล: ถ้า error เกิดในโค้ดของผู้ใช้ (เช่น index nil, exploit ฝั่งเกม error) ของเดิมจะพัง error หลุดขึ้นมา
--- แล้วบางกรณี "ตัด" การทำงานของ element/ระบบ event ถัดไปในเฟรมเดียวกันไปด้วย ห่อด้วย pcall ให้ error ของ user
--- ไม่ลามไปกระทบ element อื่นหรือ UI หลัก แค่ print เตือนใน console เฉยๆ
 local function safeCallback(fn, ...)
     if type(fn) ~= "function" then return end
     local ok, err = pcall(fn, ...)
@@ -265,13 +246,11 @@ local function safeCallback(fn, ...)
     end
 end
 
--- คืน path เต็มของไฟล์ config ชื่อ name (sanitize ชื่อไฟล์กันอักขระที่ใช้ทำ path แตก)
 local function configPath(name)
     name = tostring(name or "default"):gsub("[^%w_%- ]", "_")
     return Library.ConfigFolder .. "/" .. name .. ".json"
 end
 
--- บันทึกค่าปัจจุบันของทุก Flag ลงไฟล์ ชื่อ config ตาม `name` (ไม่ระบุ = "default")
 function Library:SaveConfig(name)
     if not hasFileSupport() then
         safeNotify({Title = "Config", Content = "Executor นี้ไม่รองรับการเขียนไฟล์ (writefile)", Type = "error"})
@@ -292,7 +271,6 @@ function Library:SaveConfig(name)
     return true
 end
 
--- โหลด config กลับเข้าไปทั้ง Library.Flags และ Element จริงบนหน้าจอ (ถ้า element นั้นถูกสร้างไว้แล้วและมี Flag ตรงกัน)
 function Library:LoadConfig(name)
     if not hasFileSupport() then
         safeNotify({Title = "Config", Content = "Executor นี้ไม่รองรับการอ่านไฟล์ (readfile)", Type = "error"})
@@ -325,7 +303,6 @@ function Library:LoadConfig(name)
     return true
 end
 
--- ลิสต์ชื่อ config ทั้งหมดที่มีอยู่ในโฟลเดอร์ (ไม่รวมนามสกุล .json)
 function Library:ListConfigs()
     local list = {}
     if not hasFileSupport() or type(listfiles) ~= "function" then return list end
@@ -338,7 +315,6 @@ function Library:ListConfigs()
     return list
 end
 
--- ลบไฟล์ config ชื่อ name ทิ้ง
 function Library:DeleteConfig(name)
     if not hasFileSupport() or type(delfile) ~= "function" then return false end
     local path = configPath(name)
@@ -350,7 +326,6 @@ function Library:DeleteConfig(name)
     return false
 end
 
--- Theme คือตารางที่ "ใช้งานจริง" ต้องเป็นก้อนของตัวเองแยกจากธีมทุกอันข้างบนเสมอ (ห้ามชี้ตัวเดียวกัน)
 local Theme = resolveTheme(nil)
 local NOTIFY_ICON = {success = Library.Icons.check, error = Library.Icons.close, warning = Library.Icons.warning, info = Library.Icons.info}
 
@@ -373,11 +348,6 @@ local function corner(inst, radius)
     return c
 end
 
--- แปลงไอดีรูปที่ผู้ใช้ใส่มาให้เป็น "rbxassetid://..." เสมอ
--- รองรับ: เลขล้วน (number), string ตัวเลขล้วน ("123456"), string ที่มี/ไม่มี "rbxassetid://" อยู่แล้ว,
--- หรือแปะลิงก์เต็มมาจากเว็บ Roblox (เช่น https://www.roblox.com/library/123456/Name)
--- นี่คือสาเหตุที่ปุ่มเปิด UI ไม่ขึ้นรูป: ImageButton.Image ต้องมี prefix "rbxassetid://" เท่านั้น
--- ถ้าใส่แค่ตัวเลขไอดีเปล่าๆ (เช่น "123456789") Roblox จะไม่ render รูปให้
 local function normalizeAssetId(id)
     if typeof(id) == "number" then
         return "rbxassetid://" .. tostring(math.floor(id))
@@ -391,7 +361,6 @@ local function normalizeAssetId(id)
         if trimmed:match("^%d+$") then
             return "rbxassetid://" .. trimmed
         end
-        -- เผื่อผู้ใช้แปะลิงก์เต็ม เช่น roblox.com/library/123456/xxx หรือ ?id=123456
         local digits = trimmed:match("(%d+)")
         if digits then
             return "rbxassetid://" .. digits
@@ -446,7 +415,6 @@ local function applyGlowOnHover(frame)
     end)
 end
 
--- กด = ยุบตัวเล็กน้อยแบบมี spring, ปล่อย = เด้งกลับ (ใช้กับปุ่มทุกชนิด)
 local function applyPressAnimation(btn, pressScale)
     pressScale = pressScale or 0.94
     local uiScale = btn:FindFirstChildOfClass("UIScale")
@@ -478,8 +446,6 @@ local function isPointOverGui(pos, guiObject)
        and pos.Y >= topLeft.Y and pos.Y <= topLeft.Y + size.Y
 end
 
--- flag = ชื่อ Flag ของ element นี้เอง (ถ้ามี) เอาไว้ลงทะเบียนใน Library.FlagElements
--- เพื่อให้ Library:LoadConfig สามารถเรียก element:Set(value) แล้วอัปเดต UI จริงได้ (ไม่ใช่แค่ทับ Flags table เงียบๆ)
 local function newElement(root, getter, setter, destroyer, flag)
     local elem
     elem = {
@@ -492,9 +458,6 @@ local function newElement(root, getter, setter, destroyer, flag)
             if destroyer then destroyer() else root:Destroy() end
         end,
     }
-    -- ผูก element นี้ให้โชว์/ซ่อนตามค่าของอีก Flag หนึ่ง (คล้าย "Dependency Box")
-    -- ตัวอย่าง: sliderElem:LinkVisibility("AdvancedMode", true)  -- โชว์เฉพาะตอน AdvancedMode == true
-    -- opts.Invert = true  -> กลับด้านลอจิก (โชว์ตอน "ไม่เท่ากับ" expectedValue)
     function elem:LinkVisibility(depFlag, expectedValue, opts)
         opts = type(opts) == "table" and opts or {}
         if expectedValue == nil then expectedValue = true end
@@ -553,9 +516,6 @@ function Library:CreateWindow(config)
     end
 
     -- ============ Notification layer ============
-    -- ต้องมี ScreenGui แยกของตัวเอง เหมือนกับ RestoreGui ด้านล่าง เพราะถ้าฝากไว้ใน ScreenGui หลัก
-    -- พอผู้ใช้กดปุ่ม "ซ่อน UI" (ScreenGui.Enabled = false) การแจ้งเตือนที่กำลังขึ้นอยู่ หรือที่จะขึ้นมาใหม่
-    -- จะถูกซ่อนไปด้วยทันที ทั้งที่ควรเห็นแจ้งเตือนได้แม้ UI หลักจะถูกซ่อนอยู่ก็ตาม
     local NotifyGui = Instance.new("ScreenGui")
     NotifyGui.Name = "NotifyGui"
     NotifyGui.ResetOnSpawn = false
@@ -585,9 +545,7 @@ function Library:CreateWindow(config)
         local COLOR_KEY = {success = "Success", error = "Danger", warning = "Warning", info = "Info"}
         local color = Theme[COLOR_KEY[ntype] or "Info"]
 
-        -- เงานุ่มๆ ใต้การ์ด ให้ลอยเด่นจากพื้นหลัง แทนที่จะแบนราบติดพื้น
-        -- ผูกกับ NotifyGui (ไม่ใช่ NotifyHolder ที่มี UIListLayout คุมอยู่) แล้วซิงค์ตำแหน่ง/ขนาดตาม Toast เอาเอง
-        -- กันปัญหาแท่ง Shadow ไปเป็นสมาชิกในลิสต์แล้วดันเลย์เอาต์ของ toast อื่นเพี้ยน
+        -- เงานุ่มๆ ใต้การ์ด
         local Shadow = Instance.new("ImageLabel")
         Shadow.Name = "ToastShadow"
         Shadow.BackgroundTransparency = 1
@@ -599,11 +557,6 @@ function Library:CreateWindow(config)
         Shadow.ZIndex = 0
         Shadow.Parent = NotifyGui
 
-        -- Slot = ตัวที่อยู่ใน UIListLayout จริง (Toast อยู่ข้างในอีกที) เดิม Toast เป็นสมาชิก list ตรงๆ
-        -- ทำให้ตอนแจ้งเตือนใหม่โผล่ หรือแจ้งเตือนเก่าถูกปิด รายการที่เหลือ "กระโดด" ไปตำแหน่งใหม่ทันที
-        -- ไม่มีการเคลื่อนไหวคั่นกลาง ถ้าจังหวะพอดีกับ toast ใบอื่นกำลัง fade อยู่ จะดูเหมือนภาพซ้อน/ทับกันแวบหนึ่ง
-        -- เปลี่ยนให้ Slot คุม "ความสูงที่จองไว้ใน list" เอง แล้ว tween ความสูงนี้ตอนเข้า/ออก
-        -- ผลคือ toast ใบอื่นๆ จะเลื่อนขึ้น-ลงอย่างนุ่มนวลตามจังหวะ แทนที่จะกระตุกทันที
         local Slot = Instance.new("Frame")
         Slot.Name = "ToastSlot"
         Slot.BackgroundTransparency = 1
@@ -619,11 +572,33 @@ function Library:CreateWindow(config)
         Toast.BackgroundTransparency = 1
         Toast.ClipsDescendants = true
         Toast.ZIndex = 2
+        -- เพิ่ม Offset เริ่มต้นเพื่อทำ Slide-in Animation
+        Toast.Position = UDim2.new(0, 30, 0, 0) 
         Toast.Parent = Slot
-        corner(Toast, 16)
+        corner(Toast, 14)
         local outline = stroke(Toast)
         outline.Thickness = 1
         outline.Transparency = 1
+
+        -- เอฟเฟกต์ Glass Sheen บางๆ เพื่อให้การ์ดดูมีมิติ
+        local Sheen = Instance.new("Frame")
+        Sheen.Name = "Sheen"
+        Sheen.Size = UDim2.new(1, 0, 1, 0)
+        Sheen.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        Sheen.BorderSizePixel = 0
+        Sheen.ZIndex = 3
+        Sheen.Active = false
+        Sheen.Parent = Toast
+        corner(Sheen, 14)
+        local sheenGradient = Instance.new("UIGradient")
+        sheenGradient.Color = ColorSequence.new(Color3.fromRGB(255, 255, 255), Color3.fromRGB(255, 255, 255))
+        sheenGradient.Transparency = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 0.95),
+            NumberSequenceKeypoint.new(0.35, 1),
+            NumberSequenceKeypoint.new(1, 1),
+        })
+        sheenGradient.Rotation = 100
+        sheenGradient.Parent = Sheen
 
         local function syncShadow()
             if not Shadow.Parent or not Toast.Parent then return end
@@ -636,14 +611,15 @@ function Library:CreateWindow(config)
         }
         syncShadow()
 
-        -- แถบสีบอกประเภท ชิดขอบซ้ายของการ์ด ปลายมนทั้งสองด้าน + ไล่เฉดจางลงเล็กน้อยจากบนลงล่างให้ดูมีมิติ ไม่ใช่แท่งทึบแข็งๆ
+        -- แถบสีบอกประเภท ชิดซ้ายบน ปลายมนและไล่เฉดล่าง
         local AccentBar = Instance.new("Frame")
-        AccentBar.Position = UDim2.new(0, 0, 0, 14)
+        AccentBar.AnchorPoint = Vector2.new(0, 0.5)
+        AccentBar.Position = UDim2.new(0, 12, 0.5, 0)
         AccentBar.Size = UDim2.new(0, 4, 0, 0)
         AccentBar.BackgroundColor3 = color
         AccentBar.BackgroundTransparency = 1
         AccentBar.BorderSizePixel = 0
-        AccentBar.ZIndex = 3
+        AccentBar.ZIndex = 4
         AccentBar.Parent = Toast
         corner(AccentBar, 2)
         local accentFade = Instance.new("UIGradient")
@@ -655,48 +631,36 @@ function Library:CreateWindow(config)
         accentFade.Rotation = 90
         accentFade.Parent = AccentBar
 
-        -- ไอคอนวงกลม "โทนนุ่ม" แทนชิปสี่เหลี่ยมสีทึบเดิม: พื้นหลังผสมสีธีมกับสีประเภทแค่ ~22%
-        -- ให้ได้โทนพาสเทลกลมกลืนกับการ์ดมืด ส่วนตัวไอคอนใช้สีเต็มของประเภทนั้นแทนสีขาว ให้เด่นเป็นจุดโฟกัสแทน
-        -- และมีฮาโลจางๆ ล้อมรอบเพิ่มความมีมิติ (เดิมตั้งใจตัดฮาโลออกเพราะของเก่าใช้แบบกระจกใสไม่มีสี ดูลอยไม่มีจุดเด่น
-        -- แบบใหม่นี้ฮาโลมีสีเดียวกับไอคอนและจางมาก จึงช่วยเน้นจุดสนใจแทนที่จะรก)
-        local IconGlow = Instance.new("Frame")
-        IconGlow.AnchorPoint = Vector2.new(0.5, 0.5)
-        IconGlow.Size = UDim2.new(0, 44, 0, 44)
-        IconGlow.Position = UDim2.new(0, 31, 0, 29)
-        IconGlow.BackgroundColor3 = color
-        IconGlow.BackgroundTransparency = 1
-        IconGlow.ZIndex = 2
-        IconGlow.Parent = Toast
-        corner(IconGlow, 22)
-
+        -- วงกลมไอคอน (Badge) สีพาสเทลโทนนุ่มนวล
         local IconBadge = Instance.new("Frame")
-        IconBadge.AnchorPoint = Vector2.new(0.5, 0.5)
-        IconBadge.Size = UDim2.new(0, 30, 0, 30)
-        IconBadge.Position = UDim2.new(0, 31, 0, 29)
-        IconBadge.BackgroundColor3 = color:Lerp(Theme.Element, 0.78)
+        IconBadge.AnchorPoint = Vector2.new(0, 0)
+        IconBadge.Size = UDim2.new(0, 32, 0, 32)
+        IconBadge.Position = UDim2.new(0, 22, 0, 16)
+        IconBadge.BackgroundColor3 = color:Lerp(Theme.Element, 0.75)
         IconBadge.BackgroundTransparency = 1
-        IconBadge.ZIndex = 3
+        IconBadge.ZIndex = 4
         IconBadge.Parent = Toast
-        corner(IconBadge, 15)
+        corner(IconBadge, 10)
 
         local IconImg = Instance.new("ImageLabel")
         IconImg.AnchorPoint = Vector2.new(0.5, 0.5)
         IconImg.Position = UDim2.new(0.5, 0, 0.5, 0)
-        IconImg.Size = UDim2.new(0, 15, 0, 15)
+        IconImg.Size = UDim2.new(0, 16, 0, 16)
         IconImg.BackgroundTransparency = 1
         IconImg.Image = NOTIFY_ICON[ntype] or Library.Icons.info
         IconImg.ImageColor3 = color
         IconImg.ImageTransparency = 1
         IconImg.ScaleType = Enum.ScaleType.Fit
-        IconImg.ZIndex = 4
+        IconImg.ZIndex = 5
         IconImg.Parent = IconBadge
 
+        -- ข้อความ
         local TextHolder = Instance.new("Frame")
         TextHolder.BackgroundTransparency = 1
-        TextHolder.Position = UDim2.new(0, 58, 0, 14)
-        TextHolder.Size = UDim2.new(1, -94, 0, 0)
+        TextHolder.Position = UDim2.new(0, 64, 0, 14)
+        TextHolder.Size = UDim2.new(1, -100, 0, 0)
         TextHolder.AutomaticSize = Enum.AutomaticSize.Y
-        TextHolder.ZIndex = 3
+        TextHolder.ZIndex = 4
         TextHolder.Parent = Toast
         local Layout = Instance.new("UIListLayout")
         Layout.Padding = UDim.new(0, 4)
@@ -704,14 +668,14 @@ function Library:CreateWindow(config)
 
         local TitleLbl = Instance.new("TextLabel")
         TitleLbl.BackgroundTransparency = 1
-        TitleLbl.Size = UDim2.new(1, 0, 0, 17)
+        TitleLbl.Size = UDim2.new(1, 0, 0, 16)
         TitleLbl.Font = Enum.Font.GothamBold
         TitleLbl.TextSize = 14
         applyThemeColor(TitleLbl, "Text", "TextColor3")
         TitleLbl.TextXAlignment = Enum.TextXAlignment.Left
         TitleLbl.TextTransparency = 1
         TitleLbl.Text = title
-        TitleLbl.ZIndex = 3
+        TitleLbl.ZIndex = 4
         TitleLbl.Parent = TextHolder
 
         local ContentLbl = Instance.new("TextLabel")
@@ -726,29 +690,27 @@ function Library:CreateWindow(config)
         ContentLbl.TextWrapped = true
         ContentLbl.TextTransparency = 1
         ContentLbl.Text = content
-        ContentLbl.ZIndex = 3
+        ContentLbl.ZIndex = 4
         ContentLbl.Parent = TextHolder
 
-        -- สเปเซอร์ล่างสุดใน TextHolder เพื่อกันพื้นที่ให้แถบนับถอยหลัง
-        -- (ใช้ตัวนี้แทน UIPadding เพราะ UIPadding ไม่ถูกนับรวมกับ AutomaticSize ของ Toast
-        -- ที่มีลูกวางตำแหน่งเองแบบ manual ทำให้ก่อนหน้านี้แถบนับถอยหลังไปทับข้อความ)
+        -- สเปเซอร์ล่างสุดเพื่อกันพื้นที่สำหรับ Progress Bar
         local BottomSpacer = Instance.new("Frame")
         BottomSpacer.BackgroundTransparency = 1
-        BottomSpacer.Size = UDim2.new(1, 0, 0, 22)
-        BottomSpacer.ZIndex = 3
+        BottomSpacer.Size = UDim2.new(1, 0, 0, 18)
+        BottomSpacer.ZIndex = 4
         BottomSpacer.Parent = TextHolder
 
-        -- ปุ่มปิดเอง มุมขวาบน เผื่ออยากไล่ toast ทิ้งก่อนเวลา
+        -- ปุ่มปิด X
         local CloseX = Instance.new("ImageButton")
         CloseX.AnchorPoint = Vector2.new(1, 0)
         CloseX.Position = UDim2.new(1, -12, 0, 12)
-        CloseX.Size = UDim2.new(0, 15, 0, 15)
+        CloseX.Size = UDim2.new(0, 18, 0, 18)
         CloseX.BackgroundTransparency = 1
         CloseX.AutoButtonColor = false
         CloseX.Image = Library.Icons.close
         applyThemeColor(CloseX, "SubText", "ImageColor3")
         CloseX.ImageTransparency = 1
-        CloseX.ZIndex = 4
+        CloseX.ZIndex = 5
         CloseX.Parent = Toast
         CloseX.MouseEnter:Connect(function()
             TweenService:Create(CloseX, TI.d012_Sine_Out, {ImageColor3 = Theme.Text}):Play()
@@ -757,62 +719,55 @@ function Library:CreateWindow(config)
             TweenService:Create(CloseX, TI.d012_Sine_Out, {ImageColor3 = Theme.SubText}):Play()
         end)
 
-        -- (เดิมมี UIPadding ตรงนี้เพื่อเว้นระยะล่าง แต่ Padding ไม่ถูกนับใน AutomaticSize
-        -- ของเฟรมที่ลูกวางตำแหน่งเอง เลยเอาออก ใช้ BottomSpacer ข้างบนแทน)
-
-        -- แถบนับถอยหลังลอยเข้ามาจากขอบเล็กน้อย + มนขอบ กันไม่ให้โผล่พ้นมุมโค้งของการ์ด
-        -- (ClipsDescendants ของ Roblox ตัดแค่กรอบสี่เหลี่ยม ไม่ตัดตามมุมโค้งจริง
-        -- ถ้าวางชิดขอบเต็มความกว้างแบบเดิมจะเห็นแท่งยื่นทะลุมุมโค้งออกมา)
+        -- แถบนับถอยหลัง (Progress bar) ด้านล่างสุดแบบเต็มความกว้าง
         local ProgressTrack = Instance.new("Frame")
         ProgressTrack.AnchorPoint = Vector2.new(0.5, 1)
         ProgressTrack.Position = UDim2.new(0.5, 0, 1, -8)
-        ProgressTrack.Size = UDim2.new(1, -20, 0, 4)
+        ProgressTrack.Size = UDim2.new(1, -24, 0, 4)
         applyThemeColor(ProgressTrack, "Stroke")
         ProgressTrack.BackgroundTransparency = 1
         ProgressTrack.BorderSizePixel = 0
-        ProgressTrack.ZIndex = 3
+        ProgressTrack.ZIndex = 4
         ProgressTrack.ClipsDescendants = true
         ProgressTrack.Parent = Toast
         corner(ProgressTrack, 2)
+        
         local ProgressBar = Instance.new("Frame")
         ProgressBar.Size = UDim2.new(1, 0, 1, 0)
         ProgressBar.BackgroundColor3 = color
         ProgressBar.BorderSizePixel = 0
-        ProgressBar.ZIndex = 3
+        ProgressBar.ZIndex = 5
         ProgressBar.Parent = ProgressTrack
         corner(ProgressBar, 2)
 
-        -- ป๊อปสเกลเด้งเข้า ให้รู้สึกมีชีวิตชีวาตอนแจ้งเตือนขึ้น (ไม่แตะ Position เพราะ UIListLayout คุมอยู่)
+        -- UIScale สำหรับทำเอฟเฟกต์เด้ง
         local ToastScale = Instance.new("UIScale")
-        ToastScale.Scale = 0.85
+        ToastScale.Scale = 0.9
         ToastScale.Parent = Toast
 
         local IconScale = Instance.new("UIScale")
-        IconScale.Scale = 0.35
+        IconScale.Scale = 0.5
         IconScale.Parent = IconBadge
-        IconBadge.Rotation = -25
+        IconBadge.Rotation = -20
 
-        -- ทุกอย่างข้างในสร้างเสร็จแล้ว ณ จุดนี้ AutomaticSize ของ Toast ควรคำนวณความสูงจริงเสร็จแล้ว
-        -- ใช้ความสูงนี้เป็นเป้าหมาย tween ของ Slot เพื่อให้ toast ใบอื่นเลื่อนตามจังหวะเดียวกันแบบนุ่มนวล
+        -- คำนวณความสูงเป้าหมาย
         local targetHeight = Toast.AbsoluteSize.Y
         TweenService:Create(Slot, TI.d024_Quint_Out, {Size = UDim2.new(1, 0, 0, targetHeight)}):Play()
-        -- เผื่อเนื้อหาเปลี่ยนความสูงหลังจากนี้ (เช่น TextLabel wrap คำนวณใหม่อีกเฟรม) ให้ Slot ตามความสูงจริงต่อเนื่อง
         local heightSyncConn = Toast:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
             Slot.Size = UDim2.new(1, 0, 0, Toast.AbsoluteSize.Y)
         end)
 
-        -- ลำดับการเข้า: การ์ดป๊อปก่อน -> แถบสีวาดตัวเองลงมา -> ไอคอนหมุนเด้งตาม -> ข้อความค่อยๆ ไล่จางเข้าทีละบรรทัด -> ปุ่มปิด/แถบเวลาเข้ามาปิดท้าย
-        -- ใช้ DelayTime ใน TweenInfo (พารามิเตอร์ตัวที่ 6) เพื่อไล่จังหวะ แทนที่จะขึ้นพร้อมกันหมดทีเดียวซึ่งดูแข็งทื่อ
+        -- ลำดับแอนิเมชันเข้า: สไลด์เข้า + เด้ง + แสดงผลทีละส่วน
+        TweenService:Create(Toast, TI.d024_Quint_Out, {Position = UDim2.new(0, 0, 0, 0)}):Play()
         TweenService:Create(ToastScale, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Scale = 1}):Play()
         TweenService:Create(Toast, TI.d022_Sine_Out, {BackgroundTransparency = 0}):Play()
         TweenService:Create(outline, TI.d022_Sine_Out, {Transparency = 0.6}):Play()
         TweenService:Create(Shadow, TI.d03_Sine_Out, {ImageTransparency = 0.65}):Play()
 
-        TweenService:Create(AccentBar, TweenInfo.new(0.38, Enum.EasingStyle.Quint, Enum.EasingDirection.Out, 0, false, 0.04), {Size = UDim2.new(0, 4, 1, -28), BackgroundTransparency = 0}):Play()
+        TweenService:Create(AccentBar, TweenInfo.new(0.38, Enum.EasingStyle.Quint, Enum.EasingDirection.Out, 0, false, 0.04), {Size = UDim2.new(0, 4, 0, targetHeight - 32), BackgroundTransparency = 0}):Play()
 
         TweenService:Create(IconScale, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out, 0, false, 0.08), {Scale = 1}):Play()
         TweenService:Create(IconBadge, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out, 0, false, 0.08), {Rotation = 0, BackgroundTransparency = 0}):Play()
-        TweenService:Create(IconGlow, TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0.08), {BackgroundTransparency = 0.86}):Play()
         TweenService:Create(IconImg, TweenInfo.new(0.22, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0.14), {ImageTransparency = 0}):Play()
 
         TweenService:Create(TitleLbl, TweenInfo.new(0.22, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0.1), {TextTransparency = 0}):Play()
@@ -820,7 +775,6 @@ function Library:CreateWindow(config)
         TweenService:Create(CloseX, TweenInfo.new(0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0.2), {ImageTransparency = 0.4}):Play()
 
         ProgressBar.BackgroundTransparency = 1
-        ProgressBar.Size = UDim2.new(1, 0, 1, 0)
         TweenService:Create(ProgressBar, TweenInfo.new(0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0.22), {BackgroundTransparency = 0}):Play()
         TweenService:Create(ProgressBar, TweenInfo.new(duration, Enum.EasingStyle.Linear), {Size = UDim2.new(0, 0, 1, 0)}):Play()
         TweenService:Create(ProgressTrack, TweenInfo.new(0.25, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0.18), {BackgroundTransparency = 0.85}):Play()
@@ -830,10 +784,11 @@ function Library:CreateWindow(config)
             if dismissed or not Toast or not Toast.Parent then return end
             dismissed = true
             if heightSyncConn then heightSyncConn:Disconnect(); heightSyncConn = nil end
-            -- ทางออก: กระชับและไวกว่าตอนเข้า ทุกอย่างจางพร้อมกันแบบ Quint In ให้ความรู้สึก "ถูกดึงหายไป" หนักแน่น ไม่ยืดเยื้อ
-            TweenService:Create(ToastScale, TI.d018_Quint_In, {Scale = 0.88}):Play()
+            
+            -- แอนิเมชันออก: สไลด์ออกขวา + จางหาย
+            TweenService:Create(Toast, TI.d018_Quint_In, {Position = UDim2.new(0, 30, 0, 0)}):Play()
+            TweenService:Create(ToastScale, TI.d018_Quint_In, {Scale = 0.92}):Play()
             TweenService:Create(IconBadge, TI.d016_Sine_In, {Rotation = 12, BackgroundTransparency = 1}):Play()
-            TweenService:Create(IconGlow, TI.d016_Sine_In, {BackgroundTransparency = 1}):Play()
             TweenService:Create(Toast, TweenInfo.new(0.18, Enum.EasingStyle.Sine, Enum.EasingDirection.In), {BackgroundTransparency = 1}):Play()
             TweenService:Create(outline, TI.d018_Sine_Out, {Transparency = 1}):Play()
             TweenService:Create(Shadow, TI.d018_Sine_Out, {ImageTransparency = 1}):Play()
@@ -844,8 +799,7 @@ function Library:CreateWindow(config)
             TweenService:Create(CloseX, TI.d014_Sine_Out, {ImageTransparency = 1}):Play()
             TweenService:Create(ProgressTrack, TI.d014_Sine_Out, {BackgroundTransparency = 1}):Play()
             TweenService:Create(ProgressBar, TI.d014_Sine_Out, {BackgroundTransparency = 1}):Play()
-            -- ยุบพื้นที่ที่ Slot จองไว้ใน list พร้อมๆ กับ fade เพื่อให้ toast ใบอื่นเลื่อนขึ้นมาเติมช่องว่างแบบนุ่มนวล
-            -- แทนที่จะยังเว้นช่องว่างเปล่าค้างไว้เต็ม 0.2s แล้วค่อยกระโดดปิดตอน Destroy ทีเดียว
+            
             TweenService:Create(Slot, TI.d018_Quint_In, {Size = UDim2.new(1, 0, 0, 0)}):Play()
             task.delay(0.2, function()
                 for _, c in ipairs(shadowConns) do c:Disconnect() end
@@ -885,15 +839,10 @@ function Library:CreateWindow(config)
     local mainStroke = stroke(MainFrame)
     mainStroke.Transparency = 1
 
-    -- UIScale ไว้ทำ animation ย่อ/ขยายตอนซ่อน-เรียกคืน-ปิด UI (ใส่ที่ Shadow เพราะ MainFrame เป็นลูกของมัน
-    -- ทำให้ scale ทั้งกรอบ+เงาไปด้วยกัน จุดหมุนอยู่กลางพอดีเพราะทั้งคู่ AnchorPoint 0.5,0.5)
     local WindowScale = Instance.new("UIScale")
     WindowScale.Scale = 1
     WindowScale.Parent = Shadow
 
-    -- เพิ่มความมิติให้กรอบหน้าต่างแบบ "glass sheen" บางๆ ที่มุมบนซ้าย ให้ดูทันสมัยขึ้นแทนที่จะเป็นสีทึบแบนราบ
-    -- ใช้เฟรมแยกต่างหากทับอยู่ด้านบนแทนการใส่ UIGradient ลงบน Background ของ MainFrame ตรงๆ
-    -- (ถ้าใส่ตรงๆ จุดที่ Transparency = 1 จะเจาะทะลุพื้นหลังจริงของหน้าต่างจนโหว่ ไม่ใช่แค่ทำให้ดูเงา)
     local Sheen = Instance.new("Frame")
     Sheen.Name = "Sheen"
     Sheen.Size = UDim2.new(1, 0, 1, 0)
@@ -1012,7 +961,6 @@ function Library:CreateWindow(config)
         })
     end)
 
-    -- ============ Hide UI Button ============
     local HideBtn = Instance.new("ImageButton")
     HideBtn.Size = UDim2.new(0, 26, 0, 26)
     HideBtn.AnchorPoint = Vector2.new(1, 0.5)
@@ -1034,9 +982,6 @@ function Library:CreateWindow(config)
         TweenService:Create(HideBtn, TI.d015_Sine_Out, {BackgroundTransparency = 1}):Play()
     end)
 
-    -- ปุ่มลอยไว้กด "เรียก UI กลับมา" ตอน UI ถูกซ่อน (โลโก้ผู้ใช้ ถ้ามี ไม่งั้นขึ้นตัวอักษรแรกของชื่อ)
-    -- ต้องมี ScreenGui ของตัวเองแยกจาก ScreenGui หลัก เพราะ ImageButton ต้องอยู่ใต้ ScreenGui ถึงจะ render
-    -- และถ้าฝากไว้ใน ScreenGui หลัก พอ ScreenGui.Enabled = false ปุ่มนี้ก็จะหายไปด้วย (ผิดจุดประสงค์)
     local RestoreGui = Instance.new("ScreenGui")
     RestoreGui.Name = "RestoreGui"
     RestoreGui.ResetOnSpawn = false
@@ -1058,8 +1003,6 @@ function Library:CreateWindow(config)
     RestoreBtn.Active = true
     RestoreBtn.Parent = RestoreGui
     corner(RestoreBtn, 23)
-    -- ใช้ UIScale แทนการเปลี่ยน Size ตรงๆ เพราะ RestoreBtn ไม่ได้ตั้ง AnchorPoint ไว้กลาง
-    -- ถ้า tween Size ตรงๆ มันจะขยายจากมุมบนซ้าย ดูเอียง/เลื่อนมุมไม่สวย
     local RestoreBtnScale = Instance.new("UIScale")
     RestoreBtnScale.Scale = 1
     RestoreBtnScale.Parent = RestoreBtn
@@ -1067,7 +1010,6 @@ function Library:CreateWindow(config)
     stroke(RestoreBtn)
 
     if config.Icon then
-        -- ใช้โลโก้/ไอคอนของผู้ใช้เอง (rbxassetid) แทนตัวอักษร
         RestoreBtn.Image = normalizeAssetId(config.Icon)
         local iconPad = Instance.new("UIPadding")
         iconPad.PaddingLeft = UDim.new(0, 8)
@@ -1076,7 +1018,6 @@ function Library:CreateWindow(config)
         iconPad.PaddingBottom = UDim.new(0, 8)
         iconPad.Parent = RestoreBtn
     else
-        -- ไม่มีโลโก้ -> ขึ้นตัวอักษรแรกของชื่อ (config.Title) ตัวใหญ่กลางวงกลม
         local LetterLabel = Instance.new("TextLabel")
         LetterLabel.Name = "LetterLabel"
         LetterLabel.Size = UDim2.new(1, 0, 1, 0)
@@ -1098,7 +1039,6 @@ function Library:CreateWindow(config)
         if visible then
             ScreenGui.Enabled = true
             RestoreBtn.Visible = false
-            -- เริ่มจากโปร่งใส+เลื่อนลงนิดหน่อย แล้ว tween ขึ้นมานุ่มๆ ด้วย Quint โดยไม่ย่อขนาดลงก่อน (คงขนาดเต็มไว้ตลอด)
             WindowScale.Scale = 1
             Shadow.Position = hiddenShadowPos
             MainFrame.BackgroundTransparency = 1
@@ -1108,7 +1048,6 @@ function Library:CreateWindow(config)
             TweenService:Create(MainFrame, easeIn, {BackgroundTransparency = 0}):Play()
             TweenService:Create(mainStroke, easeIn, {Transparency = 0.5}):Play()
         else
-            -- ย่อ+เลื่อนลง+จางหายพร้อมกันแบบนุ่มๆ ก่อนค่อยปิด ScreenGui จริงตอนจบ tween
             local easeOut = TI.d018_Quint_In
             local t = TweenService:Create(WindowScale, easeOut, {Scale = 0.92})
             TweenService:Create(Shadow, easeOut, {Position = hiddenShadowPos}):Play()
@@ -1116,11 +1055,10 @@ function Library:CreateWindow(config)
             TweenService:Create(mainStroke, easeOut, {Transparency = 1}):Play()
             t:Play()
             t.Completed:Connect(function()
-                if myToken ~= hideToken then return end -- ถูกสั่งซ่อน/คืนซ้อนระหว่าง tween ทิ้ง callback เก่า
+                if myToken ~= hideToken then return end
                 ScreenGui.Enabled = false
-                Shadow.Position = baseShadowPos -- คืนตำแหน่งไว้เผื่อรอบหน้า
+                Shadow.Position = baseShadowPos
                 RestoreBtn.Visible = true
-                -- ปุ่มลอย pop เข้ามาแบบเบาๆ ผ่าน UIScale (จุดหมุนกึ่งกลางจริง ไม่เอียงมุม)
                 RestoreBtnScale.Scale = 0.5
                 TweenService:Create(RestoreBtnScale, TI.d022_Back_Out, {Scale = 1}):Play()
             end)
@@ -1129,9 +1067,7 @@ function Library:CreateWindow(config)
 
     HideBtn.MouseButton1Click:Connect(function() setUiVisible(false) end)
 
-    -- ลาก RestoreBtn ได้ + กดเพื่อเรียก UI กลับ (แยกจากการลากด้วยระยะที่ขยับ)
     do
-        -- OPTIMIZED: connect เฉพาะตอนเริ่มลาก ไม่ปล่อยให้ InputChanged วิ่งฟรีตลอดเวลาที่ไม่ได้ลาก
         local rDragging, rDragStart, rStartPos, rTouch, rMoved = false, nil, nil, nil, false
         local rChangedConn, rEndedConn = nil, nil
         local pushRestoreDrag, startRestoreDragSync, stopRestoreDragSync = createRenderSyncedDrag(function(delta)
@@ -1208,7 +1144,6 @@ function Library:CreateWindow(config)
     ContentArea.Active = true
     ContentArea.Parent = MainFrame
 
-    -- ============ Resize Handle ============
     local resizing = false
     local ResizeHandle = Instance.new("ImageButton")
     ResizeHandle.Size = UDim2.new(0, 18, 0, 18)
@@ -1216,7 +1151,7 @@ function Library:CreateWindow(config)
     ResizeHandle.Position = UDim2.new(1, -4, 1, -4)
     ResizeHandle.BackgroundTransparency = 1
     ResizeHandle.AutoButtonColor = false
-    ResizeHandle.Image = "rbxassetid://10709760051" -- lucide-align-start-horizontal ใช้แทนไอคอนมุมลาก
+    ResizeHandle.Image = "rbxassetid://10709760051"
     ResizeHandle.Rotation = 90
     ResizeHandle.ImageTransparency = 0.4
     applyThemeColor(ResizeHandle, "SubText", "ImageColor3")
@@ -1241,7 +1176,6 @@ function Library:CreateWindow(config)
         BackgroundTransparency = 0
     }):Play()
     TweenService:Create(mainStroke, TI.d028_Sine_Out, {Transparency = 0.5}):Play()
-    -- Shadow ปิดไว้ (ไม่แสดง) ตามที่ขอ
     TweenService:Create(TopBar, TI.d028_Sine_Out, {BackgroundTransparency = 0}):Play()
     TweenService:Create(topBarFix, TI.d028_Sine_Out, {BackgroundTransparency = 0}):Play()
     TweenService:Create(TitleLabel, TI.d03_Sine_Out, {TextTransparency = 0}):Play()
@@ -1266,7 +1200,6 @@ function Library:CreateWindow(config)
     function Window:Minimize() setUiVisible(false) end
     function Window:Restore() setUiVisible(true) end
 
-    -- เปลี่ยนไอคอนปุ่มลอย (RestoreBtn) ตอนรันไทม์ ใช้แทนตัวอักษรเดิมถ้ามี หรือสลับไอคอนใหม่ก็ได้
     function Window:SetIcon(icon)
         local letterLabel = RestoreBtn:FindFirstChild("LetterLabel")
         if letterLabel then letterLabel:Destroy() end
@@ -1281,14 +1214,11 @@ function Library:CreateWindow(config)
         end
     end
 
-    -- ลงทะเบียนฟังก์ชันที่จะถูกเรียกตอน Window:Destroy() ถูกสั่ง (เช่น เซฟ config ก่อนปิด UI)
     local closeCallbacks = {}
     function Window:BindToClose(callback)
         if type(callback) == "function" then table.insert(closeCallbacks, callback) end
     end
 
-    -- อ้างอิงถึง Watermark/KeyList ที่อาจถูกสร้างทีหลัง (Window:CreateWatermark / Window:CreateKeyList)
-    -- เก็บไว้ตรงนี้เพื่อให้ Window:Destroy() เก็บกวาดทิ้งด้วยตอนปิด UI ทั้งระบบ
     local activeWatermark, activeKeyList = nil, nil
 
     function Window:Destroy()
@@ -1301,7 +1231,6 @@ function Library:CreateWindow(config)
             ScreenGui:Destroy(); RestoreGui:Destroy(); NotifyGui:Destroy()
         end
         if ScreenGui.Enabled then
-            -- ย่อ+เลื่อนลง+จางหายนุ่มๆ ก่อนค่อยลบจริง ไม่ตัดหายวับทันที
             local easeOut = TI.d02_Quint_In
             TweenService:Create(WindowScale, easeOut, {Scale = 0.9}):Play()
             TweenService:Create(Shadow, easeOut, {Position = hiddenShadowPos, ImageTransparency = 1}):Play()
@@ -1313,12 +1242,6 @@ function Library:CreateWindow(config)
         end
     end
 
-    -- ============ Watermark (แถบสถานะลอย มุมจอ, โชว์ได้แม้ UI หลักถูกซ่อน) ============
-    -- config.Text      = ข้อความหลัก (default "SpectreWare")
-    -- config.Position  = UDim2 ตำแหน่ง (default มุมซ้ายบน)
-    -- config.ShowFPS   = true/false โชว์ FPS อัปเดตทุก 1 วิ
-    -- config.ShowPing  = true/false โชว์ Ping (ms) อัปเดตทุก 1 วิ
-    -- คืน object ที่มี :SetText(text) :Show() :Hide() :Toggle() :Destroy()
     function Window:CreateWatermark(config)
         config = type(config) == "table" and config or {}
 
@@ -1369,7 +1292,7 @@ function Library:CreateWindow(config)
         local heartbeatConn
         if config.ShowFPS or config.ShowPing then
             local frames, lastClock, fps = 0, os.clock(), 0
-            local lastPing = nil -- เก็บค่า ping ล่าสุดที่อ่านสำเร็จไว้ กันตัวเลขกระพริบเป็น "--" ทุกครั้งที่ StatsService อ่านพลาดชั่วคราว
+            local lastPing = nil
             local function refreshStatsText()
                 local parts = {config.Text or "SpectreWare"}
                 if config.ShowFPS then table.insert(parts, fps .. " FPS") end
@@ -1409,10 +1332,6 @@ function Library:CreateWindow(config)
         return Watermark
     end
 
-    -- ============ KeyList (กล่องลอยแสดงปุ่มลัดที่ตั้งไว้ อัปเดตอัตโนมัติตาม Flag) ============
-    -- config.Items = { {Text = "ชื่อฟังก์ชัน", Flag = "ชื่อ Flag ของ Tab:CreateKeybind ตัวนั้น"}, ... }
-    -- รายชื่อปุ่มจะอัปเดตสดเมื่อผู้ใช้เปลี่ยนคีย์ผ่าน Keybind element (ผ่าน Library.FlagChanged)
-    -- คืน object ที่มี :AddItem({Text=, Flag=}) :Show() :Hide() :Destroy()
     function Window:CreateKeyList(config)
         config = type(config) == "table" and config or {}
 
@@ -1459,13 +1378,15 @@ function Library:CreateWindow(config)
 
         local rowConns = {}
         local KeyList = {}
+        local itemCount = 0
 
         function KeyList:AddItem(item)
             item = type(item) == "table" and item or {}
+            itemCount = itemCount + 1
             local Row = Instance.new("Frame")
             Row.Size = UDim2.new(1, 0, 0, 20)
             Row.BackgroundTransparency = 1
-            Row.LayoutOrder = #Holder:GetChildren()
+            Row.LayoutOrder = itemCount
             Row.Parent = Holder
 
             local NameLbl = Instance.new("TextLabel")
@@ -1511,8 +1432,6 @@ function Library:CreateWindow(config)
         return KeyList
     end
 
-    -- ============ Modal Dialogs ============
-    -- Alert: ป๊อปอัพแจ้งเตือนแบบมีปุ่มเดียว บล็อกจนกว่าผู้ใช้จะกดปิด
     function Window:Alert(opts)
         opts = type(opts) == "table" and opts or {}
         local Overlay = Instance.new("Frame")
@@ -1584,7 +1503,6 @@ function Library:CreateWindow(config)
         return newElement(Overlay, nil, nil, closeAlert)
     end
 
-    -- Confirm: ป๊อปอัพถาม Yes/No ผลลัพธ์ (true/false) ส่งกลับผ่าน opts.Callback
     function Window:Confirm(opts)
         opts = type(opts) == "table" and opts or {}
         local Overlay = Instance.new("Frame")
@@ -1673,7 +1591,7 @@ function Library:CreateWindow(config)
 
     function Window:CreateSettingsTab()
         local tab = Window:CreateTab("Settings", "settings")
-        tab.Btn.LayoutOrder = 9999 -- ตรึงให้แท็บ Settings อยู่ล่างสุดของไซด์บาร์เสมอ ไม่ว่าจะสร้างตอนไหน
+        tab.Btn.LayoutOrder = 9999
         tab:CreateThemeDropdown()
         return tab
     end
@@ -1892,8 +1810,6 @@ function Library:CreateWindow(config)
             Label.TextXAlignment = Enum.TextXAlignment.Left
             Label.Parent = Btn
 
-            -- Debounce กันกรณีผู้ใช้กดรัวๆ (double click เร็ว/สแปมบนมือถือ) ยิง callback ซ้อนกันหลายรอบ
-            -- ปรับ cooldown ได้ผ่าน c.Debounce (วินาที) ค่า default 0.3s พอสำหรับปุ่มทั่วไป ไม่รู้สึกหน่วง
             local debounceUntil = 0
             Btn.MouseButton1Click:Connect(function()
                 local now = os.clock()
@@ -2051,13 +1967,7 @@ function Library:CreateWindow(config)
                 if fireCallback then safeCallback(c.Callback, value) end
             end
 
-            -- OPTIMIZED: แต่ละ Slider เคยผูก UserInputService.InputChanged/InputEnded แบบถาวร
-            -- (fire ทุกครั้งที่เมาส์ขยับ "ทั้งเกม" ตลอดไป แม้ไม่ได้ลากอยู่เลย)
-            -- ถ้า UI มีหลาย Slider จะกลายเป็นหลาย listener ที่วิ่งฟรีตลอดเวลา
-            -- แก้เป็น connect เฉพาะตอนเริ่มลาก แล้ว disconnect ทันทีที่ปล่อยนิ้ว/เมาส์
             local inputChangedConn, inputEndedConn = nil, nil
-            -- OPTIMIZED: updateFromPos ทำงานหนัก (string.format + Label.Text + user Callback) เดิมรันทุกครั้งที่ InputChanged ยิง
-            -- ซึ่งถี่กว่าเฟรมเรนเดอร์จริงได้มาก ทำให้ระหว่างลาก slider รู้สึกกระตุก -> batch ให้รันแค่ครั้งเดียวต่อเฟรม
             local pushSliderDrag, startSliderDragSync, stopSliderDragSync = createRenderSyncedDrag(function(x)
                 updateFromPos(x, true)
             end)
@@ -2073,13 +1983,10 @@ function Library:CreateWindow(config)
                 if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                     dragging = true
                     activeType = input.UserInputType
-                    TabContent.ScrollingEnabled = false -- กันไม่ให้การเลื่อน scroll แย่ง gesture ตอนลาก ทำให้กระตุก
+                    TabContent.ScrollingEnabled = false
                     updateFromPos(input.Position.X, true)
                     startSliderDragSync()
 
-                    -- เช็คแค่ "ประเภท" ของ input (Touch/MouseMovement) แทนการเทียบ InputObject ตรงๆ
-                    -- เพราะบาง executor มือถือส่ง InputObject คนละตัวกันในแต่ละ event ของการลากนิ้วเดียวกัน
-                    -- ถ้าเทียบ object ตรงๆ จะมี event ตกหล่นเป็นบางจังหวะ ทำให้แถบลากดูค้าง/กระตุก
                     inputChangedConn = UserInputService.InputChanged:Connect(function(input2)
                         if not dragging then return end
                         if activeType == Enum.UserInputType.Touch and input2.UserInputType == Enum.UserInputType.Touch then
@@ -2088,7 +1995,6 @@ function Library:CreateWindow(config)
                             pushSliderDrag(input2.Position.X)
                         end
                     end)
-                    -- fallback: เผื่อ Bar.InputEnded ไม่ fire (เช่นนิ้วเลื่อนหลุดกรอบ Bar ระหว่างลากแล้วปล่อย) กันไม่ให้ scroll ถูกปิดค้าง
                     inputEndedConn = UserInputService.InputEnded:Connect(function(input2)
                         if dragging and input2.UserInputType == activeType then
                             stopSliderDrag()
@@ -2198,7 +2104,6 @@ function Library:CreateWindow(config)
                 local fullH = pad * 2 + math.min(contentH, maxVisible * itemH + (maxVisible - 1) * gap)
                 local needsScroll = #c.Options > maxVisible
 
-                -- soft drop shadow for elevation
                 shadow = Instance.new("ImageLabel")
                 shadow.Name = "DropShadow"
                 shadow.BackgroundTransparency = 1
@@ -2365,7 +2270,6 @@ function Library:CreateWindow(config)
             Label.TextXAlignment = Enum.TextXAlignment.Left
             Label.Parent = Btn
 
-            -- พรีวิวสีปุ่มหลัก: ใหญ่ขึ้นเล็กน้อย + ขอบสีขาวจางๆ ให้ดูเหมือน swatch การ์ดจริง ไม่ใช่กล่องแบนๆ
             local colorPreview = Instance.new("Frame")
             colorPreview.Size = UDim2.new(0, 26, 0, 26)
             colorPreview.Position = UDim2.new(1, -34, 0.5, -13)
@@ -2382,7 +2286,6 @@ function Library:CreateWindow(config)
             local isOpen, picker, outsideConn = false, nil, nil
             local h, s, v = selectedColor:ToHSV()
 
-            -- อ้างอิงถูก set ให้ตอนเปิด popup เพื่อใช้ sync ระหว่าง SV box / Hue bar / Hex label
             local refreshVisuals
 
             local function closePicker()
@@ -2427,7 +2330,6 @@ function Library:CreateWindow(config)
                 pLayout.SortOrder = Enum.SortOrder.LayoutOrder
                 pLayout.Parent = picker
 
-                -- ============ SV Box (Saturation x, Value y) ============
                 local SVBox = Instance.new("Frame")
                 SVBox.LayoutOrder = 1
                 SVBox.Size = UDim2.new(1, 0, 0, 110)
@@ -2438,7 +2340,6 @@ function Library:CreateWindow(config)
                 SVBox.Parent = picker
                 corner(SVBox, 8)
 
-                -- ขาว(ซ้าย) -> โปร่งใส(ขวา) = แกน Saturation
                 local SatOverlay = Instance.new("Frame")
                 SatOverlay.Size = UDim2.new(1, 0, 1, 0)
                 SatOverlay.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -2452,7 +2353,6 @@ function Library:CreateWindow(config)
                 })
                 satGradient.Parent = SatOverlay
 
-                -- โปร่งใส(บน) -> ดำ(ล่าง) = แกน Value
                 local ValOverlay = Instance.new("Frame")
                 ValOverlay.Size = UDim2.new(1, 0, 1, 0)
                 ValOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
@@ -2480,7 +2380,6 @@ function Library:CreateWindow(config)
                 svCursorStroke.Color = Color3.fromRGB(25, 25, 25)
                 svCursorStroke.Parent = SVCursor
 
-                -- ============ Hue Bar ============
                 local HueBar = Instance.new("Frame")
                 HueBar.LayoutOrder = 2
                 HueBar.Size = UDim2.new(1, 0, 0, 16)
@@ -2513,7 +2412,6 @@ function Library:CreateWindow(config)
                 hueCursorStroke.Color = Color3.fromRGB(25, 25, 25)
                 hueCursorStroke.Parent = HueCursor
 
-                -- ============ Hex readout ============
                 local HexLabel = Instance.new("TextLabel")
                 HexLabel.LayoutOrder = 3
                 HexLabel.Size = UDim2.new(1, 0, 0, 16)
@@ -2525,7 +2423,6 @@ function Library:CreateWindow(config)
                 applyThemeColor(HexLabel, "SubText", "TextColor3")
                 HexLabel.Parent = picker
 
-                -- ============ Preset swatches (แถวสีสำเร็จรูป กดเปลี่ยนไว) ============
                 local swatchRow = Instance.new("Frame")
                 swatchRow.LayoutOrder = 4
                 swatchRow.Size = UDim2.new(1, 0, 0, 22)
@@ -2576,10 +2473,6 @@ function Library:CreateWindow(config)
                     applyColor(Color3.fromHSV(h, s, v), true)
                 end
 
-                -- ลาก SV box / Hue bar: connect เฉพาะช่วงลากจริง (แพทเทิร์นเดียวกับ Slider ด้านบน)
-                -- OPTIMIZED: updateSV/updateHue ทำงานหนัก (คำนวณ HSV + เลื่อน cursor + เปลี่ยนสีพื้น + refreshHex + user Callback)
-                -- เดิมรันทุกครั้งที่ InputChanged ยิง (ถี่กว่าเฟรมเรนเดอร์จริงได้บนมือถือ) ทำให้ลากแล้วรู้สึกหน่วง
-                -- -> batch ให้รันแค่ครั้งเดียวต่อเฟรมผ่าน RenderStepped เหมือน window drag/slider ด้านบน
                 local svDragging, svChangedConn, svEndedConn = false, nil, nil
                 local pushSVDrag, startSVDragSync, stopSVDragSync = createRenderSyncedDrag(function(x, y)
                     updateSV(x, y)
@@ -2650,7 +2543,6 @@ function Library:CreateWindow(config)
                     swStroke.Thickness = 1
                     swStroke.Transparency = 0.7
                     swStroke.Parent = sw
-                    -- hover ใช้ tween ความหนา/ความจางของขอบแทนการขยับ Size กันไม่ให้แถว swatch เด้งจัด layout ใหม่
                     sw.MouseEnter:Connect(function()
                         TweenService:Create(swStroke, TI.d012_Sine_Out, {Thickness = 2, Transparency = 0.15}):Play()
                     end)
@@ -3060,7 +2952,6 @@ function Library:CreateWindow(config)
         function Tab:CreateSearchBox(c)
             c = type(c) == "table" and c or {}
 
-            -- Outer = ตัวกล่องพื้นหลัง/มุมโค้ง/glow เท่านั้น ไม่ยุ่งกับข้อความ
             local Outer = Instance.new("Frame")
             Outer.Size = UDim2.new(1, 0, 0, 38)
             applyThemeColor(Outer, "Element")
@@ -3079,8 +2970,6 @@ function Library:CreateWindow(config)
             IconImg.ZIndex = 2
             IconImg.Parent = Outer
 
-            -- ค่า Position/Size ชุดนี้ใช้ร่วมกันทั้งกล่องพิมพ์จริงและ placeholder
-            -- ห้ามใช้ UIPadding เด็ดขาด เพราะเลื่อนกล่องพิมพ์จริงกับ placeholder ไม่เท่ากัน ทำให้เยื้อง
             local contentPos = UDim2.new(0, 34, 0, 0)
             local contentSize = UDim2.new(1, -44, 1, 0)
 
@@ -3089,7 +2978,7 @@ function Library:CreateWindow(config)
             Box.Size = contentSize
             Box.BackgroundTransparency = 1
             Box.Text = c.Default or ""
-            Box.PlaceholderText = "" -- ปิด PlaceholderText ของ Roblox ใช้ label ปลอมแทนทั้งหมด
+            Box.PlaceholderText = ""
             applyThemeColor(Box, "Text", "TextColor3")
             Box.Font = Enum.Font.GothamSemibold
             Box.TextSize = 13
@@ -3099,7 +2988,6 @@ function Library:CreateWindow(config)
             Box.ZIndex = 3
             Box.Parent = Outer
 
-            -- Placeholder ปลอม ใช้ Position/Size เดียวกับ Box เป๊ะๆ จึงตรงกันเสมอ
             local PlaceholderLbl = Instance.new("TextLabel")
             PlaceholderLbl.BackgroundTransparency = 1
             PlaceholderLbl.Position = contentPos
@@ -3146,10 +3034,6 @@ function Library:CreateWindow(config)
             end)
         end
 
-        -- ============ Config Manager (UI สำเร็จรูปสำหรับ Save/Load/Delete config) ============
-        -- ใช้ค่าจาก Library:SaveConfig/LoadConfig/ListConfigs/DeleteConfig ที่ประกาศไว้ระดับ Library
-        -- c.Title      = หัวข้อ section (default "Config")
-        -- c.AutoLoad   = true(default) -> โหลด config ล่าสุดที่เจอให้อัตโนมัติตอนสร้าง UI นี้
         function Tab:CreateConfigManager(c)
             c = type(c) == "table" and c or {}
             Tab:CreateSection(c.Title or "Config")
@@ -3200,7 +3084,6 @@ function Library:CreateWindow(config)
             end
         end
 
-        -- ล้างทุก element ที่เคยสร้างไว้ในแท็บนี้ทิ้งทั้งหมด (เก็บ layout ไว้)
         function Tab:Clear()
             for _, child in ipairs(TabContent:GetChildren()) do
                 if not child:IsA("UIListLayout") then child:Destroy() end
@@ -3219,13 +3102,8 @@ function Library:CreateWindow(config)
     end
 
     -- ============ Draggable ============
-    -- OPTIMIZED: เดิม InputChanged/InputEnded ผูกแบบถาวรตั้งแต่สร้างหน้าต่าง
-    -- ทำให้ทุก mouse move ทั้งเกมต้องวิ่งผ่าน callback นี้แม้ไม่ได้ลากอยู่เลย
-    -- เปลี่ยนเป็น connect ตอนเริ่มลากเท่านั้น แล้ว disconnect ทันทีที่ปล่อย
     local dragging, dragStart, startPos, activeTouch = false, nil, nil, nil
     local dragChangedConn, dragEndedConn = nil, nil
-    -- OPTIMIZED: เดิม Shadow.Position ถูก set ทันทีทุกครั้งที่ InputChanged ยิง (ถี่กว่าเฟรมเรนเดอร์จริงได้บนมือถือ/เมาส์โพลเรทสูง)
-    -- เปลี่ยนมาเก็บ delta ล่าสุดไว้ก่อน แล้ว apply ตำแหน่งจริงแค่ครั้งเดียวต่อเฟรมผ่าน RenderStepped ให้ลื่นไม่กระตุก
     local pushWindowDrag, startWindowDragSync, stopWindowDragSync = createRenderSyncedDrag(function(delta)
         Shadow.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
     end)
@@ -3263,12 +3141,9 @@ function Library:CreateWindow(config)
     end)
 
     -- ============ Resizable ============
-    -- MIN_SIZE ล็อกเท่ากับขนาดเริ่มต้นของหน้าต่าง (380x340) ลากขยายได้อย่างเดียว ย่อให้เล็กกว่าเดิมไม่ได้
     local MIN_SIZE, MAX_SIZE = Vector2.new(380, 340), Vector2.new(650, 550)
-    -- OPTIMIZED: เช่นเดียวกับ Draggable ด้านบน — connect เฉพาะช่วง resize จริง
     local resizeStart, startSize, resizeTouch = nil, nil, nil
     local resizeChangedConn, resizeEndedConn = nil, nil
-    -- OPTIMIZED: batch การ set MainFrame.Size ให้เกิดแค่ครั้งเดียวต่อเฟรมผ่าน RenderStepped (เหตุผลเดียวกับ window drag ด้านบน)
     local pushResize, startResizeSync, stopResizeSync = createRenderSyncedDrag(function(delta)
         local newW = math.clamp(startSize.X.Offset + delta.X, MIN_SIZE.X, MAX_SIZE.X)
         local newH = math.clamp(startSize.Y.Offset + delta.Y, MIN_SIZE.Y, MAX_SIZE.Y)
