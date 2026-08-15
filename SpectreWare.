@@ -28,6 +28,14 @@ local CFG = {
     announceTimeout     = 6,
     apiSessionTimeout   = 10,
     discordUrl          = "https://discord.gg/KJHk8c2Q65",
+    notifLibUrl         = "https://pastefy.app/vVYdYcbO/raw",
+    -- DJB2 hex hash of the current notiflib source, uppercase. Leave "" to
+    -- run unpinned (old behaviour). Get the real value by running once with
+    -- it blank — the loader will warn()-print the computed hash — then paste
+    -- that in here. Any future change to the pastefy content (hijack, edit,
+    -- deletion/replacement) will then fail closed instead of silently
+    -- loadstring-ing whatever is at that URL.
+    notifLibHash        = "",
 }
 
 local CLIENT_HEADERS = { ["X-Client-Key"] = CFG.clientKey }
@@ -65,6 +73,12 @@ local _r_format   = string.format
 local _r_byte, _r_char = string.byte, string.char
 local _r_concat   = table.concat
 local _r_floor, _r_random = math.floor, math.random
+
+local function _djb2(s)
+    local h = 5381
+    for i = 1, #s do h = ((h * 33) + _r_byte(s, i)) % 0x100000000 end
+    return _r_format("%08X", h)
+end
 
 local _r_bxor = (bit32 and bit32.bxor) or (function()
     local F = math.floor
@@ -111,17 +125,23 @@ local function _checkRawops()
 end
 
 -- ── Global key symbols ──────────────────────────────────────────────────────
+-- s1/s2/s3/xk/canary get a random per-session suffix so a getgenv() key name
+-- harvested from one dumped/leaked session can't be hardcoded into a public
+-- bypass script and reused against a different session or user.
+-- running/stime stay fixed — they're needed as a cross-restart anchor for the
+-- double-run guard below, but they only ever hold a boolean/timestamp, never
+-- the sentinel token itself, so a fixed name there leaks little.
 local _GK = (function()
     local c = _r_char
+    local salt = _r_format("%06x", _r_random(0, 0xFFFFFF))
     return {
         running = c(95,114,119,110,103,95),
-        time    = c(95,115,116,109,116,95),
-        xk      = c(95,120,107,118,48,95),
-        s1      = c(95,115,119,49,120,95),
-        s2      = c(95,115,119,50,121,95),
-        s3      = c(95,115,119,51,122,95),
-        canary  = c(95,99,110,114,121,95),
         stime   = c(95,115,116,109,50,95),
+        xk      = c(95,120,107,118,48,95) .. salt,
+        s1      = c(95,115,119,49,120,95) .. salt,
+        s2      = c(95,115,119,50,121,95) .. salt,
+        s3      = c(95,115,119,51,122,95) .. salt,
+        canary  = c(95,99,110,114,121,95) .. salt,
     }
 end)()
 
@@ -380,9 +400,30 @@ local function safeGetTimeout(url, timeout, headers)
 end
 
 -- ── Notification library (async) ─────────────────────────────────────────────
+-- Pinned by hash: the notiflib is fetched from an external URL Claude doesn't
+-- control the origin of. Without pinning, anyone who hijacks/edits/replaces
+-- that pastefy page gets loadstring'd code execution in every client. With
+-- CFG.notifLibHash set, a mismatch aborts the load instead of running it.
 task.spawn(function()
-    local _nlOk, _nlSrc = safeGet("https://pastefy.app/vVYdYcbO/raw")
-    NotificationLibrary = _nlOk and loadstring(_nlSrc)() or nil
+    local _nlOk, _nlSrc = safeGet(CFG.notifLibUrl)
+    if not _nlOk or not _nlSrc or _nlSrc == "" then
+        warn("LuaSyncX: notiflib fetch failed"); return
+    end
+    if CFG.notifLibHash ~= "" then
+        local gotHash = _djb2(_nlSrc)
+        if gotHash ~= CFG.notifLibHash:upper() then
+            warn("LuaSyncX: notiflib hash mismatch — refusing to run untrusted code " ..
+                 "(expected " .. CFG.notifLibHash:upper() .. ", got " .. gotHash .. ")")
+            return
+        end
+    else
+        warn("LuaSyncX: notiflib running UNPINNED — set CFG.notifLibHash to " ..
+             _djb2(_nlSrc) .. " to pin it")
+    end
+    local _fn, _cerr = _native_loadstring(_nlSrc)
+    if not _fn then warn("LuaSyncX: notiflib compile error — " .. tostring(_cerr)); return end
+    local _runOk, _lib = _r_pcall(_fn)
+    NotificationLibrary = _runOk and _lib or nil
     if not NotificationLibrary then warn("LuaSyncX: notiflib load failed") end
 end)
 
@@ -1015,11 +1056,6 @@ local function _parseResult(raw)
     return r
 end
 
-local function _djb2(s)
-    local h = 5381
-    for i = 1, #s do h = ((h * 33) + _r_byte(s, i)) % 0x100000000 end
-    return _r_format("%08X", h)
-end
 local function _fnv1a(s)
     local h = 0x811C9DC5
     for i = 1, #s do
